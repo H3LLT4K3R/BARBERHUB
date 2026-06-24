@@ -1,0 +1,264 @@
+:root {
+  /* Paleta de colores y variables globales */
+  --color-sidebar: #121212;
+  --color-principal: #ffffff;
+  --color-dorado: #e5be6b;
+  --color-dorado-borde: #edd193;
+  --texto-blanco: #ffffff;
+  --texto-principal: #000000;
+  --texto-muted: #555555;
+  --gris-claro: #e0e0e0;
+}
+
+/* Página principal de notificaciones */
+.pagina-notificaciones {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-principal);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Barra lateral */
+.sidebar {
+  width: 250px;
+  background-color: var(--color-sidebar);
+  display: flex;
+  flex-direction: column;
+  padding: 25px 0;
+  box-sizing: border-box;
+}
+
+/* Marca Barber Hub */
+.marca {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 40px;
+}
+
+.logo-barberhub {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  margin-right: 12px;
+}
+
+.marca h2 {
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  color: var(--texto-blanco);
+  margin: 0;
+}
+
+/* Menú de navegación */
+.menu-navegacion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 15px;
+  flex: 1;
+}
+
+.boton-menu {
+  background: none;
+  border: none;
+  color: #aaaaaa;
+  text-align: left;
+  padding: 14px 22px;
+  font-size: 1.05rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.boton-menu:hover {
+  color: var(--texto-blanco);
+  background-color: #222222;
+}
+
+.boton-menu.activo {
+  background-color: var(--color-dorado);
+  color: #000000;
+  font-weight: 700;
+}
+
+/* Perfil de usuario */
+.perfil-usuario {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-top: 1px solid #222222;
+  margin-top: auto;
+}
+
+.avatar-placeholder {
+  width: 48px;
+  height: 48px;
+  background-color: #f3d89d;
+  color: #000000;
+  font-weight: 700;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  margin-right: 12px;
+}
+
+.nombre-usuario {
+  color: var(--texto-blanco);
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.rol-usuario {
+  color: #888888;
+  font-size: 0.85rem;
+  margin-top: 2px;
+}
+
+/* Contenedor principal */
+.contenedor-principal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-principal);
+}
+
+/*  Encabezado principal */
+.encabezado-principal {
+  background-color: #000000;
+  padding: 25px 40px;
+}
+
+.encabezado-principal h1 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--texto-blanco);
+}
+
+/* Layout de contenido */
+.contenido {
+  padding: 40px;
+  background-color: var(--color-principal);
+  display: flex;
+  justify-content: center;
+}
+
+.contenedor-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* Contador de no leídas */
+.contador-no-leidas {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.punto-indicador {
+  width: 14px;
+  height: 14px;
+  background-color: var(--color-dorado);
+  border-radius: 50%;
+}
+
+.contador-no-leidas p {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--texto-principal);
+  margin: 0;
+}
+
+/* Lista de notificaciones */
+.lista-notificaciones {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Tarjeta de notificación */
+.tarjeta-notificacion {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background-color: var(--color-principal);
+  border: 1.5px solid var(--color-dorado-borde);
+  border-radius: 18px;
+  padding: 24px 30px;
+  gap: 25px;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.01);
+  transition: all 0.2s ease;
+}
+
+.tarjeta-notificacion:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(229, 190, 107, 0.15);
+  background-color: #fdfdfa;
+}
+
+.tarjeta-notificacion:active {
+  transform: translateY(0);
+}
+
+.tarjeta-notificacion.no-leida {
+  border-color: var(--color-dorado);
+}
+
+/* Icono dentro de tarjeta */
+.icono-placeholder {
+  width: 55px;
+  height: 55px;
+  background-color: var(--gris-claro);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Información de notificación  */
+.info-notificacion {
+  flex: 1;
+}
+
+.info-notificacion h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+  color: var(--texto-principal);
+}
+
+.descripcion-notificacion {
+  font-size: 1rem;
+  color: var(--texto-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/*Meta de notificación */
+.meta-notificacion {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-shrink: 0;
+}
+
+.texto-tiempo {
+  font-size: 0.95rem;
+  color: var(--texto-muted);
+  font-weight: 500;
+}
+
+.punto-no-leida {
+  width: 12px;
+  height: 12px;
+  background-color: var(--color-dorado);
+  border-radius: 50%;
+}

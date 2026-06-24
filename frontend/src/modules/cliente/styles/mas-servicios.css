@@ -1,0 +1,169 @@
+/*  Página principal  */
+.pagina-servicios {
+  min-height: 100vh;
+  background: #f4f4f4;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* Contenido principal */
+.contenido-servicios {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 28px 40px 56px;
+}
+
+/*  Sección hero con datos de barbería  */
+.hero-servicios {
+  background: #000;
+  border-radius: 22px;
+  padding: 22px 26px;
+  color: #fff;
+}
+
+.hero-izquierda {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.logo-barberia {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fff;
+  padding: 3px;
+}
+
+.titulo-barberia {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(28px, 3.5vw, 44px);
+  line-height: 1.05;
+  margin-bottom: 8px;
+}
+
+.rating-barberia {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.estrellas {
+  display: inline-flex;
+  gap: 3px;
+  color: #d9b85e;
+}
+
+.direccion-barberia,
+.estado-barberia {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #d9b85e;
+  font-size: 15px;
+}
+
+.direccion-barberia {
+  margin-bottom: 6px;
+}
+
+.estado-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #666;
+}
+
+.estado-dot--abierto {
+  background: #22c55e;
+}
+
+/*Sección de servicios */
+.lista-servicios {
+  padding: 22px 2px 0;
+}
+
+.lista-servicios h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(36px, 4vw, 52px);
+  color: #111;
+  margin-bottom: 22px;
+}
+
+.grid-servicios {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 38px;
+}
+
+.columna-servicios {
+  list-style: none;
+}
+
+.item-servicio {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+  font-size: 16px;
+  color: #111;
+}
+
+.servicio-izquierda {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.precio-servicio {
+  color: #d0a948;
+  font-weight: 600;
+}
+
+/* Acciones (botón regresar) */
+.acciones-servicios {
+  margin-top: 22px;
+  display: flex;
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.boton-regresar {
+  border-radius: 14px;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1.5px solid #d0a948;
+  color: #d0a948;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .contenido-servicios {
+    padding: 20px 16px 38px;
+  }
+
+  .grid-servicios {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .acciones-servicios {
+    flex-direction: column;
+  }
+
+  .boton-regresar {
+    width: 100%;
+    justify-content: center;
+  }
+}

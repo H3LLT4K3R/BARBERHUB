@@ -1,0 +1,370 @@
+/* ── COMPONENTE CONTENEDOR ── */
+.explorar-container {
+  min-height: calc(100vh - 70px);
+  background: #ffffff;
+  padding: 32px 40px;
+  box-sizing: border-box;
+}
+
+/* CONTENEDOR GENERAL EN GRID (Split Tarjetas / Mapa) */
+.explorar-main {
+  display: grid;
+  grid-template-columns: 1fr 450px;
+  gap: 32px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.explorar-content {
+  min-width: 0;
+}
+
+/* BANNER DE FILTROS EN NEGRO PREMIUM */
+.explorar-section-header {
+  background-color: #000000;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 20px;
+}
+
+.explorar-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1;
+}
+
+.explorar-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+}
+
+.explorar-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.explorar-filter-btn {
+  padding: 8px 20px;
+  border: 1px solid #374151;
+  border-radius: 9999px;
+  background: #1f2937;
+  color: #E9C46A; /* Dorado premium */
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.explorar-filter-btn:hover {
+  background: #2d3748;
+}
+
+.explorar-filter-btn.active {
+  background: #E9C46A;
+  color: #000000;
+  border-color: #E9C46A;
+}
+
+/* Deslizador de Radio Interno */
+.explorar-radius-control {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
+}
+
+.explorar-radius-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #E9C46A;
+}
+
+.explorar-radius-slider {
+  width: 100%;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #374151;
+  border-radius: 9999px;
+  outline: none;
+}
+
+.explorar-radius-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #E9C46A;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* ── LISTADO Y TARJETAS DE BARBERÍAS ── */
+.explorar-barberias-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.explorar-barberia-card {
+  background: #ffffff;
+  border: 2px solid #E9C46A;
+  border-radius: 20px;
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  overflow: hidden;
+}
+
+/* Bloque Izquierdo: Datos */
+.explorar-barberia-left-block {
+  padding: 24px;
+  border-right: 1px solid #E5E7EB;
+  display: flex;
+  gap: 16px;
+}
+
+.explorar-barberia-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #E9C46A;
+  border-radius: 50%;
+}
+
+.explorar-barberia-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.explorar-barberia-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: #000000;
+  margin: 0;
+}
+
+.explorar-barberia-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+.explorar-stars {
+  display: flex;
+  gap: 1px;
+}
+
+.explorar-star {
+  width: 13px;
+  height: 13px;
+}
+
+.explorar-opiniones {
+  margin-left: 2px;
+}
+
+.sidebar-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+}
+
+.explorar-barberia-address {
+  font-size: 12px;
+  color: #6B7280;
+  margin: 2px 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.explorar-address-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.explorar-barberia-distance {
+  font-size: 11px;
+  font-weight: 800;
+  color: #000000;
+  border: 1px solid #000000;
+  padding: 3px 10px;
+  border-radius: 6px;
+  align-self: flex-start;
+  margin: 4px 0;
+}
+
+.explorar-barberia-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: #4B5563;
+  margin: 2px 0 0 0;
+}
+
+/* Bloque Derecho: Horarios */
+.explorar-barberia-right-block {
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+}
+
+.explorar-slots-section {
+  width: 100%;
+}
+
+.explorar-slots-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #000000;
+  margin: 0 0 10px 0;
+  text-align: center;
+}
+
+.explorar-slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  width: 100%;
+}
+
+.explorar-slot {
+  padding: 6px 0;
+  border: 1px solid #000000;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #000000;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+
+.explorar-slot:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.explorar-slot.unavailable {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+  opacity: 1;
+}
+
+.explorar-slot:disabled {
+  cursor: not-allowed;
+}
+
+.explorar-profile-link {
+  background: none;
+  border: none;
+  color: #9CA3AF;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 10px;
+  text-decoration: none;
+}
+
+.explorar-profile-link:hover {
+  color: #6b7280;
+}
+
+/* ── CONTENEDOR MAPA ── */
+.explorar-map-container {
+  width: 100%;
+  height: 550px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 1px solid #E5E7EB;
+  position: sticky;
+  top: 94px;
+}
+
+.explorar-map-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* ── ESTADOS ── */
+.explorar-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 70px);
+  gap: 16px;
+  color: #666;
+}
+
+.explorar-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top-color: #E9C46A;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.explorar-empty {
+  text-align: center;
+  padding: 40px;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1150px) {
+  .explorar-main {
+    grid-template-columns: 1fr;
+  }
+  .explorar-map-container {
+    position: relative;
+    top: 0;
+    height: 350px;
+    order: -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .explorar-section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .explorar-barberia-card {
+    grid-template-columns: 1fr;
+  }
+  .explorar-barberia-left-block {
+    border-right: none;
+    border-bottom: 1px solid #E5E7EB;
+  }
+}

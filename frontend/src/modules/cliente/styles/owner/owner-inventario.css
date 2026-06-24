@@ -1,0 +1,260 @@
+
+:root {
+  --oi-gold: #f0c75e;
+  --oi-gold-dark: #d8b24a;
+  --oi-black: #1a1a1a;
+  --oi-black-soft: #161616;
+  --oi-border: #e3e3e3;
+  --oi-text-muted: #9a9a9a;
+  --oi-radius: 10px;
+}
+
+.oi-layout {
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background-color: #ffffff;
+  min-height: 100vh;
+  color: var(--oi-black);
+}
+
+/* ---------------- HEADER ---------------- */
+.oi-header {
+  background-color: #000000;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+}
+
+.oi-logo {
+  height: 65px;
+  object-fit: contain;
+}
+
+/* ---------------- BODY LAYOUT ---------------- */
+.oi-body {
+  display: flex;
+  min-height: calc(100vh - 64px);
+}
+
+/* ---------------- SIDEBAR ---------------- */
+.oi-sidebar {
+  width: 230px;
+  border-right: 1px solid var(--oi-border);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
+}
+
+.oi-sidebar-titulo {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 700;
+  padding: 0 24px;
+  margin: 0 0 24px 0;
+}
+
+.oi-owner-tag {
+  color: var(--oi-gold-dark);
+}
+
+.oi-sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.oi-sidebar-item {
+  background: transparent;
+  border: none;
+  text-align: left;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--oi-black);
+  cursor: pointer;
+}
+
+.oi-sidebar-item.activo {
+  background-color: var(--oi-black);
+  color: #ffffff;
+}
+
+.oi-sidebar-item:not(.activo):hover {
+  background-color: #f5f5f5;
+}
+
+.oi-perfil {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 24px 0;
+  border-top: 1px solid var(--oi-border);
+  margin-top: 12px;
+}
+
+.oi-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--oi-gold);
+  color: var(--oi-black);
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.oi-perfil-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.oi-perfil-nombre {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.oi-perfil-rol {
+  font-size: 12px;
+  color: var(--oi-text-muted);
+}
+
+/* ---------------- MAIN ---------------- */
+.oi-main {
+  flex: 1;
+  padding: 28px 32px;
+}
+
+.oi-titulo {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+}
+
+.oi-subtitulo {
+  font-size: 13px;
+  color: var(--oi-text-muted);
+  margin: 0 0 24px 0;
+  max-width: 900px;
+  line-height: 1.5;
+}
+
+/* ---------------- PANEL / TABLA ---------------- */
+.oi-panel {
+  border-radius: var(--oi-radius);
+  overflow: hidden;
+}
+
+.oi-tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.oi-tabla thead {
+  background-color: var(--oi-black);
+}
+
+.oi-tabla thead th {
+  text-align: left;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--oi-gold);
+  padding: 16px 18px;
+}
+
+.oi-tabla thead th.oi-col-centro {
+  text-align: center;
+}
+
+.oi-tabla tbody td {
+  padding: 18px;
+  font-size: 14px;
+  border-bottom: 1px solid var(--oi-border);
+}
+
+.oi-tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.oi-celda-bold {
+  font-weight: 700;
+}
+
+.oi-celda-muted {
+  color: var(--oi-text-muted);
+}
+
+.oi-col-centro {
+  text-align: center;
+}
+
+/* ---------------- STEPPER (+ / -) ---------------- */
+.oi-stepper {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--oi-black);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.oi-stepper-btn {
+  background-color: var(--oi-black);
+  color: #ffffff;
+  border: none;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.oi-stepper-btn:hover {
+  background-color: var(--oi-black-soft);
+}
+
+.oi-stepper-valor {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  min-width: 50px;
+  text-align: center;
+}
+
+/* ---------------- RESPONSIVE ---------------- */
+@media (max-width: 1000px) {
+  .oi-body {
+    flex-direction: column;
+  }
+
+  .oi-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--oi-border);
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 16px;
+  }
+
+  .oi-sidebar-menu {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .oi-perfil {
+    border-top: none;
+    margin-top: 0;
+    padding: 0;
+  }
+
+  .oi-tabla {
+    font-size: 12px;
+  }
+
+  .oi-tabla thead th,
+  .oi-tabla tbody td {
+    padding: 10px;
+  }
+}

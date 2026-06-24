@@ -1,0 +1,477 @@
+:root {
+  /* Paleta de colores */
+  --bg-sidebar: #121212;              
+  --bg-main-light: #ffffff; 
+  --bg-card-white: #ffffff;            
+  --gold-primary: #e5be6b;             
+  --gold-light: #fdf8ed;               
+  --text-main: #000000;     
+  --text-muted: #555555;    
+  --gray-border: #e4e4e7;   
+  
+  /* Estados */
+  --status-pending: #f59e0b;
+  --status-success: #10b981;
+  --status-danger: #ea5455;
+}
+
+/* Panel general */
+.panel-historial {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-main-light);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  color: var(--text-main);
+}
+
+/* Sidebar izquierdo  */
+.sidebar-historial {
+  width: 250px;
+  background-color: var(--bg-sidebar);
+  display: flex;
+  flex-direction: column;
+  padding: 25px 0;
+  box-sizing: border-box;
+}
+
+.marca-historial {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 40px;
+}
+
+.logo-historial {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  margin-right: 12px;
+}
+
+.marca-historial h2 {
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  color: #ffffff;
+  margin: 0;
+}
+
+.menu-historial {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 15px;
+}
+
+.btn-menu-historial {
+  background: none;
+  border: none;
+  color: #aaaaaa;
+  text-align: left;
+  padding: 14px 22px;
+  font-size: 1.05rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+  font-weight: 500;
+}
+
+.btn-menu-historial:hover {
+  color: #ffffff;
+  background-color: #222222;
+}
+
+.btn-menu-historial.activo {
+  background-color: var(--gold-primary);
+  color: #000000;
+  font-weight: 700;
+}
+
+/* Contenedor principal */
+.contenido-historial {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-main-light);
+}
+
+.encabezado-historial {
+  background-color: #000000; 
+  padding: 25px 40px;
+}
+
+.encabezado-historial h1 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0;
+  color: #ffffff;
+}
+
+.layout-historial {
+  flex: 1;
+  display: flex;
+  background-color: var(--bg-main-light);
+  padding: 40px;
+  gap: 35px;
+}
+
+/*  Sección central*/
+.contenido-central-historial {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  max-width: 1200px;
+}
+
+/* Tarjetas resumen */
+.tarjetas-resumen-historial {
+  display: flex;
+  gap: 25px;
+}
+
+.tarjeta-resumen {
+  flex: 1;
+  background-color: var(--bg-card-white);
+  border: 1.5px solid var(--gray-border);
+  border-radius: 16px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.tarjeta-resumen:hover {
+  transform: translateY(-2px);
+  border-color: var(--gold-primary);
+}
+
+.numero-resumen {
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.numero-resumen.texto-dorado {
+  color: #c9a054; 
+}
+
+.etiqueta-resumen {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+/* Filtros */
+.filtros-historial {
+  display: flex;
+  gap: 15px;
+}
+
+.btn-filtro-historial {
+  background-color: #f0f0f2;
+  border: none;
+  color: #55555a;
+  padding: 10px 26px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-filtro-historial:hover {
+  background-color: #e4e4e7;
+  color: var(--text-main);
+}
+
+.btn-filtro-historial.activo {
+  background-color: var(--gold-primary);
+  color: #000000;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(229, 190, 107, 0.25);
+}
+
+/* Lista de citas */
+.lista-citas-historial {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.lista-citas-historial::-webkit-scrollbar {
+  width: 6px;
+}
+.lista-citas-historial::-webkit-scrollbar-thumb {
+  background: #dddddd;
+  border-radius: 10px;
+}
+
+/* Item de cita */
+.item-cita-historial {
+  display: flex;
+  align-items: center;
+  background-color: var(--bg-card-white);
+  border: 1.5px solid var(--gray-border);
+  border-radius: 18px;
+  padding: 24px 30px;
+  gap: 30px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
+}
+
+.item-cita-historial:hover {
+  border-color: rgba(229, 190, 107, 0.6);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+}
+
+.imagen-cita {
+  width: 130px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.info-cita {
+  flex: 1;
+}
+
+.info-cita h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: var(--text-main);
+}
+
+.info-cita p {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.acciones-cita {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.precio-cita {
+  font-weight: 700;
+  color: #c9a054;
+  font-size: 1.3rem;
+}
+
+.fecha-cita {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.fila-acciones {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 4px;
+}
+
+/* Botón de detalle */
+.btn-detalle-cita {
+  background-color: #1a1a1a;
+  color: #ffffff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-detalle-cita:hover {
+  background-color: #333333;
+}
+
+/* Badges de estado */
+.badge-estado {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: 18px;
+  min-width: 85px;
+  text-align: center;
+}
+
+.estado-pendiente {
+  background-color: rgba(245, 158, 11, 0.12);
+  color: var(--status-pending);
+}
+
+.estado-completada {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: var(--status-success);
+}
+
+.estado-rechazada {
+  background-color: rgba(234, 84, 85, 0.12);
+  color: var(--status-danger);
+}
+
+/* Sidebar derecho: detalle */
+.sidebar-detalle {
+  width: 360px;
+}
+
+.detalle-cita {
+  background-color: var(--bg-card-white);
+  border: 1.5px solid var(--gray-border);
+  border-radius: 18px;
+  padding: 26px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.titulo-detalle {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 6px 0;
+  color: var(--text-main);
+}
+
+.timestamp-detalle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+/* Tarjeta barbería */
+.tarjeta-barberia-detalle {
+  display: flex;
+  align-items: center;
+  background-color: #fafafa;
+  border: 1.5px solid var(--gray-border);
+  border-radius: 14px;
+  padding: 14px;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.icono-tijeras {
+  font-size: 1.3rem;
+  color: #c9a054;
+}
+
+.tarjeta-barberia-detalle h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-main);
+}
+
+.tarjeta-barberia-detalle p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 4px 0 0 0;
+}
+
+/* Tabla detalle */
+.tabla-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 0.95rem;
+}
+
+.fila-detalle {
+  display: flex;
+  justify-content: space-between;
+}
+
+.fila-detalle span {
+  color: var(--text-muted);
+}
+
+.fila-detalle strong {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.separador-detalle {
+  border: none;
+  border-top: 1.5px solid var(--gray-border);
+  margin: 8px 0;
+}
+
+/* Reseña */
+.reseña-detalle {
+  margin-top: 24px;
+  background-color: #fdfbf7;
+  border-left: 4px solid var(--gold-primary);
+  padding: 14px;
+  border-radius: 6px;
+}
+
+.reseña-detalle h5 {
+  margin: 0 0 6px 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #c9a054;
+}
+
+.reseña-detalle p {
+  font-size: 0.9rem;
+  color: #333335;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Acciones inferiores */
+.acciones-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.btn-reagendar {
+  background-color: var(--gold-primary);
+  color: #000000;
+  border: none;
+  padding: 14px;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-reagendar:hover {
+  background-color: #edd193;
+}
+
+.btn-ver-barberia {
+  background-color: #ffffff;
+  color: var(--text-main);
+  border: 1.5px solid #cccccc;
+  padding: 14px;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-ver-barberia:hover {
+  background-color: #fafafa;
+}
+
+/* Mensaje vacío */
+.mensaje-vacio {
+  text-align: center;
+  color: var(--text-muted);
+  margin-top: 25px;
+  font-size: 1rem;
+}

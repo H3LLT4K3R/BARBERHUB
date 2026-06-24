@@ -1,0 +1,394 @@
+/* ── DETALLE CITA PAGE ── */
+.dc-page {
+  min-height: 100vh;
+  background: #fcf8f3;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.dc-body {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 24px 60px;
+}
+
+/* ── BACK BUTTON ── */
+.dc-btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #e6c7a8;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  margin-bottom: 24px;
+  transition: all 0.2s;
+}
+
+.dc-btn-back:hover {
+  background: #f9f5f0;
+  color: #111;
+}
+
+/* ── ERROR STATE ── */
+.dc-error-card {
+  background: #fff;
+  border: 1px solid #fca5a5;
+  border-radius: 20px;
+  padding: 48px 40px;
+  text-align: center;
+}
+
+.dc-error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.dc-error-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: #111;
+  margin: 0 0 8px 0;
+  font-family: serif;
+}
+
+.dc-error-text {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0 0 24px 0;
+}
+
+/* ── MAIN CARD ── */
+.dc-card {
+  background: #fff;
+  border: 1px solid #e6c7a8;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+}
+
+/* ── HEADER ── */
+.dc-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 28px 32px;
+  background: #111;
+  color: #fff;
+}
+
+.dc-header-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(201, 162, 39, 0.15);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c9a227;
+  flex-shrink: 0;
+}
+
+.dc-title {
+  font-size: 22px;
+  font-weight: 900;
+  margin: 0 0 4px 0;
+  font-family: serif;
+}
+
+.dc-subtitle {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+.dc-badge {
+  margin-left: auto;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.dc-badge--confirmada {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+}
+
+.dc-badge--cancelada {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.dc-badge--pendiente {
+  background: rgba(201, 162, 39, 0.15);
+  color: #c9a227;
+}
+
+/* ── SECTIONS ── */
+.dc-section {
+  padding: 28px 32px;
+  border-bottom: 1px solid #f0ece6;
+}
+
+.dc-section:last-of-type {
+  border-bottom: none;
+}
+
+.dc-section--qr {
+  background: #faf8f5;
+}
+
+.dc-section-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.dc-section-title svg {
+  color: #c9a227;
+}
+
+/* ── INFO GRID ── */
+.dc-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.dc-info-grid--2col {
+  grid-template-columns: 1fr 1fr;
+}
+
+.dc-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dc-info-item:first-child:nth-last-child(1),
+.dc-info-item:first-child:nth-last-child(1) ~ .dc-info-item {
+  grid-column: 1 / -1;
+}
+
+.dc-info-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dc-info-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+
+.dc-info-value--lg {
+  font-size: 18px;
+  font-weight: 800;
+  font-family: serif;
+}
+
+.dc-info-value--time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #f9f5f0;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #e6c7a8;
+  font-size: 16px;
+  font-weight: 900;
+  color: #b8836f;
+}
+
+.dc-info-value--price {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 20px;
+  font-weight: 900;
+  color: #c9a227;
+  font-family: serif;
+}
+
+/* ── QR CODE ── */
+.dc-qr-box {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: #fff;
+  border: 1px solid #e6c7a8;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.dc-qr-code {
+  background: #fff;
+  border: 2px dashed #111;
+  border-radius: 12px;
+  padding: 16px 20px;
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: 800;
+  color: #111;
+  letter-spacing: 1px;
+  text-align: center;
+  flex-shrink: 0;
+  max-width: 160px;
+  word-break: break-all;
+}
+
+.dc-qr-info {
+  flex: 1;
+}
+
+.dc-qr-label {
+  font-size: 14px;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 6px 0;
+}
+
+.dc-qr-desc {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ── ACTIONS ── */
+.dc-actions {
+  display: flex;
+  gap: 12px;
+  padding: 24px 32px;
+  background: #f9f5f0;
+  border-top: 1px solid #e6c7a8;
+}
+
+.dc-btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 12px;
+  background: #111;
+  color: #c9a227;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.dc-btn-primary:hover {
+  background: #222;
+}
+
+.dc-btn-secondary {
+  flex: 1;
+  padding: 14px 24px;
+  border: 1px solid #e6c7a8;
+  border-radius: 12px;
+  background: #fff;
+  color: #4b5563;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dc-btn-secondary:hover {
+  background: #f9f5f0;
+  border-color: #b8836f;
+}
+
+/* ── PRINT STYLES ── */
+@media print {
+  .dc-btn-back,
+  .dc-actions {
+    display: none !important;
+  }
+
+  .dc-page {
+    background: #fff !important;
+  }
+
+  .dc-card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .dc-header {
+    background: #111 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .dc-badge {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .dc-qr-code {
+    border: 2px solid #111 !important;
+  }
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .dc-body {
+    padding: 16px;
+  }
+
+  .dc-header {
+    flex-wrap: wrap;
+    padding: 20px;
+  }
+
+  .dc-badge {
+    width: 100%;
+    text-align: center;
+  }
+
+  .dc-section {
+    padding: 20px;
+  }
+
+  .dc-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dc-info-grid--2col {
+    grid-template-columns: 1fr;
+  }
+
+  .dc-qr-box {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .dc-actions {
+    flex-direction: column;
+    padding: 20px;
+  }
+}

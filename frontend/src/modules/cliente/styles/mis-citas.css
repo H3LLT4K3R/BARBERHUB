@@ -1,0 +1,375 @@
+:root {
+  /* Paleta de colores y variables globales */
+  --color-sidebar: #121212;
+  --color-principal: #ffffff;
+  --color-dorado: #e5be6b;
+  --color-dorado-borde: #edd193;
+  --texto-blanco: #ffffff;
+  --texto-principal: #000000;
+  --texto-muted: #7e7e82;
+  --step-gris: #b0b0b5;
+  --step-verde: #24cc63;
+}
+
+/* Página principal de citas */
+.pagina-citas {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-principal);
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Barra lateral */
+.sidebar {
+  width: 250px;
+  background-color: var(--color-sidebar);
+  display: flex;
+  flex-direction: column;
+  padding: 25px 0;
+  box-sizing: border-box;
+}
+
+/* Marca Barber Hub */
+.marca {
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 40px;
+}
+
+.logo-barberhub {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  margin-right: 12px;
+}
+
+.marca h2 {
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  color: var(--texto-blanco);
+  margin: 0;
+}
+
+/*Menú de navegación */
+.menu-navegacion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 15px;
+  flex: 1;
+}
+
+.boton-menu {
+  background: none;
+  border: none;
+  color: #aaaaaa;
+  text-align: left;
+  padding: 14px 22px;
+  font-size: 1.05rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.boton-menu:hover {
+  color: var(--texto-blanco);
+  background-color: #222222;
+}
+
+.boton-menu.activo {
+  background-color: var(--color-dorado);
+  color: #000000;
+  font-weight: 700;
+}
+
+/*  Perfil de usuario */
+.perfil-usuario {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-top: 1px solid #222222;
+  margin-top: auto;
+}
+
+.avatar-placeholder {
+  width: 48px;
+  height: 48px;
+  background-color: #f3d89d;
+  color: #000000;
+  font-weight: 700;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  margin-right: 12px;
+}
+
+.nombre-usuario {
+  color: var(--texto-blanco);
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+/* Contenedor principal  */
+.contenedor-principal {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-principal);
+}
+
+/* Encabezado principal */
+.encabezado-principal {
+  background-color: #000000;
+  padding: 25px 40px;
+}
+
+.encabezado-principal h1 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--texto-blanco);
+}
+
+/* Layout de contenido  */
+.contenido {
+  padding: 50px 40px; 
+  background-color: var(--color-principal);
+  display: flex;
+  justify-content: center;
+}
+
+.contenedor-citas {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1300px; 
+}
+
+.titulo-seccion {
+  font-size: 1.4rem; 
+  font-weight: 700;
+  color: var(--texto-principal);
+  margin: 0 0 30px 0;
+}
+
+/* Lista de citas  */
+.lista-citas {
+  display: flex;
+  flex-direction: column;
+  gap: 35px; 
+}
+
+/* Tarjeta de cita  */
+.tarjeta-cita {
+  display: flex;
+  justify-content: space-between;
+  border: 2px solid var(--color-dorado-borde); 
+  border-radius: 24px; 
+  padding: 40px; 
+  background-color: var(--color-principal);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.tarjeta-cita:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(229, 190, 107, 0.16);
+}
+
+/* Bloque izquierdo */
+.bloque-izquierdo {
+  display: flex;
+  flex-direction: column;
+  gap: 24px; 
+  flex: 1;
+}
+
+.info-header {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.icono-servicio {
+  width: 65px; 
+  height: 65px;
+  border: 2px solid var(--color-dorado-borde);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  background-color: var(--color-principal);
+}
+
+.detalles-texto h3 {
+  font-size: 1.5rem; 
+  font-weight: 700;
+  color: var(--texto-principal);
+  margin: 0 0 6px 0;
+}
+
+.detalles-texto p {
+  font-size: 1.15rem; 
+  color: var(--texto-muted);
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Badge de estado */
+.badge-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 22px; 
+  border-radius: 25px;
+  font-size: 1.1rem; 
+  font-weight: 600;
+  width: max-content;
+}
+
+.badge-estado.esperando {
+  border: 2px solid var(--color-dorado-borde);
+  color: var(--color-dorado);
+  background-color: #fffdf6;
+}
+
+.badge-estado.confirmada {
+  border: 2px solid var(--step-verde);
+  color: var(--step-verde);
+  background-color: #f4fdf7;
+}
+
+.icono-badge {
+  font-size: 1.15rem;
+}
+
+/* Stepper de progreso */
+.stepper-progreso {
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
+  padding-left: 5px;
+}
+
+.nodo-step {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  padding: 0;
+}
+
+.punto-step {
+  width: 18px; 
+  height: 18px;
+  border-radius: 50%;
+  background-color: var(--step-gris);
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.label-step {
+  position: absolute;
+  top: 28px; 
+  font-size: 1.05rem; 
+  font-weight: 600;
+  color: var(--step-gris);
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.linea-step {
+  height: 4px;
+  width: 130px; 
+  background-color: var(--step-gris);
+  margin-bottom: 22px; 
+  z-index: 1;
+}
+
+.linea-step.activa {
+  background-color: var(--step-verde);
+}
+
+.nodo-step.completado .punto-step {
+  background-color: var(--step-verde);
+}
+.nodo-step.completado .label-step {
+  color: var(--step-verde);
+}
+
+.nodo-step.actual .punto-step {
+  background-color: var(--color-dorado);
+  transform: scale(1.2);
+}
+.nodo-step.actual .label-step {
+  color: var(--color-dorado);
+  font-weight: 700;
+}
+
+/* Bloque derecho */
+.bloque-derecho {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  min-width: 200px; 
+}
+
+.precio-cita {
+  font-size: 2.1rem; 
+  font-weight: 700;
+  color: var(--color-dorado);
+  margin-top: 0;
+}
+
+/* Acciones dentro de la tarjeta de cita */
+.acciones-cita {
+  display: flex;
+  flex-direction: column; /* Botones uno debajo del otro */
+  gap: 14px; /* Espacio entre botones */
+  width: 100%;
+}
+
+/* Botón genérico de acción */
+.boton-accion {
+  width: 100%;
+  padding: 14px 28px; 
+  font-size: 1.1rem; 
+  font-weight: 600;
+  background-color: var(--color-principal);
+  border: 2px solid var(--color-dorado-borde);
+  border-radius: 16px;
+  cursor: pointer;
+  color: var(--color-dorado);
+  transition: all 0.2s ease;
+}
+
+/* Efecto hover para todos los botones de acción */
+.boton-accion:hover {
+  background-color: #fffdf5;
+  transform: translateY(-1px);
+}
+
+/* Botón específico: Ver detalles */
+.boton-detalles {
+  color: var(--color-dorado);
+}
+
+/* Botón específico: Cancelar */
+.boton-cancelar {
+  color: #d9534f;
+  border-color: #d9534f;
+}
+
+.boton-cancelar:hover {
+  background-color: #fff5f5;
+}

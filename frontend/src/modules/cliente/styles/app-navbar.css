@@ -1,0 +1,77 @@
+.app-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #111111;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  height: 62px;
+}
+
+.app-nav-logo-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.app-nav-logo-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.app-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-btn-outline {
+  padding: 8px 20px;
+  border-radius: 22px;
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  background: transparent;
+  color: #fff;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.app-btn-outline:hover {
+  border-color: #fff;
+}
+
+.app-btn-gold {
+  padding: 8px 22px;
+  border-radius: 22px;
+  border: none;
+  background: #c9a227;
+  color: #000;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.app-btn-gold:hover {
+  background: #b8911e;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 700px) {
+  .app-navbar {
+    padding: 0 20px;
+  }
+
+  .app-nav-actions .app-btn-outline:first-of-type {
+    display: none;
+  }
+}

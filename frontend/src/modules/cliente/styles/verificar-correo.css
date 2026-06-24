@@ -1,0 +1,178 @@
+.vc-page {
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.vc-body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.vc-card {
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.vc-icon-wrap {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 24px;
+  border-radius: 50%;
+  background: #b98a76;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vc-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 16px;
+}
+
+.vc-text {
+  font-size: 14px;
+  color: #888;
+  line-height: 1.5;
+}
+
+.vc-text--sub {
+  margin-bottom: 28px;
+}
+
+.vc-email {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111;
+  margin: 6px 0 12px;
+}
+
+.vc-form {
+  margin-bottom: 20px;
+}
+
+.vc-code-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.vc-code-input {
+  width: 48px;
+  height: 52px;
+  border: none;
+  border-radius: 10px;
+  background: #e6c373;
+  font-family: inherit;
+  font-size: 22px;
+  font-weight: 700;
+  color: #111;
+  text-align: center;
+  outline: none;
+  transition: box-shadow 0.2s;
+}
+
+.vc-code-input:focus {
+  box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.35);
+}
+
+.vc-code-input::placeholder {
+  color: #111;
+}
+
+.vc-error {
+  font-size: 13px;
+  color: #c44;
+  margin-bottom: 14px;
+}
+
+.vc-btn-verify {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  background: #111;
+  color: #e6c373;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.vc-btn-verify:hover:not(:disabled) {
+  background: #222;
+}
+
+.vc-btn-verify:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.vc-resend {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 10px;
+}
+
+.vc-link-gold {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: #c9a227;
+  cursor: pointer;
+}
+
+.vc-link-gold:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.vc-link-gold:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.vc-timer {
+  font-size: 13px;
+  color: #aaa;
+  margin-bottom: 28px;
+}
+
+.vc-back {
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  cursor: pointer;
+  padding: 0;
+}
+
+.vc-back:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 380px) {
+  .vc-code-row {
+    gap: 6px;
+  }
+
+  .vc-code-input {
+    width: 42px;
+    height: 48px;
+    font-size: 20px;
+  }
+}

@@ -1,0 +1,265 @@
+:root {
+  /* Paleta de colores y variables globales */
+  --color-dorado: #f0c75e;
+  --color-dorado-oscuro: #d8b24a;
+  --color-borde: #d9d9d9;
+  --color-texto-muted: #9a9a9a;
+  --radio: 12px;
+}
+
+/*  Página principal */
+.pagina-barbero {
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  background-color: #ffffff;
+  color: #1a1a1a;
+  min-height: 100vh;
+}
+
+/* Encabezado con logo */
+.encabezado {
+  background-color: #000000;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+}
+
+.logo-barberhub {
+  height: 80px;
+  object-fit: contain;
+}
+
+/* Contenido principal */
+.contenido {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+}
+
+.titulo-principal {
+  text-align: center;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 800;
+  font-size: 36px;
+  color: var(--color-dorado);
+  letter-spacing: 1px;
+  margin: 0 0 48px 0;
+  line-height: 1.4;
+}
+
+/* Cuerpo con selección y tarjeta */
+.cuerpo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+/* Sección de barberos*/
+.subtitulo {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 800;
+  font-size: 22px;
+  margin: 0 0 24px 0;
+}
+
+.grid-barberos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px 16px;
+}
+
+.tarjeta-barbero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: var(--radio);
+  padding: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.tarjeta-barbero.seleccionado {
+  border-color: var(--color-dorado);
+}
+
+.foto-barbero {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-dorado-oscuro);
+}
+
+.nombre-barbero {
+  font-size: 14px;
+  color: #1a1a1a;
+  text-align: center;
+}
+
+/* Tarjeta de opinión */
+.tarjeta-opinion {
+  border: 1px solid var(--color-dorado);
+  border-radius: var(--radio);
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.foto-opinion {
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-dorado-oscuro);
+  margin-bottom: 12px;
+}
+
+.nombre-opinion {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+}
+
+.subtitulo-opinion {
+  font-size: 15px;
+  color: #1a1a1a;
+  margin: 0 0 12px 0;
+}
+
+/*Estrellas de calificación */
+.estrellas-calificacion {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.estrella {
+  font-size: 28px;
+  color: #d9d9d9;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.estrella.llena {
+  color: var(--color-dorado);
+}
+
+/* Área de comentario*/
+.comentario-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.comentario-textarea {
+  width: 100%;
+  min-height: 110px;
+  border: 1px solid var(--color-dorado);
+  border-radius: var(--radio);
+  padding: 14px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+  color: #1a1a1a;
+}
+
+.comentario-textarea::placeholder {
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.comentario-textarea:focus {
+  outline: none;
+  border-color: var(--color-dorado-oscuro);
+}
+
+.comentario-hint {
+  position: absolute;
+  left: 16px;
+  top: 38px;
+  font-size: 13px;
+  color: var(--color-texto-muted);
+  pointer-events: none;
+}
+
+.contador-caracteres {
+  position: absolute;
+  right: 14px;
+  bottom: -22px;
+  font-size: 12px;
+  color: var(--color-texto-muted);
+}
+
+/* Botón enviar */
+.boton-enviar {
+  width: 100%;
+  border: 1px solid var(--color-dorado);
+  background-color: #ffffff;
+  color: var(--color-dorado);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 14px;
+  cursor: pointer;
+  margin-top: 28px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.boton-enviar:hover {
+  background-color: var(--color-dorado);
+  color: #1a1a1a;
+}
+
+/* Footer con acciones*/
+.acciones-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  margin-top: 48px;
+}
+
+.boton-regresar,
+.boton-comentario-general {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #1a1a1a;
+  border-bottom: 2px solid #1a1a1a;
+  padding-bottom: 4px;
+}
+
+.boton-regresar:hover,
+.boton-comentario-general:hover {
+  color: var(--color-dorado-oscuro);
+  border-color: var(--color-dorado-oscuro);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .cuerpo {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-barberos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .titulo-principal {
+    font-size: 26px;
+  }
+}

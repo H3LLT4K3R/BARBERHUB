@@ -1,0 +1,246 @@
+:root {
+  --pa-bg-dark: #121212;
+  --pa-bg-light: #ffffff;
+  --pa-bg-input: #f5f5f7;
+  --pa-gold: #e5be6b;
+  --pa-gold-border: #edd193;
+  --pa-text-main: #000000;
+  --pa-text-muted: #6e6e73;
+}
+
+.pa-container-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f9f9fb;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+.pa-main-header {
+  background-color: var(--pa-bg-dark);
+  padding: 20px 50px;
+  display: flex;
+  align-items: center;
+}
+
+.pa-brand-header {
+  display: flex;
+  align-items: center;
+}
+
+.pa-logo-img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  margin-right: 14px;
+}
+
+.pa-brand-header h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #ffffff;
+  margin: 0;
+}
+
+.pa-content-layout {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px 20px;
+}
+
+.pa-reserva-card {
+  background-color: var(--pa-bg-light);
+  width: 100%;
+  max-width: 650px;
+  padding: 50px 45px;
+  border-radius: 28px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.pa-icon-badge {
+  width: 90px;
+  height: 90px;
+  background-color: var(--pa-bg-dark);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.pa-icon-badge::before {
+  content: "";
+  position: absolute;
+  top: -4px; left: -4px; right: -4px; bottom: -4px;
+  border: 2px dashed var(--pa-bg-dark);
+  border-radius: 50%;
+}
+
+.pa-check-mark {
+  color: #ffffff;
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.pa-title {
+  font-size: 2.1rem;
+  font-weight: 700;
+  color: var(--pa-text-main);
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+
+.pa-subtitle {
+  font-size: 1.2rem;
+  color: var(--pa-text-muted);
+  text-align: center;
+  margin: 0 0 35px 0;
+  line-height: 1.5;
+}
+
+.pa-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pa-input-group {
+  width: 100%;
+}
+
+.pa-form-row {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+.pa-flex-1 {
+  flex: 1;
+}
+
+.pa-input-field {
+  width: 100%;
+  padding: 18px 22px;
+  font-size: 1.1rem;
+  background-color: var(--pa-bg-input);
+  border: 1px solid transparent;
+  border-radius: 14px;
+  color: var(--pa-text-main);
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.pa-input-field:focus {
+  outline: none;
+  background-color: #ffffff;
+  border-color: var(--pa-gold-border);
+  box-shadow: 0 0 0 4px rgba(229, 190, 107, 0.15);
+}
+
+.pa-input-field::placeholder {
+  color: #9a9a9a;
+  font-weight: 500;
+}
+
+.pa-summary-box {
+  width: 100%;
+  border: 1.5px solid var(--pa-gold-border);
+  border-radius: 18px;
+  padding: 25px 30px;
+  background-color: #fffdf9;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 15px;
+}
+
+.pa-summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1.1rem;
+}
+
+.pa-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #8e8e93;
+  letter-spacing: 0.5px;
+}
+
+.pa-value {
+  color: var(--pa-text-main);
+  font-weight: 500;
+}
+
+.pa-value.font-bold {
+  font-weight: 700;
+}
+
+.pa-highlight-row {
+  border-top: 1px dashed var(--pa-gold-border);
+  padding-top: 14px;
+  margin-top: 4px;
+}
+
+.pa-highlight-row .pa-label {
+  color: var(--pa-text-main);
+  font-weight: 700;
+}
+
+.pa-highlight-row .pa-value {
+  color: var(--pa-text-main);
+  font-size: 1.2rem;
+}
+
+.pa-action-buttons {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  margin-top: 25px;
+}
+
+.pa-btn {
+  flex: 1;
+  padding: 16px 20px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.pa-btn-cancel {
+  background-color: #f5f5f7;
+  border: 1.5px solid var(--pa-gold-border);
+  color: var(--pa-text-main);
+}
+
+.pa-btn-cancel:hover {
+  background-color: #e8e8ed;
+  transform: translateY(-1px);
+}
+
+.pa-btn-confirm {
+  background-color: var(--pa-bg-dark);
+  border: 2px solid var(--pa-bg-dark);
+  color: var(--pa-gold);
+}
+
+.pa-btn-confirm:hover {
+  background-color: #222222;
+  border-color: #222222;
+  transform: translateY(-1px);
+}
