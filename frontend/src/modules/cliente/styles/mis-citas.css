@@ -373,3 +373,23 @@
 .boton-cancelar:hover {
   background-color: #fff5f5;
 }
+
+.acciones-cita {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.boton-comentario {
+  background-color: transparent; 
+  border: 1px solid #e2e2e2;     
+  color: #e2e2e2;                
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.boton-comentario:hover {
+  background-color: #fdfaf2;
+  opacity: 0.9;
+}

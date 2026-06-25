@@ -58,6 +58,12 @@ export default function MisCitas() {
     console.log(`Iniciando flujo de cancelación para la cita #${id}.`);
   };
 
+  // Nueva acción para el botón de comentario
+  const handleHacerComentario = (id, e) => {
+    e.stopPropagation();
+    console.log(`Abriendo sección de comentarios para la cita #${id}.`);
+  };
+
   const handleStepClick = (citaId, pasoLabel, e) => {
     e.stopPropagation();
     console.log(`Clic en el estado "${pasoLabel}" de la cita #${citaId}.`);
@@ -168,6 +174,10 @@ export default function MisCitas() {
                       </button>
                       <button className="boton-accion boton-cancelar" onClick={(e) => handleCancelarCita(cita.id, e)}>
                         Cancelar
+                      </button>
+                      {/* Se agregó el botón aquí abajo para que herede el flujo vertical */}
+                      <button className="boton-accion boton-comentario" onClick={(e) => handleHacerComentario(cita.id, e)}>
+                        Hacer comentario
                       </button>
                     </div>
                   </div>
