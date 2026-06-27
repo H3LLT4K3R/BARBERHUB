@@ -9,7 +9,6 @@ import AgendaLocal from "./modules/cliente/pages/agenda-local";
 import DatosReserva from "./modules/cliente/pages/datos-reserva";
 import CitaConfirmada from "./modules/cliente/pages/cita-confirmada";
 import Explorar from "./modules/cliente/pages/explorar";
-import BarberiaPerfil from "./modules/cliente/pages/barberia-perfil";
 import MasServicios from "./modules/cliente/pages/mas-servicios";
 import DetalleCita from "./modules/cliente/pages/detalle-cita";
 import RecuperarPassword from "./modules/cliente/pages/recuperar-password";
