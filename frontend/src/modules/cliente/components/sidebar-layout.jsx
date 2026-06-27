@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { CalendarDays, Map, Menu, X, LogOut, History, Heart, Bell, Settings, Search } from "lucide-react";
 import { clearSession } from "../../../utils/api";
+import { Scissors, TicketPercent } from "lucide-react";
 import "../styles/sidebar-layout.css"; // Eliminamos el import de logo.png de aquí arriba
 
 const NAV_ITEMS = [

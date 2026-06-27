@@ -1,0 +1,414 @@
+/* Fuentes y estilos base */
+body {
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   LAYOUT PRINCIPAL (HEADER Y SIDEBAR COPIADOS DE BARBER HUB)
+   ========================================================================== */
+
+/* Header Superior */
+.main-header {
+  height: 60px;
+  background-color: #000000;
+  border-bottom: 1px solid #2a2a2a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Contenedor del Logo Intercambiable */
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #2a2a2a;
+}
+
+.brand-title {
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Botón Hamburguesa para Móviles */
+.menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Estructura Inferior (Sidebar + Contenido) */
+.layout-body {
+  display: flex;
+  margin-top: 60px; /* Espacio para el header */
+  min-height: calc(100vh - 60px);
+}
+
+/* Barra Lateral Oscura */
+.sidebar {
+  width: 240px;
+  background-color: #000000;
+  border-right: 1px solid #2a2a2a;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 0;
+  position: fixed;
+  top: 60px;
+  bottom: 0;
+  left: 0;
+  transition: transform 0.3s ease;
+  z-index: 90;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+/* Botón Activo Estilo Dorado Opaco de tu imagen */
+.sidebar-btn-active {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #e5c158;
+  color: #000000;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+
+.sidebar-footer {
+  padding: 0 12px;
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  border: none;
+  color: #a0a0a0;
+  padding: 12px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.btn-logout:hover {
+  color: #ffffff;
+}
+
+/* Contenedor del Contenido Central */
+.content-wrapper {
+  flex-grow: 1;
+  margin-left: 240px; /* Desplazamiento por la barra lateral fija */
+  padding: 40px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centra perfectamente el formulario */
+  background-color: #121212;
+}
+
+/* ==========================================================================
+   ESTILOS DE LA TARJETA Y FORMULARIO (MÉTRICA ORIGINAL COMPLETA)
+   ========================================================================== */
+
+.grid-card {
+  max-width: 1024px;
+  width: 100%;
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  border: 1px solid #2a2a2a;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+@media (min-width: 992px) {
+  .grid-card {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.form-side {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (min-width: 992px) {
+  .form-side {
+    grid-column: span 2 / span 2;
+    border-right: 1px solid #2a2a2a;
+  }
+}
+
+.preview-side {
+  padding: 32px;
+  background-color: #151515;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+}
+
+.title-main {
+  font-size: 24px;
+  font-weight: 700;
+  color: #d4af37;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.subtitle {
+  color: #a0a0a0;
+  font-size: 14px;
+  margin: 4px 0 0 0;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 16px 0;
+}
+
+.separator {
+  border: 0;
+  border-top: 1px solid #2a2a2a;
+  margin: 0;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .inputs-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-row-gap {
+  display: flex;
+  gap: 8px;
+}
+
+.label-style {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #a0a0a0;
+  margin-bottom: 4px;
+}
+
+.input-field {
+  width: 100%;
+  background-color: #262626;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  padding: 10px;
+  color: #ffffff;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #d4af37;
+}
+
+.input-field-code {
+  width: 100%;
+  background-color: #e8f0fe;
+  border: 1px solid #3a3a3a;
+  border-radius: 4px;
+  padding: 10px;
+  color: #000000;
+  font-weight: 600;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.btn-rayo {
+  background-color: #2a2a2a;
+  border: 1px solid #4a4a4a;
+  color: #ff9f43;
+  font-size: 12px;
+  padding: 0 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #2a2a2a;
+}
+
+.btn-cancel {
+  background: none;
+  border: none;
+  padding: 10px 20px;
+  color: #a0a0a0;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-submit {
+  background-color: #d4af37;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  color: #000000;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.days-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.day-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #262626;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid #3a3a3a;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.day-checkbox-label input {
+  accent-color: #d4af37;
+}
+
+/* Tarjeta Cupón Vista Previa */
+.preview-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #6b7280;
+  font-weight: 700;
+  margin-bottom: 32px;
+}
+
+.cupon-card {
+  position: relative;
+  width: 100%;
+  max-width: 260px;
+  background: linear-gradient(135deg, #2c2214 0%, #1a150e 100%);
+  border: 2px dashed rgba(212, 175, 55, 0.4);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-sizing: border-box;
+}
+
+.cupon-card::before, .cupon-card::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background-color: #151515;
+  border-radius: 50%;
+}
+
+.cupon-card::before { left: -13px; }
+.cupon-card::after { right: -13px; }
+
+.card-brand { color: #d4af37; font-size: 14px; font-weight: 700; }
+.card-discount-value { font-size: 36px; font-weight: 800; color: #ffffff; }
+.card-coupon-name { font-size: 14px; color: #d1d5db; }
+.card-code-box { background-color: rgba(18, 18, 18, 0.8); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 4px; padding: 10px; }
+.card-code-text { font-family: monospace; font-size: 18px; font-weight: 700; color: #d4af37; }
+.card-footer-info { font-size: 11px; color: #9ca3af; }
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
+/* ==========================================================================
+   RESPONSIVIDAD DE LA BARRA LATERAL (MEDIA QUERIES)
+   ========================================================================== */
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block; /* Muestra el botón de menú en móviles */
+  }
+
+  .sidebar {
+    transform: translateX(-100%); /* Oculta la barra lateral por defecto en móviles */
+  }
+
+  .sidebar.open {
+    transform: translateX(0); /* Abre la barra cuando tiene la clase '.open' */
+  }
+
+  .content-wrapper {
+    margin-left: 0; /* Ocupa toda la pantalla en móviles */
+    padding: 20px 10px;
+  }
+}

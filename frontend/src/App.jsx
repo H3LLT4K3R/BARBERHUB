@@ -34,6 +34,10 @@ import SidebarLayout from "./modules/cliente/components/sidebar-layout";
 import OwnerFinanzas from "./modules/cliente/pages/owner/owner-finanzas";
 import OwnerInventario from "./modules/cliente/pages/owner/owner-inventario";
 
+//vistas de las barberias
+import PerfilBarberia from "./modules/cliente/pages/Barberias/perfilBarberia";
+import CrearCupon from "./modules/cliente/pages/Barberias/crearCupon";
+
 
 function AuthLayout({ children }) {
   return <SidebarLayout>{children}</SidebarLayout>;
@@ -49,6 +53,8 @@ export default function App() {
         <Route path="/registro" element={<Registro />} />
         <Route path="/verificar-correo" element={<VerificarCorreo />} />
         <Route path="/recuperar-password" element={<RecuperarPassword />} />
+        <Route path="/perfilBarberia" element={<PerfilBarberia />} />
+        <Route path="/crearCupon" element={<CrearCupon />} />
         <Route
           path="/recuperar-password-enviado"
           element={<RecuperarPasswordEnviado />}
@@ -71,16 +77,6 @@ export default function App() {
             </AuthLayout>
           }
         />
-
-        <Route
-          path="/barberia/:id"
-          element={
-            <AuthLayout>
-              <BarberiaPerfil />
-            </AuthLayout>
-          }
-        />
-
         <Route
           path="/barberia/:id/servicios"
           element={
@@ -221,15 +217,6 @@ export default function App() {
           element={
             <AuthLayout>
               <PagoAnticipo />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/barberia/:id"
-          element={
-            <AuthLayout>
-              <OwnerInventario />
             </AuthLayout>
           }
         />
