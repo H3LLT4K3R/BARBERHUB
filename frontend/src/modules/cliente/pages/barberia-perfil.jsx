@@ -1,3 +1,4 @@
+import React from "react"; // Buena práctica incluirlo explícitamente según la configuración
 import { useNavigate, useParams } from "react-router-dom";
 import {
   IconMapPin,
@@ -13,7 +14,7 @@ import AppNavbar from "../components/app-navbar";
 import { getBarberiaById } from "../data/barberias.js";
 import "../styles/barberia-perfil.css";
 
-/*  Diccionario de iconos de servicio*/
+/* Diccionario de iconos de servicio */
 const ICONOS_SERVICIO = {
   moustache: IconMoustache,
   razor: IconRazor,
@@ -32,15 +33,28 @@ function Estrellas({ count = 5 }) {
   );
 }
 
-/* Componente principal: Perfil de Barbería*/
+/* Componente principal: Perfil de Barbería */
 export default function BarberiaPerfil() {
   const { id } = useParams();
   const navigate = useNavigate();
   const barberia = getBarberiaById(id);
 
-  // Acción: abrir ubicación en Google Maps
+  // CONTROL DE ERRORES: Si la barbería no existe en la base de datos de prueba
+  if (!barberia) {
+    return (
+      <div className="pagina-barberia">
+        <AppNavbar />
+        <main className="contenido-barberia" style={{ textAlign: "center", marginTop: "50px" }}>
+          <h2>Barbería no encontrada</h2>
+          <button onClick={() => navigate("/")}>Volver al inicio</button>
+        </main>
+      </div>
+    );
+  }
+
+  // Acción: abrir ubicación en Google Maps (CORREGIDO)
   const abrirMapa = () => {
-    const url = `https://www.google.com/maps/search/?api=1&query=${barberia.lat},${barberia.lng}`;
+    const url = `https://www.google.com/maps?q=${barberia.lat},${barberia.lng}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
@@ -59,7 +73,7 @@ export default function BarberiaPerfil() {
       <AppNavbar />
 
       <main className="contenido-barberia">
-        {/* Tarjeta principal con datos de la barbería*/}
+        {/* Tarjeta principal con datos de la barbería */}
         <section className="hero-barberia" aria-label={`Perfil de ${barberia.nombre}`}>
           <div className="hero-izquierda">
             <img className="logo-barberia" src={barberia.imagen} alt="" />
@@ -98,7 +112,7 @@ export default function BarberiaPerfil() {
           </div>
         </section>
 
-        {/*Tres columnas: Servicios, Barberos, Opiniones */}
+        {/* Tres columnas: Servicios, Barberos, Opiniones */}
         <div className="grid-barberia">
           
           {/* Panel de Servicios */}

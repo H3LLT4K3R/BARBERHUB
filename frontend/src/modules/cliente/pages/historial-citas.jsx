@@ -1,5 +1,4 @@
-import  { useState } from "react";
-// Importación exacta con el nombre en minúsculas que me enseñaste:
+import { useState } from "react";
 import "../styles/historial-citas.css";
 
 const citasData = [
@@ -56,7 +55,6 @@ const citasData = [
 export default function HistorialCitas() {
   const [filtroEstado, setFiltroEstado] = useState("Todas");
   const [citaSeleccionada, setCitaSeleccionada] = useState(citasData[0]);
-  const [menuActivo, setMenuActivo] = useState("Historial");
 
   const citasFiltradas = citasData.filter((cita) => {
     if (filtroEstado === "Todas") return true;
@@ -74,157 +72,121 @@ export default function HistorialCitas() {
   };
 
   return (
-    <div className="panel-historial">
-      {/* Sidebar de navegación */}
-      <aside className="sidebar-historial">
-        <div className="marca-historial">
-          <img src="/barberhublogo.jpg" alt="Barber Hub" className="logo-historial" />
-          <h2>BARBER HUB</h2>
-        </div>
-        <nav className="menu-historial">
-          {["Explorar", "Mis citas", "Historial", "Favoritos", "Notificaciones", "Ajustes"].map((item) => (
-            <button
-              key={item}
-              className={`btn-menu-historial ${menuActivo === item ? "activo" : ""}`}
-              onClick={() => setMenuActivo(item)}
-            >
-              {item}
-            </button>
-          ))}
-        </nav>
-      </aside>
+    <div className="contenido-historial">
+      <header className="encabezado-historial">
+        <h1>Historial de citas</h1>
+      </header>
 
-      {/* Contenedor principal */}
-      <div className="contenido-historial">
-        <header className="encabezado-historial">
-          <h1>Historial de citas</h1>
-        </header>
-
-        <div className="layout-historial">
-          {/* Sección central */}
-          <main className="contenido-central-historial">
-            {/* Tarjetas resumen */}
-            <div className="tarjetas-resumen-historial">
-              <div className="tarjeta-resumen">
-                <span className="numero-resumen texto-dorado">14</span>
-                <span className="etiqueta-resumen">Total visitas</span>
-              </div>
-              <div className="tarjeta-resumen">
-                <span className="numero-resumen texto-dorado">$ 1,480</span>
-                <span className="etiqueta-resumen">Gastado Total</span>
-              </div>
-              <div className="tarjeta-resumen">
-                <span className="numero-resumen">4.9</span>
-                <span className="etiqueta-resumen">Calificación dada</span>
-              </div>
+      <div className="layout-historial">
+        <main className="contenido-central-historial">
+          <div className="tarjetas-resumen-historial">
+            <div className="tarjeta-resumen">
+              <span className="numero-resumen texto-dorado">14</span>
+              <span className="etiqueta-resumen">Total visitas</span>
             </div>
-
-            {/* Filtros */}
-            <div className="filtros-historial">
-              {["Todas", "Completadas", "Canceladas", "Pendientes"].map((status) => (
-                <button
-                  key={status}
-                  className={`btn-filtro-historial ${filtroEstado === status ? "activo" : ""}`}
-                  onClick={() => setFiltroEstado(status)}
-                >
-                  {status}
-                </button>
-              ))}
+            <div className="tarjeta-resumen">
+              <span className="numero-resumen texto-dorado">$ 1,480</span>
+              <span className="etiqueta-resumen">Gastado Total</span>
             </div>
+            <div className="tarjeta-resumen">
+              <span className="numero-resumen">4.9</span>
+              <span className="etiqueta-resumen">Calificación dada</span>
+            </div>
+          </div>
 
-            {/* Lista de citas */}
-            <div className="lista-citas-historial">
-              {citasFiltradas.map((cita) => (
-                <div key={cita.id} className="item-cita-historial">
-                  <img src={cita.imagen} alt={cita.barberia} className="imagen-cita" />
-                  
-                  <div className="info-cita">
-                    <h3>{cita.servicio} · {cita.barbero}</h3>
-                    <p>{cita.barberia} · {cita.tiempo}</p>
-                  </div>
+          <div className="filtros-historial">
+            {["Todas", "Completadas", "Canceladas", "Pendientes"].map((status) => (
+              <button
+                key={status}
+                className={`btn-filtro-historial ${filtroEstado === status ? "activo" : ""}`}
+                onClick={() => setFiltroEstado(status)}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
 
-                  <div className="acciones-cita">
-                    <span className="precio-cita">${cita.precio}</span>
-                    <span className="fecha-cita">{cita.fecha}</span>
-                    <div className="fila-acciones">
-                      <button 
-                        className="btn-detalle-cita"
-                        onClick={() => setCitaSeleccionada(cita)}
-                      >
-                        Ver detalle
-                      </button>
-                      <span className={`badge-estado ${getBadgeClass(cita.estado)}`}>
-                        {cita.estado}
-                      </span>
-                    </div>
+          <div className="lista-citas-historial">
+            {citasFiltradas.map((cita) => (
+              <div key={cita.id} className="item-cita-historial">
+                <img src={cita.imagen} alt={cita.barberia} className="imagen-cita" />
+                <div className="info-cita">
+                  <h3>{cita.servicio} · {cita.barbero}</h3>
+                  <p>{cita.barberia} · {cita.tiempo}</p>
+                </div>
+                <div className="acciones-cita">
+                  <span className="precio-cita">${cita.precio}</span>
+                  <span className="fecha-cita">{cita.fecha}</span>
+                  <div className="fila-acciones">
+                    <button className="btn-detalle-cita" onClick={() => setCitaSeleccionada(cita)}>
+                      Ver detalle
+                    </button>
+                    <span className={`badge-estado ${getBadgeClass(cita.estado)}`}>
+                      {cita.estado}
+                    </span>
                   </div>
                 </div>
-              ))}
-              {citasFiltradas.length === 0 && (
-                <p className="mensaje-vacio">No se encontraron citas en esta categoría.</p>
+              </div>
+            ))}
+            {citasFiltradas.length === 0 && (
+              <p className="mensaje-vacio">No se encontraron citas en esta categoría.</p>
+            )}
+          </div>
+        </main>
+
+        {citaSeleccionada && (
+          <aside className="sidebar-detalle">
+            <div className="detalle-cita">
+              <h3 className="titulo-detalle">Detalle de cita</h3>
+              <p className="timestamp-detalle">{citaSeleccionada.fecha} {citaSeleccionada.hora}</p>
+
+              <div className="tarjeta-barberia-detalle">
+                <span className="icono-tijeras">✂</span>
+                <div>
+                  <h4>{citaSeleccionada.barberia}</h4>
+                  <p>{citaSeleccionada.direccion}</p>
+                </div>
+              </div>
+
+              <div className="tabla-detalle">
+                <div className="fila-detalle">
+                  <span>Servicio</span>
+                  <strong>{citaSeleccionada.servicio}</strong>
+                </div>
+                <div className="fila-detalle">
+                  <span>Barbero</span>
+                  <strong>{citaSeleccionada.barbero}</strong>
+                </div>
+                <div className="fila-detalle">
+                  <span>Duración</span>
+                  <strong>{citaSeleccionada.duracion}</strong>
+                </div>
+                <hr className="separador-detalle" />
+                <div className="fila-detalle">
+                  <span>Total Pagado</span>
+                  <strong className="texto-dorado">${citaSeleccionada.precio}</strong>
+                </div>
+                <div className="fila-detalle">
+                  <span>Puntos Ganados</span>
+                  <strong className="texto-dorado">{citaSeleccionada.puntosGanados}</strong>
+                </div>
+              </div>
+
+              {citaSeleccionada.miCalificacion && (
+                <div className="reseña-detalle">
+                  <h5>Mi calificación</h5>
+                  <p>"{citaSeleccionada.miCalificacion}"</p>
+                </div>
               )}
+
+              <div className="acciones-detalle">
+                <button className="btn-reagendar">Volver a agendar</button>
+                <button className="btn-ver-barberia">Ver barbería</button>
+              </div>
             </div>
-          </main>
-
-          {/* Sidebar derecho: detalle de cita */}
-          {citaSeleccionada && (
-            <aside className="sidebar-detalle">
-              <div className="detalle-cita">
-                <h3 className="titulo-detalle">Detalle de cita</h3>
-                <p className="timestamp-detalle">{citaSeleccionada.fecha} {citaSeleccionada.hora}</p>
-
-                {/* Info barbería */}
-                <div className="tarjeta-barberia-detalle">
-                  <span className="icono-tijeras">✂</span>
-                  <div>
-                    <h4>{citaSeleccionada.barberia}</h4>
-                    <p>{citaSeleccionada.direccion}</p>
-                  </div>
-                </div>
-
-                {/* Tabla de especificaciones */}
-                <div className="tabla-detalle">
-                  <div className="fila-detalle">
-                    <span>Servicio</span>
-                    <strong>{citaSeleccionada.servicio}</strong>
-                  </div>
-                  <div className="fila-detalle">
-                    <span>Barbero</span>
-                    <strong>{citaSeleccionada.barbero}</strong>
-                  </div>
-                  <div className="fila-detalle">
-                    <span>Duración</span>
-                    <strong>{citaSeleccionada.duracion}</strong>
-                  </div>
-                  <hr className="separador-detalle" />
-                  <div className="fila-detalle">
-                    <span>Total Pagado</span>
-                    <strong className="texto-dorado">${citaSeleccionada.precio}</strong>
-                  </div>
-                  <div className="fila-detalle">
-                    <span>Puntos Ganados</span>
-                    <strong className="texto-dorado">{citaSeleccionada.puntosGanados}</strong>
-                  </div>
-                </div>
-
-               {/* Reseña */}
-     {citaSeleccionada.miCalificacion && (
-      <div className="reseña-detalle">
-         <h5>Mi calificación</h5>
-        <p>"{citaSeleccionada.miCalificacion}"</p>
-  </div>
-)}
-
-/* Botones de acción inferiores */
-<div className="acciones-detalle">
-  <button className="btn-reagendar">Volver a agendar</button>
-  <button className="btn-ver-barberia">Ver barbería</button>
-</div>
-</div>
-</aside>
-)}
-</div>
-</div>
-</div>
-);
+          </aside>
+        )}
+      </div>
+    </div>
+  );
 }
