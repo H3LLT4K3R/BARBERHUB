@@ -38,7 +38,6 @@ export default function Ajustes() {
                 <div className="avatar-perfil">LM</div>
                 <h3>Luis Méndez</h3>
                 <p>luis.mendez@gmail.com</p>
-                <span className="badge-estado">Cliente básico</span>
               </div>
 
               <button className="boton-cambiar-foto">
