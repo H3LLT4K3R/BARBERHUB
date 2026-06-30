@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import CrearCupon from '../Barberias/crearCupon';
+import CrearCupon from './crearCupon';
 
 import { 
   User, MapPin, MessageSquare, Share2, Heart, 
