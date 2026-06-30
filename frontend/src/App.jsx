@@ -25,7 +25,7 @@ import OpinionBarberiaGeneral from "./modules/cliente/pages/opinion-barberia-gen
 import ComentarioEnviado from "./modules/cliente/pages/comentario-enviado";
 import PagoAnticipo from "./modules/cliente/pages/pago-anticipo";
 import MisCitas from "./modules/cliente/pages/mis-citas"; // <-- Añadido porque faltaba
-
+import BarberiaPerfilComponent from "./modules/cliente/pages/barberia-perfil";
 // Componentes
 import SidebarLayout from "./modules/cliente/components/sidebar-layout";
 
@@ -81,6 +81,15 @@ export default function App() {
           element={
             <AuthLayout>
               <MasServicios />
+            </AuthLayout>
+          }
+        />
+
+        <Route
+          path="/barberia-perfil/:id"
+          element={
+            <AuthLayout>
+              <BarberiaPerfilComponent />
             </AuthLayout>
           }
         />

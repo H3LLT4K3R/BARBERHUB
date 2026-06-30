@@ -264,7 +264,7 @@ export default function Explorar() {
                     </div>
 
                     <button 
-                      onClick={() => navigate(`/barberia/${b.id}`)}
+                      onClick={() => navigate(`/barberia-perfil/${b.id}`)}
                       className="explorar-profile-link"
                     >
                       Ver perfil de barbería 

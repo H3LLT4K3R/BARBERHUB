@@ -7,7 +7,7 @@ import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight,
   LogOut, LayoutDashboard, Menu, X, CalendarDays
 } from 'lucide-react';
-import '../../styles/Barberias/perfilBarberia.css';
+import "../../styles/Barberias/perfilbarberia.css";
 
 export default function PerfilBarberiaFinal() {
   const [activeTab, setActiveTab] = useState('Acerca');
