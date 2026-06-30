@@ -180,15 +180,6 @@
   margin-bottom: 15px;
 }
 
-.badge-estado {
-  background-color: #e4e4e7;
-  color: #55555a;
-  padding: 5px 16px;
-  border-radius: 15px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
 .boton-cambiar-foto {
   display: flex;
   align-items: center;
