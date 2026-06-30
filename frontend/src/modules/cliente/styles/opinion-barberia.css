@@ -1,33 +1,47 @@
 :root {
-  --color-dorado: #f0c75e;
-  --color-dorado-oscuro: #d8b24a;
-  --color-borde: #d9d9d9;
-  --color-texto-muted: #9a9a9a;
-  --color-verde: #2ecc71;
-  --color-negro: #000000;
+  --color-dorado: #ebd07f;
+  --color-borde-gris: #e5e7eb;
+  --color-texto-muted: #cbd5e1;
   --color-blanco: #ffffff;
-  --radio: 8px;
 }
 
-/* Página principal */
-.pagina-opiniones {
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
   background-color: var(--color-blanco);
   color: #1a1a1a;
+}
+
+/* Contenedor Base */
+.pagina-opiniones {
+  display: flex;
+  width: 100%;
   min-height: 100vh;
 }
 
-/* Encabezado con logo */
+.contenedor-principal {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Header superior negro plano */
 .encabezado {
-  background-color: var(--color-negro);
-  height: 72px;
+  background-color: #000000;
+  height: 64px;
   display: flex;
   align-items: center;
-  padding: 0 24px;
+  padding: 0 40px;
+  width: 100%;
 }
 
 .logo-barberhub {
-  height: 80px;
+  height: 32px;
   object-fit: contain;
 }
 
@@ -35,194 +49,147 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
 }
 
-/*  Contenido principal  */
+/* Área central */
 .contenido {
-  max-width: 1160px;
+  max-width: 1100px;
+  width: 100%;
   margin: 0 auto;
-  padding: 24px 24px 40px;
+  padding: 40px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-/* Información de la barbería  */
+/* Encabezado de la Barbería */
 .info-barberia {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-bottom: 16px;
+  width: 100%;
 }
 
 .nombre-barberia {
   font-size: 36px;
   font-weight: 800;
-  margin: 0 0 6px 0;
+  color: #000000;
+  margin-bottom: 4px;
 }
 
 .fila-rating {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-
-.total-opiniones {
-  font-size: 15px;
-  color: #333;
-}
-
-.direccion-barberia {
-  display: flex;
-  align-items: center;
   gap: 8px;
+  margin-bottom: 4px;
+}
+
+.total-opiniones, .direccion-barberia {
   font-size: 14px;
-  color: #444;
+  color: #718096;
 }
 
 .icono-check {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 2px solid var(--color-verde);
-  color: var(--color-verde);
-  font-size: 11px;
+  color: #2ecc71;
+  font-weight: bold;
+  margin-right: 4px;
 }
 
-/*  Pestañas */
+/* Tabs / Pestañas */
 .pestañas {
   display: flex;
-  border: 1px solid var(--color-dorado);
+  border: 1px solid var(--color-borde-gris);
   border-radius: 6px;
   overflow: hidden;
-  height: 40px;
 }
 
 .pestaña {
   border: none;
-  background-color: var(--color-blanco);
-  padding: 0 18px;
-  font-weight: 700;
+  background-color: #f8fafc;
+  padding: 10px 20px;
+  font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  color: #1a1a1a;
-   transition: background-color 0.3s ease, color 0.3s ease;
+  color: #000000;
 }
 
 .pestaña.activo {
   background-color: var(--color-dorado);
-  color: #000;
 }
 
-.pestaña.inactivo {
-  background-color: var(--color-blanco);;
-}
-
-.pestaña:hover{
-  background-color:var(--color-dorado);
-color: #000;
-}
-
-/*  Filtros */
+/* Caja de Filtros */
 .filtros-opiniones {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio);
-  padding: 14px 18px;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-}
-
-.etiqueta-filtros {
-  font-weight: 700;
-  font-size: 16px;
-  margin-right: 4px;
-}
-
-.filtro {
-  border: 1px solid var(--color-borde);
+  border: 1px solid var(--color-borde-gris);
+  border-radius: 8px;
+  padding: 14px 20px;
   background-color: var(--color-blanco);
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  color: #1a1a1a;
+  width: 100%;
 }
 
-.filtro.activo {
-  border-color: var(--color-dorado);
-}
-
-.filtro-estrellas {
-  border: 1px solid var(--color-borde);
-  background-color: var(--color-blanco);
-  border-radius: 6px;
-  padding: 8px 14px;
-  cursor: pointer;
-}
-
-.filtro-estrellas.activo {
-  border-color: var(--color-dorado);
-  background-color: #fdf6e3;
-}
-
-.boton-ordenar {
-  margin-left: auto;
-  border: 1px solid var(--color-borde);
-  background-color: var(--color-blanco);
-  border-radius: 6px;
-  padding: 10px 18px;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
+.grupo-filtros-izq {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.icono-chevron {
-  font-weight: 400;
+.etiqueta-filtros {
+  font-weight: 700;
+  font-size: 14px;
+  margin-right: 4px;
+}
+
+.filtro, .filtro-estrellas, .boton-ordenar {
+  border: 1px solid var(--color-borde-gris);
+  background-color: var(--color-blanco);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 /* Estrellas */
 .estrellas .estrella {
-  color: #d9d9d9;
-  font-size: 22px;
+  color: #e2e8f0;
+  font-size: 18px;
 }
 
 .estrellas .estrella.llena {
-  color: var(--color-dorado);
+  color: #f5c542;
 }
 
 .estrellas.small .estrella {
-  font-size: 14px;
+  font-size: 13px;
 }
 
-/* Opiniones */
+/* ==========================================================================
+   LISTA DE OPINIONES CON ESPACIADO INTERNO CORRECTO
+   ========================================================================== */
 .lista-opiniones {
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .tarjeta-opinion {
-  display: flex;
-  gap: 16px;
-  padding: 18px 4px;
-  border-bottom: 1px solid var(--color-borde);
+  display: flex; 
+  align-items: flex-start;
+  gap: 20px; /* Un poco más de separación entre el avatar y el texto */
+  border-bottom: 1px solid var(--color-borde-gris); 
+  padding: 24px 16px; /* 16px a los lados para que el contenido no toque las orillas */
+  background-color: transparent;
+  width: 100%;
+  box-sizing: border-box; /* Asegura que el padding no rompa el ancho total */
 }
 
 .avatar-cliente {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
@@ -231,63 +198,34 @@ color: #000;
 .cuerpo-opinion {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px; /* Espacio uniforme entre el encabezado y el texto del comentario */
+  width: 100%;
 }
 
 .encabezado-opinion {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  width: 100%;
 }
 
 .nombre-cliente {
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
+  color: #000000;
+  margin-right: 12px;
 }
 
 .tiempo-opinion {
   font-size: 13px;
   color: var(--color-texto-muted);
+  margin-left: auto; /* Mantiene la fecha alineada a la extrema derecha sin pegarse */
+  padding-right: 4px; /* Margen de cortesía interno para el tiempo */
 }
 
 .texto-opinion {
-  margin: 4px 0 0 0;
+  margin: 0;
   font-size: 14px;
-  color: #333;
-}
-
-/*  Botones de acción  */
-.acciones {
-  display: flex;
-  justify-content: flex-end;
-  gap: 14px;
-  margin-top: 24px;
-}
-
-.boton-regresar {
-  background-color: var(--color-dorado);
-  color: #1a1a1a;
-  border: none;
-  border-radius: 6px;
-  padding: 14px 28px;
-  font-weight: 800;
-  font-size: 15px;
-  cursor: pointer;
-}
-
-/* Responsive */
-@media (max-width: 720px) {
-  .info-barberia {
-    flex-direction: column;
-  }
-
-  .boton-ordenar {
-    margin-left: 0;
-  }
-
-  .acciones {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
+  color: #4a5568;
+  line-height: 1.5;
+  text-align: left;
 }
