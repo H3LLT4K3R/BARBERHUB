@@ -1,7 +1,6 @@
 import { useState } from "react";
 import "../styles/opinion-barberia.css";
 
-/* Datos ficticios de opiniones de clientes */
 const opinionesBarberia = [
   {
     id: 1,
@@ -30,16 +29,16 @@ const opinionesBarberia = [
 ];
 
 const opinionesBarberos = [
-  { id: 1, 
+  { 
+    id: 1, 
     nombre: "Carlos Reyes", 
-    avatar: "https://randomuser.me/api/por traits/men/22.jpg", 
+    avatar: "https://randomuser.me/api/portraits/men/22.jpg", 
     rating: 5, 
     tiempo: "Hace 3 horas", 
     comentario: "Carlos es un barbero increíble, siempre atento a lo que quiero." 
   }, 
 ];
 
-/*Componente para mostrar estrellas de calificación*/
 function Estrellas({ rating, size = "normal" }) {
   return (
     <span className={`estrellas ${size}`}>
@@ -52,96 +51,103 @@ function Estrellas({ rating, size = "normal" }) {
   );
 }
 
-/*Componente principal de Opiniones Barberia*/
 export default function OpinionBarberia() {
-  const [tabActiva, setTabActiva] = useState("barberia"); // controla pestañas
-  const [filtroEstrellas, setFiltroEstrellas] = useState("todas"); // controla filtros
+  const [tabActiva, setTabActiva] = useState("barberia");
+  const [filtroEstrellas, setFiltroEstrellas] = useState("todas");
 
   return (
     <div className="pagina-opiniones">
-      {/*Encabezado con logo*/}
-      <header className="encabezado">
-        <button className="boton-logo" onClick={() => console.log("Logo clickeado")}>
-          <img src="/logo.png" alt="Barber Hub" className="logo-barberhub" />
-        </button>
-      </header>
-
-      <div className="contenido">
-        {/*Información principal de la barbería*/}
-        <div className="info-barberia">
-          <div>
-            <h1 className="nombre-barberia">Urban Cuts</h1>
-            <div className="fila-rating">
-              <Estrellas rating={5} />
-              <span className="total-opiniones">(220 opiniones)</span>
-            </div>
-            <div className="direccion-barberia">
-              <span className="icono-check">✔</span>
-              Blvd. 10 de mayo, Puebla
-            </div>
-          </div>
-
-          {/*Pestañas para cambiar entre comentarios*/}
-          <div className="pestañas">
-            <button
-              className={`pestaña ${tabActiva === "barbería" ? "activo" : "inactivo"}`}
-              onClick={() => setTabActiva("barberia")}
-            >
-              Comentarios Barbería
-            </button>
-            <button
-              className={`pestaña ${tabActiva === "barberos" ? "activo" : "inactivo"}`}
-              onClick={() => setTabActiva("barberos")}
-            >
-              Comentarios Barberos
-            </button>
-          </div>
-        </div>
-
-        {/*Filtros de opiniones*/}
-        <div className="filtros-opiniones">
-          <span className="etiqueta-filtros">Filtrar por:</span>
-
-          <button
-            className={`filtro ${filtroEstrellas === "todas" ? "activo" : ""}`}
-            onClick={() => setFiltroEstrellas("todas")}  >
-            Todas
+      {/* SECCIÓN 1: CONTENEDOR PRINCIPAL DERECHO */}
+      <div className="contenedor-principal">
+        
+        {/* Encabezado con logo */}
+        <header className="encabezado">
+          <button className="boton-logo" onClick={() => console.log("Logo clickeado")}>
+            <img src="/logo.png" alt="Barber Hub" className="logo-barberhub" />
           </button>
+        </header>
 
-          {[5, 4, 3, 2, 1].map((num) => (
-            <button
-              key={num}
-              className={`filtro-estrellas ${filtroEstrellas === num ? "activo" : ""}`}
-              onClick={() => setFiltroEstrellas(num)} >
-              <Estrellas rating={num} />
-            </button>
-          ))}
-
-          <button className="boton-ordenar">
-            Más recientes <span className="icono-chevron"></span>
-          </button>
-        </div>
-
-        {/*Lista de opiniones*/}
-        <div className="lista-opiniones">
-          {(tabActiva === "barberia" ? opinionesBarberia : opinionesBarberos).map((op) => (
-            <div key={op.id} className="tarjeta-opinion">
-              <img src={op.avatar} alt={op.nombre} className="avatar-cliente" />
-              <div className="cuerpo-opinion">
-                <div className="encabezado-opinion">
-                  <span className="nombre-cliente">{op.nombre}</span>
-                  <Estrellas rating={op.rating} size="small" />
-                  <span className="tiempo-opinion">{op.tiempo}</span>
-                </div>
-                <p className="texto-opinion">{op.comentario}</p>
+        {/* Contenido en flujo vertical */}
+        <div className="contenido">
+          
+          {/* Nombre de la Barbería y Pestañas en la misma fila */}
+          <div className="info-barberia">
+            <div className="bloque-datos">
+              <h1 className="nombre-barberia">Urban Cuts</h1>
+              <div className="fila-rating">
+                <Estrellas rating={5} />
+                <span className="total-opiniones">(220 opiniones)</span>
+              </div>
+              <div className="direccion-barberia">
+                <span className="icono-check">✔</span>
+                Blvd. 10 de mayo, Puebla
               </div>
             </div>
-          ))}
-        </div>
 
-        {/*Botón de acción, regresar*/}
-        <div className="acciones">
-          <button className="boton-regresar">Regresar</button>
+            <div className="pestañas">
+              <button
+                className={`pestaña ${tabActiva === "barberia" ? "activo" : "inactivo"}`}
+                onClick={() => setTabActiva("barberia")}
+              >
+                Comentarios Barbería
+              </button>
+              <button
+                className={`pestaña ${tabActiva === "barberos" ? "activo" : "inactivo"}`}
+                onClick={() => setTabActiva("barberos")}
+              >
+                Comentarios Barberos
+              </button>
+            </div>
+          </div>
+
+          {/* Filtros de opiniones */}
+          <div className="filtros-opiniones">
+            <div className="grupo-filtros-izq">
+              <span className="etiqueta-filtros">Filtrar por:</span>
+              <button
+                className={`filtro ${filtroEstrellas === "todas" ? "activo" : ""}`}
+                onClick={() => setFiltroEstrellas("todas")}
+              >
+                Todas
+              </button>
+
+              {[5, 4, 3, 2, 1].map((num) => (
+                <button
+                  key={num}
+                  className={`filtro-estrellas ${filtroEstrellas === num ? "activo" : ""}`}
+                  onClick={() => setFiltroEstrellas(num)}
+                >
+                  <Estrellas rating={num} size="small" />
+                </button>
+              ))}
+            </div>
+
+            <button className="boton-ordenar">
+              Más recientes <span className="icono-chevron">&gt;</span>
+            </button>
+          </div>
+
+          {/* Lista de opiniones limpias */}
+          <div className="lista-opiniones">
+            {(tabActiva === "barberia" ? opinionesBarberia : opinionesBarberos).map((op) => (
+              <div key={op.id} className="tarjeta-opinion">
+                <img src={op.avatar} alt={op.nombre} className="avatar-cliente" />
+                <div className="cuerpo-opinion">
+                  <div className="encabezado-opinion">
+                    <span className="nombre-cliente">{op.nombre}</span>
+                    <Estrellas rating={op.rating} size="small" />
+                    <span className="tiempo-opinion">{op.tiempo}</span>
+                  </div>
+                  <p className="texto-opinion">{op.comentario}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Botón regresar abajo a la derecha */}
+          <div className="acciones">
+            <button className="boton-regresar">Regresar</button>
+          </div>
         </div>
       </div>
     </div>
