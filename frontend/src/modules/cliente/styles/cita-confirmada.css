@@ -1,116 +1,162 @@
-/* ===== Página principal ===== */
-.pagina-barberia {
+/* ==========================================================================
+   Contenedor Principal de la Página de Confirmación
+   ========================================================================== */
+.pagina-cita {
   min-height: 100vh;
   background: #f5f5f5;
-  font-family: "Inter", system-ui, sans-serif;
-}
-
-.contenido-barberia {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 32px 40px 56px;
-}
-
-/* ===== Hero principal ===== */
-.hero-barberia {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 32px;
-  background: #000;
-  border-radius: 24px;
-  padding: 32px 36px;
-  margin-bottom: 28px;
-  color: #fff;
-}
-
-.hero-izquierda {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  flex: 1;
-  min-width: 0;
-}
-
-.logo-barberia {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #fff;
-  flex-shrink: 0;
-  padding: 4px;
-}
-
-.titulo-barberia {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(28px, 4vw, 38px);
-  font-weight: 700;
-  margin-bottom: 10px;
-  line-height: 1.15;
-}
-
-.rating-barberia {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 10px;
-}
-
-.estrellas-barberia {
-  display: inline-flex;
-  gap: 2px;
-  color: #c9a227;
-}
-
-.direccion-barberia {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  color: #c9a227;
-  margin-bottom: 8px;
-}
-
-.estado-barberia {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #c9a227;
-  font-weight: 500;
-}
-
-.estado-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #666;
-  flex-shrink: 0;
-}
-
-.estado-dot--abierto {
-  background: #22c55e;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.35);
-}
-
-/* ===== Botones de acción en el hero ===== */
-.acciones-hero {
+  font-family: 'Inter', system-ui, sans-serif;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Área que envuelve la tarjeta al lado de la barra lateral */
+.contenido-cita {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 20px;
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   Tarjeta Blanca de Confirmación (Arregla el colapso horizontal)
+   ========================================================================== */
+.tarjeta-cita {
+  background: #ffffff;
+  border: 1.5px solid #ddd0ba; /* Borde dorado claro acorde a tu paleta */
+  border-radius: 24px;
+  padding: 40px 36px;
+  max-width: 550px;
+  width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  
+  /* Fuerza a que todo se alinee verticalmente en el centro */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* Icono circular de check verde */
+.icono-confirmacion {
+  background-color: #22c55e; /* Verde de éxito coincidiendo con tu dot de abierto */
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+}
+
+.titulo-cita {
+  font-family: Georgia, Times New Roman, serif; /* Manteniendo tus fuentes elegantes */
+  font-size: 28px;
+  font-weight: 700;
+  color: #111111;
+  margin: 0 0 16px 0;
+}
+
+.mensaje-cita {
+  font-size: 15px;
+  color: #555555;
+  line-height: 1.6;
+  margin: 0 0 28px 0;
+}
+
+.mensaje-cita strong {
+  color: #111111;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Resumen de la Cita (Caja interna)
+   ========================================================================== */
+.resumen-cita {
+  background: #fffdf9; /* Fondo crema sutil */
+  border: 1px solid #f0ebe3;
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 32px;
+  text-align: left; /* Alineación de lectura normal */
+}
+
+.resumen-encabezado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  border-bottom: 1px dashed #ddd0ba;
+  padding-bottom: 12px;
+}
+
+.resumen-hora {
+  font-weight: 700;
+  color: #111111;
+  font-size: 15px;
+}
+
+.resumen-precio {
+  font-weight: 700;
+  color: #c9a227; /* Tu dorado corporativo */
+  font-size: 16px;
+}
+
+/* Detalle inferior del resumen (Logo + Nombres) */
+.resumen-detalle {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* CORRECCIÓN CRÍTICA: Limita el tamaño de la imagen para que no salga gigante ni rota */
+.resumen-logo-btn {
+  background: none;
+  border: none;
+  padding: 0;
   flex-shrink: 0;
 }
 
-.boton-mapa,
-.boton-agendar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+.resumen-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #fff;
+  border: 1px solid #f0ebe3;
+}
+
+.nombre-servicio {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111111;
+  margin-bottom: 2px;
+}
+
+.nombre-barberia {
+  font-size: 13px;
+  color: #777777;
+}
+
+/* ==========================================================================
+   Botones de Acción Inferiores
+   ========================================================================== */
+.acciones-cita {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+}
+
+.acciones-cita button {
+  flex: 1;
   padding: 12px 22px;
   border-radius: 12px;
   font-family: inherit;
@@ -118,250 +164,42 @@
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: opacity 0.2s, transform 0.15s;
-  min-width: 180px;
+  transition: background 0.2s, transform 0.1s;
 }
 
-.boton-mapa {
+/* Botón "Ver mis citas" */
+.boton-outline {
   background: transparent;
   border: 1.5px solid #c9a227;
   color: #c9a227;
 }
 
-.boton-mapa:hover {
-  background: rgba(201, 162, 39, 0.1);
-}
-
-.boton-agendar {
-  background: #c9a227;
-  border: none;
-  color: #fff;
-}
-
-.boton-agendar:hover {
-  background: #b8911e;
-  transform: translateY(-1px);
-}
-
-/* ===== Grid de tres columnas ===== */
-.grid-barberia {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  align-items: start;
-}
-
-/* ===== Panel genérico ===== */
-.panel-barberia {
-  background: #fff;
-  border: 1.5px solid #ddd0ba;
-  border-radius: 16px;
-  padding: 22px 20px;
-  min-height: 320px;
-  display: flex;
-  flex-direction: column;
-}
-
-.panel-encabezado {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid #f0ebe3;
-}
-
-.panel-encabezado h2 {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: #111;
-}
-
-.icono-panel {
-  color: #111;
-  flex-shrink: 0;
-}
-
-.icono-panel.dorado {
-  color: #c9a227;
-}
-
-/* ===== Servicios ===== */
-.lista-servicios {
-  list-style: none;
-  flex: 1;
-}
-
-.item-servicio {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid #f5f0e8;
-  font-size: 14px;
-  color: #111;
-}
-
-.item-servicio:last-child {
-  border-bottom: none;
-}
-
-.servicio-izquierda {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.precio-servicio {
-  font-weight: 700;
-  color: #c9a227;
-  flex-shrink: 0;
-}
-
-.boton-ver-mas {
-  margin-top: 16px;
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1.5px solid #c9a227;
-  background: transparent;
-  color: #c9a227;
-  font-family: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.boton-ver-mas:hover {
+.boton-outline:hover {
   background: rgba(201, 162, 39, 0.08);
 }
 
-/* ===== Barberos ===== */
-.lista-barberos {
-  list-style: none;
+/* Botón "Ir al Inicio" */
+.boton-principal {
+  background: #c9a227;
+  border: none;
+  color: #ffffff;
 }
 
-.item-barbero {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 0;
-  border-bottom: 1px solid #f5f0e8;
+.boton-principal:hover {
+  background: #b8911e;
 }
 
-.item-barbero:last-child {
-  border-bottom: none;
+.boton-principal:active, .boton-outline:active {
+  transform: scale(0.98);
 }
 
-.foto-barbero {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.nombre-barbero {
-  font-size: 15px;
-  font-weight: 600;
-  color: #111;
-  margin-bottom: 4px;
-}
-
-.rating-barbero {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #111;
-}
-
-.rating-barbero svg {
-  color: #c9a227;
-}
-
-.opiniones-barbero {
-  font-weight: 400;
-  color: #888;
-}
-
-/* ===== Opiniones ===== */
-.lista-opiniones {
-  list-style: none;
-  flex: 1;
-}
-
-.item-opinion {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-  padding: 12px 0;
-  border-bottom: 1px solid #f5f0e8;
-}
-
-.item-opinion:last-child {
-  border-bottom: none;
-}
-
-.chevron-opinion {
-  color: #c9a227;
-  flex-shrink: 0;
-  margin-top: 3px;
-}
-
-.item-opinion p {
-  font-size: 13px;
-  line-height: 1.6;
-  color: #333;
-}
-
-/* ===== Responsive ===== */
-@media (max-width: 1024px) {
-  .grid-barberia {
-    grid-template-columns: 1fr;
-  }
-
-  .hero-barberia {
+/* Adaptación responsiva para móviles */
+@media (max-width: 480px) {
+  .acciones-cita {
     flex-direction: column;
-    align-items: stretch;
+    gap: 10px;
   }
-
-  .acciones-hero {
-    flex-direction: row;
-    flex-wrap: wrap;
-  }
-
-  .boton-mapa,
-  .boton-agendar {
-    flex: 1;
-    min-width: 140px;
-  }
-}
-
-@media (max-width: 600px) {
-  .contenido-barberia {
-    padding: 20px 16px 40px;
-  }
-
-  .hero-barberia {
-    padding: 24px 20px;
-    border-radius: 18px;
-  }
-
-  .hero-izquierda {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .acciones-hero {
-    flex-direction: column;
-  }
-
-  .boton-mapa,
-  .boton-agendar {
+  .acciones-cita button {
     width: 100%;
-  }}
+  }
+}
