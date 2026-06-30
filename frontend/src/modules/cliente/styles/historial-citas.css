@@ -239,6 +239,8 @@
 
 .info-cita {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .info-cita h3 {
@@ -246,12 +248,18 @@
   font-weight: 700;
   margin: 0 0 8px 0;
   color: var(--text-main);
+   white-space: nowrap;       
+  overflow: hidden;          
+  text-overflow: ellipsis;
 }
 
 .info-cita p {
   font-size: 1rem;
   color: var(--text-muted);
   margin: 0;
+  white-space: nowrap;      
+  overflow: hidden;          
+  text-overflow: ellipsis;   
 }
 
 .acciones-cita {
