@@ -1,7 +1,6 @@
 import { useState } from "react";
 import "../styles/opinion-barbero.css";
 
-/* Datos de barberos disponibles */
 const barberos = [
   { id: 1, nombre: "Alexis Duran", foto: "https://randomuser.me/api/portraits/men/32.jpg" },
   { id: 2, nombre: "Marco Pedraza", foto: "https://randomuser.me/api/portraits/men/45.jpg" },
@@ -11,63 +10,71 @@ const barberos = [
   { id: 6, nombre: "Juan Sanchez", foto: "https://randomuser.me/api/portraits/men/61.jpg" },
 ];
 
-/* Componente principal: Opinión Barbero */
 export default function OpinionBarbero() {
-  const [barberoSeleccionado, setBarberoSeleccionado] = useState(barberos[0]); // Estado para barbero elegido
-  const [rating, setRating] = useState(5); // Estado para calificación
-  const [comentario, setComentario] = useState(""); // Estado para comentario
-  const maxCaracteres = 1000; // Límite de caracteres
+  const [barberoSeleccionado, setBarberoSeleccionado] = useState(barberos[0]);
+  const [rating, setRating] = useState(5);
+  const [comentario, setComentario] = useState("");
+  const maxCaracteres = 1000;
 
   return (
     <div className="pagina-barbero">
-      {/*Encabezado con logo*/}
-      <header className="encabezado">
-        <img src="/logo.png" alt="Barber Hub" className="logo-barberhub" />
+      {/* Encabezado Superior Negro de Extremo a Extremo */}
+      <header className="encabezado-superior">
+        <div className="contenedor-logo">
+          <img src="/logo.png" alt="Barber Hub" className="logo-barberhub" />
+        </div>
       </header>
 
-      <div className="contenido">
-        {/*Título principal*/}
-        <h1 className="titulo-principal">
+      {/* Contenedor Flotante Central */}
+      <main className="contenedor-central-opiniones">
+        
+        <h1 className="titulo-principal-dorado">
           Valora tu experiencia
           <br />
           con nosotros
         </h1>
 
-        <div className="cuerpo">
-          {/*Selección de barbero*/}
-          <div className="seccion-barberos">
-            <h2 className="subtitulo">Selecciona a tu barbero</h2>
-
-            <div className="grid-barberos">
+        <div className="layout-dos-columnas">
+          
+          {/* COLUMNA IZQUIERDA: Selección de Barberos */}
+          <div className="bloque-izquierdo-barberos">
+            <h2 className="titulo-seccion-barberos">Selecciona a tu barbero</h2>
+            
+            <div className="malla-barberos">
               {barberos.map((b) => (
                 <button
                   key={b.id}
-                  className={`tarjeta-barbero ${barberoSeleccionado.id === b.id ? "seleccionado" : ""}`}
+                  className={`item-barbero-btn ${barberoSeleccionado.id === b.id ? "activo" : ""}`}
                   onClick={() => setBarberoSeleccionado(b)}
                 >
-                  <img src={b.foto} alt={b.nombre} className="foto-barbero" />
-                  <span className="nombre-barbero">{b.nombre}</span>
+                  <div className="wrapper-avatar">
+                    <img src={b.foto} alt={b.nombre} className="img-avatar-barbero" />
+                  </div>
+                  <span className="txt-nombre-barbero">{b.nombre}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/*Tarjeta de opinión*/}
-          <div className="tarjeta-opinion">
-            <img
-              src={barberoSeleccionado.foto}
-              alt={barberoSeleccionado.nombre}
-              className="foto-opinion"
-            />
-            <h3 className="nombre-opinion">{barberoSeleccionado.nombre}</h3>
-            <p className="subtitulo-opinion">Tu opinión es importante</p>
+          {/* COLUMNA DERECHA: Tarjeta de Opinión Centrada */}
+          <div className="tarjeta-opinion-derecha">
+            <div className="avatar-destacado-container">
+              <img
+                src={barberoSeleccionado.foto}
+                alt={barberoSeleccionado.nombre}
+                className="img-avatar-destacado"
+              />
+            </div>
+            
+            <h3 className="nombre-barbero-destacado">{barberoSeleccionado.nombre}</h3>
+            <p className="txt-subtitulo-opinion">Tu opinión es importante</p>
 
-            {/*Estrellas de calificación*/}
-            <div className="estrellas-calificacion">
+            {/* Estrellas interactiva */}
+            <div className="contenedor-estrellas-oro">
               {Array.from({ length: 5 }, (_, i) => (
                 <span
                   key={i}
-                  className={`estrella ${i < rating ? "llena" : ""}`}
+                  className={`estrella-click ${i < rating ? "marcada" : ""}`}
                   onClick={() => setRating(i + 1)}
                 >
                   ★
@@ -75,35 +82,33 @@ export default function OpinionBarbero() {
               ))}
             </div>
 
-            {/*Área de comentario*/}
-            <div className="comentario-wrapper">
+            {/* Caja de Texto Inteligente */}
+            <div className="caja-textarea-wrapper">
               <textarea
-                className="comentario-textarea"
-                placeholder="Escribe tu comentario aquí..."
+                className="input-textarea-comentario"
+                placeholder={`Escribe tu comentario aquí...\nCompartte tu experiencia con ${barberoSeleccionado.nombre}.`}
                 maxLength={maxCaracteres}
                 value={comentario}
                 onChange={(e) => setComentario(e.target.value)}
               />
-              {comentario === "" && (
-                <span className="comentario-hint">
-                  Comparte tu experiencia con {barberoSeleccionado.nombre}.
-                </span>
-              )}
-              <span className="contador-caracteres">
+              <span className="contador-interno-caracteres">
                 {comentario.length}/{maxCaracteres}
               </span>
             </div>
 
-            {/*Botón enviar*/}
-            <button className="boton-enviar">Enviar mi comentario</button>
+            <button className="btn-enviar-opinion-dorado">
+              Enviar mi comentario
+            </button>
           </div>
+
         </div>
 
-        {/*Footer con botón regresar*/}
-        <div className="acciones-footer">
-          <button className="boton-regresar">Regresar</button>
+        {/* Botón Regresar centrado abajo */}
+        <div className="bloque-regresar-footer">
+          <button className="btn-regresar-enlace">Regresar</button>
         </div>
-      </div>
+
+      </main>
     </div>
   );
 }

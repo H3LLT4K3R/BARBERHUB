@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "../styles/mis-citas.css";
 
-/* Datos de citas de prueba */
+/* Datos simulados del proyecto */
 const citasData = [
   {
     id: 1,
@@ -12,7 +12,6 @@ const citasData = [
     precio: "$80",
     badgeTexto: "Esperando respuesta - 10 min",
     badgeTipo: "esperando",
-    pasoActual: 1,
     pasos: [
       { id: 1, label: "Enviada", estado: "completado" },
       { id: 2, label: "Revisada", estado: "actual" },
@@ -29,7 +28,6 @@ const citasData = [
     precio: "$120",
     badgeTexto: "Confirmada - en 3 días",
     badgeTipo: "confirmada",
-    pasoActual: 3,
     pasos: [
       { id: 1, label: "Enviada", estado: "completado" },
       { id: 2, label: "Aceptada", estado: "completado" },
@@ -39,47 +37,18 @@ const citasData = [
   }
 ];
 
-/* Componente principal: Mis Citas */
 export default function MisCitas() {
-  const [menuActivo, setMenuActivo] = useState("Mis citas"); // Estado para menú lateral activo
-
-  // Acciones de interacción
-  const handleCardClick = (id) => {
-    console.log(`Clic en tarjeta de cita #${id}: Abrir vista rápida.`);
-  };
-
-  const handleVerDetalles = (id, e) => {
-    e.stopPropagation();
-    console.log(`Abriendo detalles completos de la cita #${id}. listo para backend.`);
-  };
-
-  const handleCancelarCita = (id, e) => {
-    e.stopPropagation();
-    console.log(`Iniciando flujo de cancelación para la cita #${id}.`);
-  };
-
-  // Nueva acción para el botón de comentario
-  const handleHacerComentario = (id, e) => {
-    e.stopPropagation();
-    console.log(`Abriendo sección de comentarios para la cita #${id}.`);
-  };
-
-  const handleStepClick = (citaId, pasoLabel, e) => {
-    e.stopPropagation();
-    console.log(`Clic en el estado "${pasoLabel}" de la cita #${citaId}.`);
-  };
+  const [menuActivo, setMenuActivo] = useState("Mis citas");
 
   return (
     <div className="pagina-citas">
-      {/* Sidebar izquierdo */}
+      {/* Sidebar Lateral */}
       <aside className="sidebar">
-        {/* Marca Barber Hub */}
         <div className="marca">
           <img src="/barberhublogo.jpg" alt="Barber Hub" className="logo-barberhub" />
           <h2>BARBER HUB</h2>
         </div>
 
-        {/* Menú de navegación */}
         <nav className="menu-navegacion">
           {["Explorar", "Mis citas", "Historial", "Favoritos", "Notificaciones", "Ajustes"].map((item) => (
             <button
@@ -92,7 +61,6 @@ export default function MisCitas() {
           ))}
         </nav>
 
-        {/* Perfil de usuario */}
         <div className="perfil-usuario">
           <div className="avatar-placeholder">LM</div>
           <div className="info-usuario">
@@ -101,7 +69,7 @@ export default function MisCitas() {
         </div>
       </aside>
 
-      {/* Contenedor principal */}
+      {/* Contenedor Principal */}
       <div className="contenedor-principal">
         <header className="encabezado-principal">
           <h1>Mis Citas</h1>
@@ -109,23 +77,14 @@ export default function MisCitas() {
 
         <main className="contenido">
           <div className="contenedor-citas">
-            
             <h2 className="titulo-seccion">Pendiente de confirmación</h2>
 
-            {/* Lista de citas */}
             <div className="lista-citas">
               {citasData.map((cita) => (
-                <div 
-                  key={cita.id} 
-                  className="tarjeta-cita"
-                  onClick={() => handleCardClick(cita.id)}
-                  role="button"
-                  tabIndex={0}
-                >
-                  {/* Bloque izquierdo: información y progreso */}
+                <div key={cita.id} className="tarjeta-cita">
+                  
+                  {/* BLOQUE IZQUIERDO: Detalles, Badge y Stepper */}
                   <div className="bloque-izquierdo">
-                    
-                    {/* Información principal */}
                     <div className="info-header">
                       <div className="icono-servicio">
                         {cita.id === 1 ? "✂️" : "🪮"}
@@ -136,7 +95,6 @@ export default function MisCitas() {
                       </div>
                     </div>
 
-                    {/* Badge dinámico de estado */}
                     <div className={`badge-estado ${cita.badgeTipo}`}>
                       <span className="icono-badge">
                         {cita.badgeTipo === "confirmada" ? "✓" : "🕒"}
@@ -144,39 +102,39 @@ export default function MisCitas() {
                       {cita.badgeTexto}
                     </div>
 
-                    {/* Stepper de progreso */}
+                    {/* Stepper Lineal */}
                     <div className="stepper-progreso">
                       {cita.pasos.map((paso, idx) => (
                         <React.Fragment key={paso.id}>
-                          <button 
-                            className={`nodo-step ${paso.estado}`}
-                            onClick={(e) => handleStepClick(cita.id, paso.label, e)}
-                            title={`Estado: ${paso.label}`}
-                          >
+                          <div className={`nodo-step ${paso.estado}`}>
                             <span className="punto-step"></span>
                             <span className="label-step">{paso.label}</span>
-                          </button>
+                          </div>
                           {idx < cita.pasos.length - 1 && (
-                            <div className={`linea-step ${cita.pasos[idx + 1].estado === "completado" || cita.pasos[idx + 1].estado === "actual" ? "activa" : ""}`}></div>
+                            <div className={`linea-step ${
+                              cita.pasos[idx + 1].estado === "completado" || 
+                              cita.pasos[idx + 1].estado === "actual" ? "activa" : ""
+                            }`}></div>
                           )}
                         </React.Fragment>
                       ))}
                     </div>
-
                   </div>
 
-                  {/* Bloque derecho: precio y acciones */}
+                  {/* BLOQUE DERECHO: Todo el contenido de cobro y acciones encapsulado */}
                   <div className="bloque-derecho">
-                    <span className="precio-cita">{cita.precio}</span>
+                    <div className="contenedor-precio">
+                      <span className="precio-cita">{cita.precio}</span>
+                    </div>
+                    
                     <div className="acciones-cita">
-                      <button className="boton-accion boton-detalles" onClick={(e) => handleVerDetalles(cita.id, e)}>
+                      <button className="boton-accion boton-detalles">
                         Ver detalles
                       </button>
-                      <button className="boton-accion boton-cancelar" onClick={(e) => handleCancelarCita(cita.id, e)}>
+                      <button className="boton-accion boton-cancelar">
                         Cancelar
                       </button>
-                      {/* Se agregó el botón aquí abajo para que herede el flujo vertical */}
-                      <button className="boton-accion boton-comentario" onClick={(e) => handleHacerComentario(cita.id, e)}>
+                      <button className="boton-accion boton-comentario-gris">
                         Hacer comentario
                       </button>
                     </div>
@@ -185,7 +143,6 @@ export default function MisCitas() {
                 </div>
               ))}
             </div>
-
           </div>
         </main>
       </div>
