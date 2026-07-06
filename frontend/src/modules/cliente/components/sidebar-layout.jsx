@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { CalendarDays, Map, Menu, X, LogOut, History, Heart, Bell, Settings, Search } from "lucide-react";
+import { CalendarDays, Map, Menu, X, LogOut, History, Heart, Bell, Settings, User, Search } from "lucide-react";
 import { clearSession } from "../../../utils/api";
-import "../styles/sidebar-layout.css"; // Eliminamos el import de logo.png de aquí arriba
+import "../styles/sidebar-layout.css";
 
 const NAV_ITEMS = [
   { href: "/explorar", label: "Explorar", icon: Map },
   { href: "/mis-citas", label: "Mis citas", icon: CalendarDays },
-  { href: "/historial", label: "Historia", icon: History },
+  { href: "/historial-citas", label: "Historia", icon: History },
   { href: "/favoritos", label: "Favoritos", icon: Heart },
   { href: "/notificaciones", label: "Notificaciones", icon: Bell },
   { href: "/ajustes", label: "Ajustes", icon: Settings },
@@ -21,6 +21,8 @@ export default function SidebarLayout({ children }) {
 
   // Evaluamos si el cliente se encuentra agendando en modo local
   const esAgendaLocal = location.pathname === "/agenda-local";
+  const esExplorar = location.pathname === "/explorar";
+  const esAjustes = location.pathname === "/ajustes";
 
   const handleLogout = () => {
     clearSession();
@@ -54,7 +56,6 @@ export default function SidebarLayout({ children }) {
       {!esAgendaLocal && (
         <aside className={`sidebar ${open ? "open" : ""}`}>
           <div className="sidebar-header">
-            {/* CORREGIDO: src="/logo.png" directo en lugar de la variable */}
             <img 
               src="/logo.png" 
               alt="BarberHub" 
@@ -103,7 +104,6 @@ export default function SidebarLayout({ children }) {
           {/* Si es agenda local pintamos la marca a la izquierda, si no dejamos el espacio vacío */}
           {esAgendaLocal ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '10px' }}>
-              {/* CORREGIDO: src="/logo.png" directo aquí también */}
               <img 
                 src="/logo.png" 
                 alt="BarberHub" 
@@ -116,19 +116,29 @@ export default function SidebarLayout({ children }) {
           ) : (
             <div className="sidebar-header-left-space"></div>
           )}
-          
-          {/* BUSCADOR: Desaparece por completo en la agenda local */}
-          {!esAgendaLocal && (
-            <div className="sidebar-header-search">
-              <input
-                type="text"
-                placeholder="Buscar barberías"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="sidebar-search-input"
-              />
-              <Search className="sidebar-search-icon" size={18} />
-            </div>
+
+          {/* LADO DERECHO DEL HEADER: depende de la página */}
+          {!esAgendaLocal && !esAjustes && (
+            esExplorar ? (
+              <div className="sidebar-header-search">
+                <input
+                  type="text"
+                  placeholder="Buscar barberías"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="sidebar-search-input"
+                />
+                <Search className="sidebar-search-icon" size={18} />
+              </div>
+            ) : (
+              <button
+                className="sidebar-header-profile"
+                onClick={() => navigate("/ajustes")}
+                aria-label="Perfil"
+              >
+                <User size={20} />
+              </button>
+            )
           )}
         </header>
 
