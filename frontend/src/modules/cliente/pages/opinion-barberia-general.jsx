@@ -24,16 +24,18 @@ export default function OpinionBarberiaGeneral() {
 
         {/* Tarjeta principal con formulario */}
         <div className="tarjeta-opinion">
-          {/* Logo de la barbería como botón */}
-          <button className="boton-logo-barberia">
-            <img
-              src="/logo-ejemplo.png"
-              alt="Logo barbería"
-              className="logo-barberia"
-            />
-          </button>
+          {/* Contenedor del Logo izquierdo */}
+          <div className="seccion-logo-barberia">
+            <button className="boton-logo-barberia">
+              <img
+                src="/logo-ejemplo.png"
+                alt="Logo barbería"
+                className="logo-barberia"
+              />
+            </button>
+          </div>
 
-          {/* Formulario de opinión */}
+          {/* Formulario de opinión derecho */}
           <div className="formulario-opinion">
             <div className="linea-separadora" />
             <h2 className="nombre-barberia">Urban Cuts</h2>
@@ -56,15 +58,15 @@ export default function OpinionBarberiaGeneral() {
             <div className="comentario-wrapper">
               <textarea
                 className="comentario-textarea"
-                placeholder="Escribe tu comentario general aquí..."
                 maxLength={maxCaracteres}
                 value={comentario}
                 onChange={(e) => setComentario(e.target.value)}
               />
               {comentario === "" && (
                 <span className="comentario-hint">
-                  Comparte tu experiencia en el establecimiento, servicio general,
-                  ambiente o cualquier aspecto de la barbería.
+                  Escribe tu comentario general aquí...
+                  <br />
+                  <small>Comparte tu experiencia en el establecimiento, servicio general, ambiente o cualquier aspecto de la barbería.</small>
                 </span>
               )}
               <span className="contador-caracteres">
