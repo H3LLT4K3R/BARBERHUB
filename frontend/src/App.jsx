@@ -74,20 +74,12 @@ export default function App() {
 
         <Route
           path="/barberia/:id"
-          element={
-            <AuthLayout>
-              <BarberiaPerfil />
-            </AuthLayout>
-          }
+          element={<BarberiaPerfil />}
         />
 
         <Route
           path="/barberia/:id/servicios"
-          element={
-            <AuthLayout>
-              <MasServicios />
-            </AuthLayout>
-          }
+          element={<MasServicios />}
         />
 
         <Route
@@ -101,19 +93,12 @@ export default function App() {
 
         <Route
           path="/datos-reserva"
-          element={
-            <AuthLayout>
-              <DatosReserva />
-            </AuthLayout>
-          }
+          element={<DatosReserva />}
         />
 
         <Route
           path="/cita-confirmada"
-          element={
-            <AuthLayout>
-              <CitaConfirmada />
-            </AuthLayout>
+          element={  <CitaConfirmada />
           }
         />
 
@@ -137,20 +122,12 @@ export default function App() {
 
         <Route
           path="/opinion-barberia"
-          element={
-            <AuthLayout>
-              <OpinionBarberia />
-            </AuthLayout>
-          }
+          element={ <OpinionBarberia />  }
         />
 
         <Route
           path="/opinion-barbero"
-          element={
-            <AuthLayout>
-              <OpinionBarbero />
-            </AuthLayout>
-          }
+          element={<OpinionBarbero />}
         />
 
         <Route
@@ -191,20 +168,12 @@ export default function App() {
 
         <Route
           path="/opinion-barberia-general"
-          element={
-            <AuthLayout>
-              <OpinionBarberiaGeneral />
-            </AuthLayout>
-          }
+          element={<OpinionBarberiaGeneral /> }
         />
 
         <Route
           path="/comentario-enviado"
-          element={
-            <AuthLayout>
-              <ComentarioEnviado />
-            </AuthLayout>
-          }
+          element={ <ComentarioEnviado />  }
         />
 
         <Route
@@ -218,20 +187,7 @@ export default function App() {
 
         <Route
           path="/pago-anticipo"
-          element={
-            <AuthLayout>
-              <PagoAnticipo />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/barberia/:id"
-          element={
-            <AuthLayout>
-              <OwnerInventario />
-            </AuthLayout>
-          }
+          element={<PagoAnticipo />}
         />
       </Routes>
     </BrowserRouter>
