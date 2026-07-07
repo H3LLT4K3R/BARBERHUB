@@ -10,127 +10,17 @@
   --step-verde: #24cc63;
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  background-color: var(--color-principal);
-}
-
-.pagina-citas {
-  display: flex;
-  min-height: 100vh;
-  font-family: 'Inter', system-ui, sans-serif;
-}
-
-/* Sidebar Estilos */
-.sidebar {
-  width: 260px;
-  background-color: var(--color-sidebar);
-  display: flex;
-  flex-direction: column;
-  padding: 25px 0;
-  box-sizing: border-box;
-}
-
-.marca {
-  display: flex;
-  align-items: center;
-  padding: 0 24px;
-  margin-bottom: 40px;
-}
-
-.logo-barberhub {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  margin-right: 12px;
-}
-
-.marca h2 {
-  font-size: 1.15rem;
-  color: var(--texto-blanco);
-  margin: 0;
-}
-
-.menu-navegacion {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 0 16px;
-  flex: 1;
-}
-
-.boton-menu {
-  background: none;
-  border: none;
-  color: #8a8a8e;
-  text-align: left;
-  padding: 12px 20px;
-  font-size: 1rem;
-  cursor: pointer;
-  border-radius: 10px;
-  font-weight: 600;
-}
-
-.boton-menu.activo {
-  background-color: var(--color-dorado);
-  color: #000000;
-  font-weight: 700;
-}
-
-.perfil-usuario {
-  display: flex;
-  align-items: center;
-  padding: 20px 24px;
-  border-top: 1px solid #1c1c1e;
-}
-
-.avatar-placeholder {
-  width: 44px;
-  height: 44px;
-  background-color: #f3d89d;
-  color: #000000;
-  font-weight: 700;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 12px;
-}
-
-.nombre-usuario {
-  color: var(--texto-blanco);
-  font-weight: 600;
-}
-
-/* Área de contenido */
-.contenedor-principal {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.encabezado-principal {
-  background-color: #000000;
-  padding: 25px 40px;
-  color: var(--texto-blanco);
-}
-
-.encabezado-principal h1 {
-  margin: 0;
-  font-size: 1.7rem;
-}
-
-.contenido {
+/* Contenedor de la página (ya sin sidebar propio, ese lo pone SidebarLayout) */
+.contenido-citas {
   padding: 40px;
   display: flex;
   justify-content: center;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 .contenedor-citas {
   width: 100%;
-  max-width: 1050px; 
+  max-width: 1050px;
 }
 
 .titulo-seccion {
@@ -148,7 +38,7 @@ body {
 /* TARJETA RECTANGULAR HORIZONTAL FIJA */
 .tarjeta-cita {
   display: flex;
-  flex-direction: row; 
+  flex-direction: row;
   justify-content: space-between;
   align-items: stretch; /* Mantiene la misma altura en ambos bloques internos */
   width: 100%;
@@ -283,7 +173,7 @@ body {
   flex-direction: column;
   justify-content: space-between; /* Mandar precio arriba y el grupo de botones abajo */
   align-items: flex-end;
-  min-width: 220px; 
+  min-width: 220px;
   margin-left: 30px;
 }
 
