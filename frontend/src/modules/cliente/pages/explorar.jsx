@@ -111,49 +111,32 @@ export default function Explorar() {
           
           {/* BANNER DE FILTROS INTEGRADOS */}
           <div className="explorar-section-header">
-            <div className="explorar-header-left" style={{ width: '100%' }}>
+            <div className="explorar-header-left">
               
               {/* Título de la sección */}
               <h2 className="explorar-title">Buscar por Disponibilidad</h2>
               
               {/* Contenedor de filtros adaptado para Inputs de fecha y hora */}
-              <div className="explorar-filters" style={{ display: 'flex', gap: '16px', marginTop: '12px', flexWrap: 'wrap' }}>
+              <div className="explorar-filters">
                 
                 {/* Filtro Fecha */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '11px', color: '#e8c46a', fontWeight: 'bold' }}>FECHA</label>
+                <div className="explorar-filter-group">
+                  <label className="explorar-filter-label">FECHA</label>
                   <input 
                     type="date"
                     value={fechaFiltro}
                     onChange={(e) => setFechaFiltro(e.target.value)}
-                    style={{
-                      backgroundColor: '#1a1a1a',
-                      border: '1px solid #333',
-                      borderRadius: '20px',
-                      padding: '6px 14px',
-                      color: '#FFF',
-                      fontSize: '14px',
-                      outline: 'none'
-                    }}
+                    className="explorar-input-fecha"
                   />
                 </div>
 
                 {/* Filtro Hora */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <label style={{ fontSize: '11px', color: '#e8c46a', fontWeight: 'bold' }}>HORA</label>
+                <div className="explorar-filter-group">
+                  <label className="explorar-filter-label">HORA</label>
                   <select
                     value={horaFiltro}
                     onChange={(e) => setHoraFiltro(e.target.value)}
-                    style={{
-                      backgroundColor: '#1a1a1a',
-                      border: '1px solid #333',
-                      borderRadius: '20px',
-                      padding: '6px 14px',
-                      color: '#FFF',
-                      fontSize: '14px',
-                      outline: 'none',
-                      cursor: 'pointer'
-                    }}
+                    className="explorar-select-hora"
                   >
                     <option value="">Cualquier hora</option>
                     <option value="09:00">09:00 a.m.</option>

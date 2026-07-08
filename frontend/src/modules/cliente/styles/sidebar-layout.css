@@ -42,9 +42,10 @@
 }
 
 .sidebar-logo-img {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .sidebar-brand {
@@ -170,6 +171,12 @@
   flex-direction: column;
 }
 
+/* Modo "agenda local": sin sidebar, el contenido ocupa todo el ancho */
+.sin-sidebar-layout .sidebar-main-wrapper {
+  margin-left: 0;
+  width: 100%;
+}
+
 .sidebar-global-header {
   background: var(--black);
   padding: 0 40px;
@@ -184,6 +191,28 @@
 
 .sidebar-header-left-space {
   flex: 1; /* Mueve el botón de perfil totalmente a la derecha */
+}
+
+/* ── MARCA EN AGENDA LOCAL (logo + texto dentro del header) ── */
+.sidebar-agenda-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 10px;
+}
+
+.sidebar-agenda-logo {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.sidebar-agenda-text {
+  color: var(--white);
+  font-weight: bold;
+  font-size: 18px;
+  letter-spacing: 1px;
 }
 
 /* ── BOTÓN DE PERFIL (reemplaza al buscador) ── */
@@ -210,6 +239,11 @@
 .sidebar-content {
   flex: 1;
   background: var(--white);
+}
+
+/* Modo "agenda local": el contenido usa otro padding */
+.sin-sidebar-layout .sidebar-content {
+  padding: 40px 24px;
 }
 
 /* ── TOGGLE MÓVIL ── */
@@ -239,33 +273,7 @@
   z-index: 150;
 }
 
-/* ── RESPONSIVE ── */
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-  }
-
-  .sidebar.open {
-    transform: translateX(0);
-  }
-
-  .sidebar-main-wrapper {
-    margin-left: 0;
-  }
-
-  .sidebar-toggle {
-    display: flex;
-  }
-
-  .sidebar-overlay.open {
-    display: block;
-  }
-
-  .sidebar-global-header {
-    padding: 0 16px 0 64px;
-  }
-  
-}
+/* ── BUSCADOR (solo se muestra en /explorar) ── */
 .sidebar-header-search {
   display: flex;
   align-items: center;
@@ -295,4 +303,31 @@
 
 .sidebar-search-input::placeholder {
   color: #9ca3af;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-main-wrapper {
+    margin-left: 0;
+  }
+
+  .sidebar-toggle {
+    display: flex;
+  }
+
+  .sidebar-overlay.open {
+    display: block;
+  }
+
+  .sidebar-global-header {
+    padding: 0 16px 0 64px;
+  }
 }

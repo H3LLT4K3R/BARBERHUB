@@ -8,7 +8,7 @@
 }
 
 /* Página principal */
-.pagina-opinion {
+.opg-page {
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
   background-color: #ffffff;
   color: #1a1a1a;
@@ -18,7 +18,7 @@
 }
 
 /* Encabezado con logo */
-.encabezado {
+.opg-header {
   background-color: #000000;
   height: 72px;
   display: flex;
@@ -26,13 +26,13 @@
   padding: 0 24px;
 }
 
-.logo-barberhub {
-  height: 40px; /* Tamaño controlado para evitar desbordes */
+.opg-logo-barberhub {
+  height: 56px;
   object-fit: contain;
 }
 
 /* Contenido principal*/
-.contenido {
+.opg-content {
   max-width: 900px;
   margin: 0 auto;
   padding: 40px 24px 60px;
@@ -41,7 +41,7 @@
   align-items: center;
 }
 
-.titulo-principal {
+.opg-title {
   text-align: center;
   font-family: Georgia, "Times New Roman", serif;
   font-weight: 800;
@@ -53,7 +53,7 @@
 }
 
 /* Tarjeta de opinión  */
-.tarjeta-opinion {
+.opg-card {
   border: 1px solid var(--color-dorado);
   border-radius: var(--radio);
   padding: 40px;
@@ -66,14 +66,14 @@
   background-color: #ffffff;
 }
 
-.seccion-logo-barberia {
+.opg-logo-section {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 /* Logo barbería como botón */
-.boton-logo-barberia {
+.opg-logo-button {
   background: transparent;
   border: none;
   cursor: pointer;
@@ -83,14 +83,14 @@
   padding: 0;
 }
 
-.logo-barberia {
+.opg-barberia-logo {
   width: 180px;
   height: 180px;
   object-fit: contain;
 }
 
 /* Formulario de opinión  */
-.formulario-opinion {
+.opg-form {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -98,51 +98,51 @@
   width: 100%;
 }
 
-.linea-separadora {
+.opg-divider {
   width: 100%;
   height: 2px;
   background-color: #1a1a1a;
   margin-bottom: 20px;
 }
 
-.nombre-barberia {
+.opg-barberia-name {
   font-size: 24px;
   font-weight: 800;
   margin: 0 0 6px 0;
 }
 
-.subtitulo-formulario {
+.opg-form-subtitle {
   font-size: 15px;
   color: #1a1a1a;
   margin: 0 0 14px 0;
 }
 
 /* Estrellas de calificación  */
-.estrellas-calificacion {
+.opg-stars {
   display: flex;
   gap: 6px;
   margin-bottom: 20px;
 }
 
-.estrella {
+.opg-star {
   font-size: 28px;
   color: #d9d9d9;
   cursor: pointer;
   transition: color 0.15s ease;
 }
 
-.estrella.llena {
+.opg-star.filled {
   color: var(--color-dorado);
 }
 
 /*  Área de comentario */
-.comentario-wrapper {
+.opg-comment-wrapper {
   position: relative;
   width: 100%;
   margin-bottom: 24px;
 }
 
-.comentario-textarea {
+.opg-comment-textarea {
   width: 100%;
   min-height: 130px;
   border: 1px solid var(--color-dorado);
@@ -150,19 +150,19 @@
   padding: 14px 16px;
   font-size: 14px;
   font-family: inherit;
-  resize: none; /* Evita que el usuario rompa el diseño estirándolo */
+  resize: none;
   box-sizing: border-box;
   color: #1a1a1a;
   background: transparent;
 }
 
-.comentario-textarea:focus {
+.opg-comment-textarea:focus {
   outline: none;
   border-color: var(--color-dorado-oscuro);
 }
 
 /* Ajuste del placeholder personalizado */
-.comentario-hint {
+.opg-comment-hint {
   position: absolute;
   left: 16px;
   top: 14px;
@@ -174,14 +174,14 @@
   line-height: 1.4;
 }
 
-.comentario-hint small {
+.opg-comment-hint small {
   display: block;
   margin-top: 6px;
   font-size: 12px;
   font-weight: 400;
 }
 
-.contador-caracteres {
+.opg-char-counter {
   position: absolute;
   right: 14px;
   bottom: -20px;
@@ -190,7 +190,7 @@
 }
 
 /* Botón enviar */
-.boton-enviar {
+.opg-submit-btn {
   width: 100%;
   border: 1px solid var(--color-dorado);
   background-color: #ffffff;
@@ -206,13 +206,13 @@
   margin-top: 10px;
 }
 
-.boton-enviar:hover {
+.opg-submit-btn:hover {
   background-color: var(--color-dorado);
   color: #1a1a1a;
 }
 
 /* Footer con botones de acción */
-.acciones-footer {
+.opg-footer-actions {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -221,8 +221,8 @@
   width: 100%;
 }
 
-.boton-regresar,
-.boton-comentario-barbero {
+.opg-btn-back,
+.opg-btn-comment-barbero {
   background: transparent;
   border: none;
   font-size: 15px;
@@ -234,26 +234,26 @@
   white-space: nowrap;
 }
 
-.boton-regresar:hover,
-.boton-comentario-barbero:hover {
+.opg-btn-back:hover,
+.opg-btn-comment-barbero:hover {
   color: var(--color-dorado-oscuro);
   border-color: var(--color-dorado-oscuro);
 }
 
 /* Responsive optimizado para pantallas con barra lateral activa */
 @media (max-width: 850px) {
-  .tarjeta-opinion {
+  .opg-card {
     grid-template-columns: 1fr;
     gap: 24px;
     padding: 32px 24px;
   }
 
-  .logo-barberia {
+  .opg-barberia-logo {
     width: 140px;
     height: 140px;
   }
-  
-  .acciones-footer {
+
+  .opg-footer-actions {
     flex-direction: column;
     gap: 16px;
   }

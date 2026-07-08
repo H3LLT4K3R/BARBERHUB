@@ -36,6 +36,7 @@
   flex-direction: column;
   gap: 16px;
   flex: 1;
+  width: 100%;
 }
 
 .explorar-title {
@@ -47,8 +48,36 @@
 
 .explorar-filters {
   display: flex;
-  gap: 12px;
+  gap: 16px;
+  margin-top: 12px;
   flex-wrap: wrap;
+}
+
+.explorar-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.explorar-filter-label {
+  font-size: 11px;
+  color: #E9C46A;
+  font-weight: bold;
+}
+
+.explorar-input-fecha,
+.explorar-select-hora {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 20px;
+  padding: 6px 14px;
+  color: #FFFFFF;
+  font-size: 14px;
+  outline: none;
+}
+
+.explorar-select-hora {
+  cursor: pointer;
 }
 
 .explorar-filter-btn {
@@ -179,13 +208,6 @@
 
 .explorar-opiniones {
   margin-left: 2px;
-}
-
-.sidebar-search-input {
-  border: none;
-  background: transparent;
-  outline: none;
-  width: 100%;
 }
 
 .explorar-barberia-address {
