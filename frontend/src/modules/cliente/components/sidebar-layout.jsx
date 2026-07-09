@@ -56,11 +56,10 @@ export default function SidebarLayout({ children }) {
       {!esAgendaLocal && (
         <aside className={`sidebar ${open ? "open" : ""}`}>
           <div className="sidebar-header">
-            <img 
-              src="/logo.png" 
-              alt="BarberHub" 
-              className="sidebar-logo-img" 
-              style={{ borderRadius: "50%", width: "40px", height: "40px", objectFit: "cover" }} 
+            <img
+              src="/logo.png"
+              alt="BarberHub"
+              className="sidebar-logo-img"
             />
             <span className="sidebar-brand">BARBER HUB</span>
           </div>
@@ -96,20 +95,20 @@ export default function SidebarLayout({ children }) {
       )}
 
       {/* 3. ENVOLTORIO PRINCIPAL */}
-      <div className="sidebar-main-wrapper" style={esAgendaLocal ? { marginLeft: 0, width: '100%' } : {}}>
+      <div className="sidebar-main-wrapper">
         
         {/* CABECERA GLOBAL */}
-        <header className="sidebar-global-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <header className="sidebar-global-header">
           
           {/* Si es agenda local pintamos la marca a la izquierda, si no dejamos el espacio vacío */}
           {esAgendaLocal ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '10px' }}>
-              <img 
-                src="/logo.png" 
-                alt="BarberHub" 
-                style={{ borderRadius: "50%", width: "35px", height: "35px", objectFit: "cover" }} 
+            <div className="sidebar-agenda-brand">
+              <img
+                src="/logo.png"
+                alt="BarberHub"
+                className="sidebar-agenda-logo"
               />
-              <span style={{ color: '#FFF', fontWeight: 'bold', fontSize: '18px', letterSpacing: '1px' }}>
+              <span className="sidebar-agenda-text">
                 BARBER HUB
               </span>
             </div>
@@ -143,7 +142,7 @@ export default function SidebarLayout({ children }) {
         </header>
 
         {/* CONTENIDO INTERNO DE LAS PÁGINAS */}
-        <main className="sidebar-content" style={esAgendaLocal ? { padding: '40px 24px' } : {}}>
+        <main className="sidebar-content">
           {children}
         </main>
       </div>
