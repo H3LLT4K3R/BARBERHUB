@@ -25,12 +25,14 @@ import OpinionBarberiaGeneral from "./modules/cliente/pages/opinion-barberia-gen
 import ComentarioEnviado from "./modules/cliente/pages/comentario-enviado";
 import PagoAnticipo from "./modules/cliente/pages/pago-anticipo";
 import MisCitas from "./modules/cliente/pages/mis-citas";
-import BarberiaPerfilComponent from "./modules/cliente/pages/barberia-perfil";
+// Import correcto para la vista de la barbería desde el lado del cliente
+import BarberiaPerfilComponent from "./modules/cliente/pages/barberia-perfil"; 
 
 // Componente Layout del Cliente
 import SidebarLayout from "./modules/cliente/components/sidebar-layout";
 
 // --- VISTAS DE LAS BARBERÍAS ---
+// Import correcto para el perfil desde el lado del dueño
 import PerfilBarberia from "./modules/cliente/pages/owner/perfilBarberia";
 import CrearCupon from "./modules/cliente/pages/Barberias/crearCupon";
 
@@ -43,7 +45,6 @@ import OwnerEstadisticas from "./modules/cliente/pages/owner/owner-estadisticas"
 import OwnerSeguridad from "./modules/cliente/pages/owner/owner-seguridad";
 import OwnerControlNegocio from "./modules/cliente/pages/owner/owner-control-negocio";
 
-
 function AuthLayout({ children }) {
   return <SidebarLayout>{children}</SidebarLayout>;
 }
@@ -52,7 +53,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Rutas públicas (sin sidebar) */}
+        {/* ── RUTAS PÚBLICAS (Sin menú lateral) ── */}
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/registro" element={<Registro />} />
@@ -63,9 +64,7 @@ export default function App() {
         <Route path="/restablecer-password" element={<RestablecerPassword />} />
         <Route path="/restablecer-password-exito" element={<RestablecerPasswordExito />} />
 
-        {/* ── RUTAS EXCLUSIVAS DEL OWNER (Dueño) ── */}
-        
-        {/* 👇 Aquí movimos PerfilBarberia y lo envolvimos con OwnerLayout */}
+        {/* ── RUTAS EXCLUSIVAS DEL OWNER (Dueño - Con su propio Layout) ── */}
         <Route 
           path="/perfilBarberia" 
           element={
@@ -74,7 +73,6 @@ export default function App() {
             </OwnerLayout>
           } 
         />
-
         <Route 
           path="/owner-finanzas" 
           element={
@@ -83,7 +81,6 @@ export default function App() {
             </OwnerLayout>
           } 
         />
-        
         <Route 
           path="/owner-inventario" 
           element={
@@ -92,7 +89,6 @@ export default function App() {
             </OwnerLayout>
           } 
         />
-
         <Route 
           path="/owner-agenda" 
           element={
@@ -101,7 +97,6 @@ export default function App() {
             </OwnerLayout>
           } 
         />
-
         <Route 
           path="/owner-estadisticas" 
           element={
@@ -110,7 +105,6 @@ export default function App() {
             </OwnerLayout>
           } 
         />
-
         <Route 
           path="/owner-seguridad" 
           element={
@@ -119,7 +113,6 @@ export default function App() {
             </OwnerLayout>
           } 
         />
-
         <Route 
           path="/owner-control" 
           element={
@@ -129,10 +122,11 @@ export default function App() {
           } 
         />
 
-        {/* ── RUTAS DEL CLIENTE (Con menú lateral negro) ── */}
+        {/* ── RUTAS DEL CLIENTE (Con menú lateral negro de usuario) ── */}
         <Route path="/explorar" element={<AuthLayout><Explorar /></AuthLayout>} />
-        <Route path="/barberia/:id/servicios" element={<AuthLayout><MasServicios /></AuthLayout>} />
+        {/* Aquí está el componente correcto para la vista del cliente 👇 */}
         <Route path="/barberia-perfil/:id" element={<AuthLayout><BarberiaPerfilComponent /></AuthLayout>} />
+        <Route path="/barberia/:id/servicios" element={<AuthLayout><MasServicios /></AuthLayout>} />
         <Route path="/agenda-local" element={<AuthLayout><AgendaLocal /></AuthLayout>} />
         <Route path="/datos-reserva" element={<AuthLayout><DatosReserva /></AuthLayout>} />
         <Route path="/cita-confirmada" element={<AuthLayout><CitaConfirmada /></AuthLayout>} />

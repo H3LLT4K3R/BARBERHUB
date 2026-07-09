@@ -43,9 +43,10 @@
 }
 
 .sidebar-logo-img {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .sidebar-brand {
@@ -175,6 +176,12 @@
   z-index: 1; /* MENOR: Para que el sidebar esté por encima */
 }
 
+/* Modo "agenda local": sin sidebar, el contenido ocupa todo el ancho */
+.sin-sidebar-layout .sidebar-main-wrapper {
+  margin-left: 0;
+  width: 100%;
+}
+
 .sidebar-global-header {
   background: var(--black);
   padding: 0 40px;
@@ -188,9 +195,90 @@
 }
 
 .sidebar-header-left-space {
-  flex: 1; /* Mueve la caja de búsqueda totalmente a la derecha */
+  flex: 1; /* Mueve el botón de perfil totalmente a la derecha */
 }
 
+/* ── MARCA EN AGENDA LOCAL (logo + texto dentro del header) ── */
+.sidebar-agenda-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-left: 10px;
+}
+
+.sidebar-agenda-logo {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.sidebar-agenda-text {
+  color: var(--white);
+  font-weight: bold;
+  font-size: 18px;
+  letter-spacing: 1px;
+}
+
+/* ── BOTÓN DE PERFIL (reemplaza al buscador) ── */
+.sidebar-header-profile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bh-gold);
+  color: var(--black);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-header-profile:hover {
+  opacity: 0.85;
+  transform: scale(1.03);
+}
+
+.sidebar-content {
+  flex: 1;
+  background: var(--white);
+}
+
+/* Modo "agenda local": el contenido usa otro padding */
+.sin-sidebar-layout .sidebar-content {
+  padding: 40px 24px;
+}
+
+/* ── TOGGLE MÓVIL ── */
+.sidebar-toggle {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 300;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: var(--white);
+  color: var(--black);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 150;
+}
+
+/* ── BUSCADOR (solo se muestra en /explorar) ── */
 .sidebar-header-search {
   display: flex;
   align-items: center;
@@ -222,38 +310,6 @@
   color: #9ca3af;
 }
 
-.sidebar-content {
-  flex: 1;
-  background: var(--white);
-}
-
-/* ── TOGGLE MÓVIL ── */
-.sidebar-toggle {
-  display: none;
-  position: fixed;
-  top: 12px;
-  left: 12px;
-  z-index: 300;
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background: var(--white);
-  color: var(--black);
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-.sidebar-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 150;
-}
-
 /* ── RESPONSIVE ── */
 @media (max-width: 768px) {
   .sidebar {
@@ -278,9 +334,5 @@
 
   .sidebar-global-header {
     padding: 0 16px 0 64px;
-  }
-
-  .sidebar-header-search {
-    width: 180px;
   }
 }

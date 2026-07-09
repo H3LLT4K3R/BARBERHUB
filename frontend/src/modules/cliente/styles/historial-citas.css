@@ -1,6 +1,5 @@
 :root {
   /* Paleta de colores */
-  --bg-sidebar: #121212;              
   --bg-main-light: #ffffff; 
   --bg-card-white: #ffffff;            
   --gold-primary: #e5be6b;             
@@ -15,102 +14,26 @@
   --status-danger: #ea5455;
 }
 
-/* Panel general */
-.panel-historial {
+/* Contenedor principal de la página */
+.contenido-historial {
   display: flex;
-  min-height: 100vh;
+  flex-direction: column;
   background-color: var(--bg-main-light);
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   color: var(--text-main);
+  padding: 40px;
 }
 
-/* Sidebar izquierdo  */
-.sidebar-historial {
-  width: 250px;
-  background-color: var(--bg-sidebar);
-  display: flex;
-  flex-direction: column;
-  padding: 25px 0;
-  box-sizing: border-box;
-}
-
-.marca-historial {
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  margin-bottom: 40px;
-}
-
-.logo-historial {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  margin-right: 12px;
-}
-
-.marca-historial h2 {
-  font-size: 1.2rem;
-  letter-spacing: 1px;
-  color: #ffffff;
-  margin: 0;
-}
-
-.menu-historial {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 0 15px;
-}
-
-.btn-menu-historial {
-  background: none;
-  border: none;
-  color: #aaaaaa;
-  text-align: left;
-  padding: 14px 22px;
-  font-size: 1.05rem;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.25s ease;
-  font-weight: 500;
-}
-
-.btn-menu-historial:hover {
-  color: #ffffff;
-  background-color: #222222;
-}
-
-.btn-menu-historial.activo {
-  background-color: var(--gold-primary);
-  color: #000000;
-  font-weight: 700;
-}
-
-/* Contenedor principal */
-.contenido-historial {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--bg-main-light);
-}
-
-.encabezado-historial {
-  background-color: #000000; 
-  padding: 25px 40px;
-}
-
-.encabezado-historial h1 {
+.titulo-pagina-historial {
   font-size: 1.6rem;
-  font-weight: 600;
-  margin: 0;
-  color: #ffffff;
+  font-weight: 700;
+  margin: 0 0 30px 0;
+  color: var(--text-main);
 }
 
 .layout-historial {
   flex: 1;
   display: flex;
-  background-color: var(--bg-main-light);
-  padding: 40px;
   gap: 35px;
 }
 

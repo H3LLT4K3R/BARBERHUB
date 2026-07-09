@@ -1,7 +1,7 @@
 /* ==========================================================================
    Contenedor Principal de la Página de Confirmación
    ========================================================================== */
-.pagina-cita {
+.cc-page {
   min-height: 100vh;
   background: #f5f5f5;
   font-family: 'Inter', system-ui, sans-serif;
@@ -12,7 +12,7 @@
 }
 
 /* Área que envuelve la tarjeta al lado de la barra lateral */
-.contenido-cita {
+.cc-body {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -23,19 +23,18 @@
 }
 
 /* ==========================================================================
-   Tarjeta Blanca de Confirmación (Arregla el colapso horizontal)
+   Tarjeta Blanca de Confirmación
    ========================================================================== */
-.tarjeta-cita {
+.cc-card {
   background: #ffffff;
-  border: 1.5px solid #ddd0ba; /* Borde dorado claro acorde a tu paleta */
+  border: 1.5px solid #ddd0ba;
   border-radius: 24px;
   padding: 40px 36px;
   max-width: 550px;
   width: 100%;
   box-sizing: border-box;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-  
-  /* Fuerza a que todo se alinee verticalmente en el centro */
+
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -43,8 +42,8 @@
 }
 
 /* Icono circular de check verde */
-.icono-confirmacion {
-  background-color: #22c55e; /* Verde de éxito coincidiendo con tu dot de abierto */
+.cc-icon {
+  background-color: #22c55e;
   width: 64px;
   height: 64px;
   border-radius: 50%;
@@ -53,24 +52,27 @@
   justify-content: center;
   margin-bottom: 24px;
   box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+  flex-shrink: 0;
 }
 
-.titulo-cita {
-  font-family: Georgia, Times New Roman, serif; /* Manteniendo tus fuentes elegantes */
+.cc-title {
+  font-family: Georgia, Times New Roman, serif;
   font-size: 28px;
   font-weight: 700;
   color: #111111;
   margin: 0 0 16px 0;
+  width: 100%;
 }
 
-.mensaje-cita {
+.cc-message {
   font-size: 15px;
   color: #555555;
   line-height: 1.6;
   margin: 0 0 28px 0;
+  width: 100%;
 }
 
-.mensaje-cita strong {
+.cc-message strong {
   color: #111111;
   font-weight: 600;
 }
@@ -78,18 +80,18 @@
 /* ==========================================================================
    Resumen de la Cita (Caja interna)
    ========================================================================== */
-.resumen-cita {
-  background: #fffdf9; /* Fondo crema sutil */
+.cc-summary {
+  background: #fffdf9;
   border: 1px solid #f0ebe3;
   border-radius: 16px;
   padding: 20px;
   width: 100%;
   box-sizing: border-box;
   margin-bottom: 32px;
-  text-align: left; /* Alineación de lectura normal */
+  text-align: left;
 }
 
-.resumen-encabezado {
+.cc-summary-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -98,34 +100,33 @@
   padding-bottom: 12px;
 }
 
-.resumen-hora {
+.cc-summary-time {
   font-weight: 700;
   color: #111111;
   font-size: 15px;
 }
 
-.resumen-precio {
+.cc-summary-price {
   font-weight: 700;
-  color: #c9a227; /* Tu dorado corporativo */
+  color: #c9a227;
   font-size: 16px;
 }
 
 /* Detalle inferior del resumen (Logo + Nombres) */
-.resumen-detalle {
+.cc-summary-detail {
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
-/* CORRECCIÓN CRÍTICA: Limita el tamaño de la imagen para que no salga gigante ni rota */
-.resumen-logo-btn {
+.cc-summary-logo-btn {
   background: none;
   border: none;
   padding: 0;
   flex-shrink: 0;
 }
 
-.resumen-logo {
+.cc-summary-logo {
   width: 52px;
   height: 52px;
   border-radius: 12px;
@@ -134,14 +135,14 @@
   border: 1px solid #f0ebe3;
 }
 
-.nombre-servicio {
+.cc-service-name {
   font-size: 15px;
   font-weight: 600;
   color: #111111;
   margin-bottom: 2px;
 }
 
-.nombre-barberia {
+.cc-barberia-name {
   font-size: 13px;
   color: #777777;
 }
@@ -149,13 +150,13 @@
 /* ==========================================================================
    Botones de Acción Inferiores
    ========================================================================== */
-.acciones-cita {
+.cc-actions {
   display: flex;
   gap: 14px;
   width: 100%;
 }
 
-.acciones-cita button {
+.cc-actions button {
   flex: 1;
   padding: 12px 22px;
   border-radius: 12px;
@@ -167,39 +168,37 @@
   transition: background 0.2s, transform 0.1s;
 }
 
-/* Botón "Ver mis citas" */
-.boton-outline {
+.cc-btn-outline {
   background: transparent;
   border: 1.5px solid #c9a227;
   color: #c9a227;
 }
 
-.boton-outline:hover {
+.cc-btn-outline:hover {
   background: rgba(201, 162, 39, 0.08);
 }
 
-/* Botón "Ir al Inicio" */
-.boton-principal {
+.cc-btn-primary {
   background: #c9a227;
   border: none;
   color: #ffffff;
 }
 
-.boton-principal:hover {
+.cc-btn-primary:hover {
   background: #b8911e;
 }
 
-.boton-principal:active, .boton-outline:active {
+.cc-btn-primary:active, .cc-btn-outline:active {
   transform: scale(0.98);
 }
 
 /* Adaptación responsiva para móviles */
 @media (max-width: 480px) {
-  .acciones-cita {
+  .cc-actions {
     flex-direction: column;
     gap: 10px;
   }
-  .acciones-cita button {
+  .cc-actions button {
     width: 100%;
   }
 }
