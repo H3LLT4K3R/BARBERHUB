@@ -2,13 +2,12 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { CalendarDays, Map, Menu, X, LogOut, History, Heart, Bell, Settings, Search } from "lucide-react";
 import { clearSession } from "../../../utils/api";
-import { Scissors, TicketPercent } from "lucide-react";
 import "../styles/sidebar-layout.css"; // Eliminamos el import de logo.png de aquí arriba
 
 const NAV_ITEMS = [
   { href: "/explorar", label: "Explorar", icon: Map },
   { href: "/mis-citas", label: "Mis citas", icon: CalendarDays },
-  { href: "/historial", label: "Historia", icon: History },
+  { href: "/historial-citas", label: "Historial", icon: History }, // <--- Corregido
   { href: "/favoritos", label: "Favoritos", icon: Heart },
   { href: "/notificaciones", label: "Notificaciones", icon: Bell },
   { href: "/ajustes", label: "Ajustes", icon: Settings },

@@ -60,7 +60,7 @@ export default function BarberiaPerfil() {
 
   // Acción: navegar a agenda de citas
   const agendarCita = () => {
-    navigate("/agenda-local", { state: { barberiaId: barberia.id } });
+    navigate("/login", { state: { barberiaId: barberia.id } });
   };
 
   // Acción: ver más servicios

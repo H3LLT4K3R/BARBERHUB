@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-// --- IMPORTS CORREGIDOS ---
+// --- IMPORTS DE CLIENTE ---
 import Landing from "./modules/cliente/pages/landing";
 import Login from "./modules/cliente/pages/login";
 import Registro from "./modules/cliente/pages/registro";
@@ -24,18 +24,24 @@ import Ajustes from "./modules/cliente/pages/ajustes";
 import OpinionBarberiaGeneral from "./modules/cliente/pages/opinion-barberia-general";
 import ComentarioEnviado from "./modules/cliente/pages/comentario-enviado";
 import PagoAnticipo from "./modules/cliente/pages/pago-anticipo";
-import MisCitas from "./modules/cliente/pages/mis-citas"; // <-- Añadido porque faltaba
+import MisCitas from "./modules/cliente/pages/mis-citas";
 import BarberiaPerfilComponent from "./modules/cliente/pages/barberia-perfil";
-// Componentes
+
+// Componente Layout del Cliente
 import SidebarLayout from "./modules/cliente/components/sidebar-layout";
 
-// Vistas de Owner
+// --- VISTAS DE LAS BARBERÍAS ---
+import PerfilBarberia from "./modules/cliente/pages/owner/perfilBarberia";
+import CrearCupon from "./modules/cliente/pages/Barberias/crearCupon";
+
+// --- IMPORTS DE OWNER ---
+import OwnerLayout from "./modules/cliente/pages/owner/OwnerLayout";
 import OwnerFinanzas from "./modules/cliente/pages/owner/owner-finanzas";
 import OwnerInventario from "./modules/cliente/pages/owner/owner-inventario";
-
-//vistas de las barberias
-import PerfilBarberia from "./modules/cliente/pages/Barberias/perfilBarberia";
-import CrearCupon from "./modules/cliente/pages/Barberias/crearCupon";
+import OwnerAgenda from "./modules/cliente/pages/owner/owner-agenda";
+import OwnerEstadisticas from "./modules/cliente/pages/owner/owner-estadisticas";
+import OwnerSeguridad from "./modules/cliente/pages/owner/owner-seguridad";
+import OwnerControlNegocio from "./modules/cliente/pages/owner/owner-control-negocio";
 
 
 function AuthLayout({ children }) {
@@ -52,182 +58,95 @@ export default function App() {
         <Route path="/registro" element={<Registro />} />
         <Route path="/verificar-correo" element={<VerificarCorreo />} />
         <Route path="/recuperar-password" element={<RecuperarPassword />} />
-        <Route path="/perfilBarberia" element={<PerfilBarberia />} />
         <Route path="/crearCupon" element={<CrearCupon />} />
-        <Route
-          path="/recuperar-password-enviado"
-          element={<RecuperarPasswordEnviado />}
-        />
-        <Route
-          path="/restablecer-password"
-          element={<RestablecerPassword />}
-        />
-        <Route
-          path="/restablecer-password-exito"
-          element={<RestablecerPasswordExito />}
+        <Route path="/recuperar-password-enviado" element={<RecuperarPasswordEnviado />} />
+        <Route path="/restablecer-password" element={<RestablecerPassword />} />
+        <Route path="/restablecer-password-exito" element={<RestablecerPasswordExito />} />
+
+        {/* ── RUTAS EXCLUSIVAS DEL OWNER (Dueño) ── */}
+        
+        {/* 👇 Aquí movimos PerfilBarberia y lo envolvimos con OwnerLayout */}
+        <Route 
+          path="/perfilBarberia" 
+          element={
+            <OwnerLayout>
+              <PerfilBarberia />
+            </OwnerLayout>
+          } 
         />
 
-        {/* Rutas con sidebar */}
-        <Route
-          path="/explorar"
+        <Route 
+          path="/owner-finanzas" 
           element={
-            <AuthLayout>
-              <Explorar />
-            </AuthLayout>
-          }
-        />
-        <Route
-          path="/barberia/:id/servicios"
-          element={
-            <AuthLayout>
-              <MasServicios />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/barberia-perfil/:id"
-          element={
-            <AuthLayout>
-              <BarberiaPerfilComponent />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/agenda-local"
-          element={
-            <AuthLayout>
-              <AgendaLocal />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/datos-reserva"
-          element={
-            <AuthLayout>
-              <DatosReserva />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/cita-confirmada"
-          element={
-            <AuthLayout>
-              <CitaConfirmada />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/mis-citas"
-          element={
-            <AuthLayout>
-              <MisCitas />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/cita/:id"
-          element={
-            <AuthLayout>
-              <DetalleCita />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/opinion-barberia"
-          element={
-            <AuthLayout>
-              <OpinionBarberia />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/opinion-barbero"
-          element={
-            <AuthLayout>
-              <OpinionBarbero />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/historial-citas"
-          element={
-            <AuthLayout>
-              <HistorialCitas />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/favoritos"
-          element={
-            <AuthLayout>
-              <Favoritos />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/notificaciones"
-          element={
-            <AuthLayout>
-              <Notificaciones />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/ajustes"
-          element={
-            <AuthLayout>
-              <Ajustes />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/opinion-barberia-general"
-          element={
-            <AuthLayout>
-              <OpinionBarberiaGeneral />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/comentario-enviado"
-          element={
-            <AuthLayout>
-              <ComentarioEnviado />
-            </AuthLayout>
-          }
-        />
-
-        <Route
-          path="/owner-finanzas"
-          element={
-            <AuthLayout>
+            <OwnerLayout>
               <OwnerFinanzas />
-            </AuthLayout>
-          }
+            </OwnerLayout>
+          } 
+        />
+        
+        <Route 
+          path="/owner-inventario" 
+          element={
+            <OwnerLayout>
+              <OwnerInventario />
+            </OwnerLayout>
+          } 
         />
 
-        <Route
-          path="/pago-anticipo"
+        <Route 
+          path="/owner-agenda" 
           element={
-            <AuthLayout>
-              <PagoAnticipo />
-            </AuthLayout>
-          }
+            <OwnerLayout>
+              <OwnerAgenda />
+            </OwnerLayout>
+          } 
         />
+
+        <Route 
+          path="/owner-estadisticas" 
+          element={
+            <OwnerLayout>
+              <OwnerEstadisticas />
+            </OwnerLayout>
+          } 
+        />
+
+        <Route 
+          path="/owner-seguridad" 
+          element={
+            <OwnerLayout>
+              <OwnerSeguridad />
+            </OwnerLayout>
+          } 
+        />
+
+        <Route 
+          path="/owner-control" 
+          element={
+            <OwnerLayout>
+              <OwnerControlNegocio />
+            </OwnerLayout>
+          } 
+        />
+
+        {/* ── RUTAS DEL CLIENTE (Con menú lateral negro) ── */}
+        <Route path="/explorar" element={<AuthLayout><Explorar /></AuthLayout>} />
+        <Route path="/barberia/:id/servicios" element={<AuthLayout><MasServicios /></AuthLayout>} />
+        <Route path="/barberia-perfil/:id" element={<AuthLayout><BarberiaPerfilComponent /></AuthLayout>} />
+        <Route path="/agenda-local" element={<AuthLayout><AgendaLocal /></AuthLayout>} />
+        <Route path="/datos-reserva" element={<AuthLayout><DatosReserva /></AuthLayout>} />
+        <Route path="/cita-confirmada" element={<AuthLayout><CitaConfirmada /></AuthLayout>} />
+        <Route path="/mis-citas" element={<AuthLayout><MisCitas /></AuthLayout>} />
+        <Route path="/cita/:id" element={<AuthLayout><DetalleCita /></AuthLayout>} />
+        <Route path="/opinion-barberia" element={<AuthLayout><OpinionBarberia /></AuthLayout>} />
+        <Route path="/opinion-barbero" element={<AuthLayout><OpinionBarbero /></AuthLayout>} />
+        <Route path="/historial-citas" element={<AuthLayout><HistorialCitas /></AuthLayout>} />
+        <Route path="/favoritos" element={<AuthLayout><Favoritos /></AuthLayout>} />
+        <Route path="/notificaciones" element={<AuthLayout><Notificaciones /></AuthLayout>} />
+        <Route path="/ajustes" element={<AuthLayout><Ajustes /></AuthLayout>} />
+        <Route path="/opinion-barberia-general" element={<AuthLayout><OpinionBarberiaGeneral /></AuthLayout>} />
+        <Route path="/comentario-enviado" element={<AuthLayout><ComentarioEnviado /></AuthLayout>} />
+        <Route path="/pago-anticipo" element={<AuthLayout><PagoAnticipo /></AuthLayout>} />
       </Routes>
     </BrowserRouter>
   );
