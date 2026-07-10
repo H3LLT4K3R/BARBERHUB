@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { apiFetch, saveSession } from "../../../utils/api.js";
+import { saveSession } from "../../../utils/api.js"; // Quitamos apiFetch temporalmente
+import { authenticateUser } from "../data/mockAuth.js"; // <-- NUESTRO MOCK
 import BrandLogo from "../components/brand-logo";
 import "../styles/login.css";
 
@@ -26,24 +27,31 @@ export default function Login() {
     setError("");
   };
 
-  // Manejo de envío de formulario
+  // Manejo de envío de formulario (MODIFICADO PARA USAR EL MOCK)
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    
     try {
-      const data = await apiFetch("/auth/login", {
-        method: "POST",
-        body: JSON.stringify(form),
-      });
-      saveSession({ token: data.token, user: data.user });
-      navigate("/explorar");
-    } catch (err) {
-      if (err.code === "EMAIL_NO_VERIFICADO") {
-        navigate("/verificar-correo", { state: { email: form.email.trim() } });
-        return;
+      // 1. Llamamos a nuestra función de prueba en lugar de apiFetch
+      const response = authenticateUser(form.email, form.password);
+
+      // Simulamos un pequeño retraso de red para que se vea real (opcional)
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      if (response.success) {
+        // 2. Usamos tu misma función saveSession con los datos falsos
+        saveSession({ token: response.data.token, user: response.data.user });
+        
+        // 3. Navegamos a la ruta específica según el rol
+        navigate(response.redirect);
+      } else {
+        // Mostramos el error si escriben mal la clave
+        setError(response.error);
       }
-      setError(err.message);
+    } catch (err) {
+      setError("Ocurrió un error inesperado al iniciar sesión.");
     } finally {
       setLoading(false);
     }
