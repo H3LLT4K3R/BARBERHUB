@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/opinion-barberia.css";
 
 const opinionesBarberia = [
@@ -39,6 +40,14 @@ const opinionesBarberos = [
   }, 
 ];
 
+/* Opciones de orden disponibles para el menú desplegable */
+const OPCIONES_ORDEN = [
+  { valor: "recientes", etiqueta: "Más recientes" },
+  { valor: "antiguos", etiqueta: "Más antiguos" },
+  { valor: "mejor", etiqueta: "Mejor calificados" },
+  { valor: "peor", etiqueta: "Peor calificados" },
+];
+
 function Estrellas({ rating, size = "normal" }) {
   return (
     <span className={`estrellas ${size}`}>
@@ -52,8 +61,43 @@ function Estrellas({ rating, size = "normal" }) {
 }
 
 export default function OpinionBarberia() {
+  const navigate = useNavigate();
   const [tabActiva, setTabActiva] = useState("barberia");
   const [filtroEstrellas, setFiltroEstrellas] = useState("todas");
+  const [orden, setOrden] = useState("recientes");
+  const [menuOrdenAbierto, setMenuOrdenAbierto] = useState(false);
+  const menuOrdenRef = useRef(null);
+
+  // Cierra el menú de orden si el usuario hace clic fuera de él
+  useEffect(() => {
+    function handleClickFuera(e) {
+      if (menuOrdenRef.current && !menuOrdenRef.current.contains(e.target)) {
+        setMenuOrdenAbierto(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickFuera);
+    return () => document.removeEventListener("mousedown", handleClickFuera);
+  }, []);
+
+  const etiquetaOrdenActual =
+    OPCIONES_ORDEN.find((op) => op.valor === orden)?.etiqueta ?? "Más recientes";
+
+  const listaBase = tabActiva === "barberia" ? opinionesBarberia : opinionesBarberos;
+
+  // 1. Filtra por estrellas seleccionadas
+  const opinionesFiltradas =
+    filtroEstrellas === "todas"
+      ? listaBase
+      : listaBase.filter((op) => op.rating === filtroEstrellas);
+
+  // 2. Ordena según la opción activa (sin mutar el arreglo original)
+  const opinionesOrdenadas = [...opinionesFiltradas].sort((a, b) => {
+    if (orden === "antiguos") return listaBase.indexOf(b) - listaBase.indexOf(a);
+    if (orden === "mejor") return b.rating - a.rating;
+    if (orden === "peor") return a.rating - b.rating;
+    // "recientes": mantiene el orden original del arreglo
+    return listaBase.indexOf(a) - listaBase.indexOf(b);
+  });
 
   return (
     <div className="pagina-opiniones">
@@ -87,13 +131,19 @@ export default function OpinionBarberia() {
             <div className="pestañas">
               <button
                 className={`pestaña ${tabActiva === "barberia" ? "activo" : "inactivo"}`}
-                onClick={() => setTabActiva("barberia")}
+                onClick={() => {
+                  setTabActiva("barberia");
+                  setFiltroEstrellas("todas");
+                }}
               >
                 Comentarios Barbería
               </button>
               <button
                 className={`pestaña ${tabActiva === "barberos" ? "activo" : "inactivo"}`}
-                onClick={() => setTabActiva("barberos")}
+                onClick={() => {
+                  setTabActiva("barberos");
+                  setFiltroEstrellas("todas");
+                }}
               >
                 Comentarios Barberos
               </button>
@@ -122,14 +172,40 @@ export default function OpinionBarberia() {
               ))}
             </div>
 
-            <button className="boton-ordenar">
-              Más recientes <span className="icono-chevron">&gt;</span>
-            </button>
+            {/* Botón de orden con menú desplegable */}
+            <div className="contenedor-orden" ref={menuOrdenRef}>
+              <button
+                className="boton-ordenar"
+                onClick={() => setMenuOrdenAbierto((prev) => !prev)}
+              >
+                {etiquetaOrdenActual}{" "}
+                <span className={`icono-chevron ${menuOrdenAbierto ? "abierto" : ""}`}>
+                </span>
+              </button>
+
+              {menuOrdenAbierto && (
+                <ul className="menu-orden">
+                  {OPCIONES_ORDEN.map((op) => (
+                    <li key={op.valor}>
+                      <button
+                        className={`opcion-orden ${orden === op.valor ? "activo" : ""}`}
+                        onClick={() => {
+                          setOrden(op.valor);
+                          setMenuOrdenAbierto(false);
+                        }}
+                      >
+                        {op.etiqueta}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
 
           {/* Lista de opiniones limpias */}
           <div className="lista-opiniones">
-            {(tabActiva === "barberia" ? opinionesBarberia : opinionesBarberos).map((op) => (
+            {opinionesOrdenadas.map((op) => (
               <div key={op.id} className="tarjeta-opinion">
                 <img src={op.avatar} alt={op.nombre} className="avatar-cliente" />
                 <div className="cuerpo-opinion">
@@ -142,11 +218,21 @@ export default function OpinionBarberia() {
                 </div>
               </div>
             ))}
+            {opinionesOrdenadas.length === 0 && (
+              <p style={{ padding: "24px 16px", color: "#718096" }}>
+                No hay comentarios con esa calificación.
+              </p>
+            )}
           </div>
 
           {/* Botón regresar abajo a la derecha */}
           <div className="acciones">
-            <button className="boton-regresar">Regresar</button>
+            <button
+              className="boton-regresar"
+              onClick={() => navigate("/barberia-perfil/urban-cuts")}
+            >
+              Regresar
+            </button>
           </div>
         </div>
       </div>

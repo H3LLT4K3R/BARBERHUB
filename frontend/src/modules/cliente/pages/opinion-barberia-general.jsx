@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/opinion-barberia-general.css";
 
 /* Componente principal: Opinión Barbería General*/
 export default function OpinionBarberiaGeneral() {
+  const navigate = useNavigate();
   const [rating, setRating] = useState(5); // Estado para la calificación (estrellas)
   const [comentario, setComentario] = useState(""); // Estado para el texto del comentario
   const maxCaracteres = 1000; // Límite de caracteres del comentario
@@ -83,8 +85,13 @@ export default function OpinionBarberiaGeneral() {
 
         {/* Botones de acción en el pie */}
         <div className="opg-footer-actions">
-          <button className="opg-btn-back">Regresar</button>
-          <button className="opg-btn-comment-barbero">
+          <button className="opg-btn-back" onClick={() => navigate("/mis-citas")}>
+            Regresar
+          </button>
+          <button
+            className="opg-btn-comment-barbero"
+            onClick={() => navigate("/opinion-barbero")}
+          >
             Hacer comentario general al barbero
           </button>
         </div>
