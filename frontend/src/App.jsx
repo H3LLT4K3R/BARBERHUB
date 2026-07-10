@@ -75,12 +75,121 @@ export default function App() {
 
         {/* RUTA CORREGIDA: Ahora usa el prefijo /owner/ para evitar conflictos */}
         <Route
-          path="/owner/barberia/:id"
+          path="/barberia/:id"
+          element={<BarberiaPerfil />}
+        />
+
+        <Route
+          path="/barberia/:id/servicios"
+          element={<MasServicios />}
+        />
+
+        <Route
+          path="/agenda-local"
           element={
             <AuthLayout>
-              <OwnerInventario />
+              <AgendaLocal />
             </AuthLayout>
           }
+        />
+
+        <Route
+          path="/datos-reserva"
+          element={<DatosReserva />}
+        />
+
+        <Route
+          path="/cita-confirmada"
+          element={  <CitaConfirmada />
+          }
+        />
+
+        <Route
+          path="/mis-citas"
+          element={
+            <AuthLayout>
+              <MisCitas />
+            </AuthLayout>
+          }
+        />
+
+        <Route
+          path="/cita/:id"
+          element={
+            <AuthLayout>
+              <DetalleCita />
+            </AuthLayout>
+          }
+        />
+
+        <Route
+          path="/opinion-barberia"
+          element={ <OpinionBarberia />  }
+        />
+
+        <Route
+          path="/opinion-barbero"
+          element={<OpinionBarbero />}
+        />
+
+        <Route
+          path="/historial-citas"
+          element={
+            <AuthLayout>
+              <HistorialCitas />
+            </AuthLayout>
+          }
+        />
+
+        <Route
+          path="/favoritos"
+          element={
+            <AuthLayout>
+              <Favoritos />
+            </AuthLayout>
+          }
+        />
+
+        <Route
+          path="/notificaciones"
+          element={
+            <AuthLayout>
+              <Notificaciones />
+            </AuthLayout>
+          }
+        />
+
+        <Route
+          path="/ajustes"
+          element={
+            <AuthLayout>
+              <Ajustes />
+            </AuthLayout>
+          }
+        />
+
+        <Route
+          path="/opinion-barberia-general"
+          element={<OpinionBarberiaGeneral /> }
+        />
+
+        <Route
+          path="/comentario-enviado"
+          element={ <ComentarioEnviado />  }
+        />
+
+        <Route
+          path="/owner-finanzas"
+          element={
+            <AuthLayout>
+              <OwnerFinanzas />
+            </AuthLayout>
+          }
+        />
+
+        <Route
+          path="/pago-anticipo"
+          element={<PagoAnticipo />}
         />
       </Routes>
     </BrowserRouter>

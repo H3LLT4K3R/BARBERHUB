@@ -8,45 +8,45 @@ export default function OpinionBarberiaGeneral() {
   const maxCaracteres = 1000; // Límite de caracteres del comentario
 
   return (
-    <div className="pagina-opinion">
+    <div className="opg-page">
       {/* Encabezado con logo */}
-      <header className="encabezado">
-        <img src="/logo.png" alt="Barber Hub" className="logo-barberhub" />
+      <header className="opg-header">
+        <img src="/logo.png" alt="Barber Hub" className="opg-logo-barberhub" />
       </header>
 
-      <div className="contenido">
+      <div className="opg-content">
         {/* Título principal */}
-        <h1 className="titulo-principal">
+        <h1 className="opg-title">
           Valora tu experiencia
           <br />
           con nosotros
         </h1>
 
         {/* Tarjeta principal con formulario */}
-        <div className="tarjeta-opinion">
+        <div className="opg-card">
           {/* Contenedor del Logo izquierdo */}
-          <div className="seccion-logo-barberia">
-            <button className="boton-logo-barberia">
+          <div className="opg-logo-section">
+            <button className="opg-logo-button">
               <img
                 src="/logo-ejemplo.png"
                 alt="Logo barbería"
-                className="logo-barberia"
+                className="opg-barberia-logo"
               />
             </button>
           </div>
 
           {/* Formulario de opinión derecho */}
-          <div className="formulario-opinion">
-            <div className="linea-separadora" />
-            <h2 className="nombre-barberia">Urban Cuts</h2>
-            <p className="subtitulo-formulario">Valora el establecimiento</p>
+          <div className="opg-form">
+            <div className="opg-divider" />
+            <h2 className="opg-barberia-name">Urban Cuts</h2>
+            <p className="opg-form-subtitle">Valora el establecimiento</p>
 
             {/* Estrellas de calificación */}
-            <div className="estrellas-calificacion">
+            <div className="opg-stars">
               {Array.from({ length: 5 }, (_, i) => (
                 <span
                   key={i}
-                  className={`estrella ${i < rating ? "llena" : ""}`}
+                  className={`opg-star ${i < rating ? "filled" : ""}`}
                   onClick={() => setRating(i + 1)}
                 >
                   ★
@@ -55,36 +55,36 @@ export default function OpinionBarberiaGeneral() {
             </div>
 
             {/* Área de texto para comentario */}
-            <div className="comentario-wrapper">
+            <div className="opg-comment-wrapper">
               <textarea
-                className="comentario-textarea"
+                className="opg-comment-textarea"
                 maxLength={maxCaracteres}
                 value={comentario}
                 onChange={(e) => setComentario(e.target.value)}
               />
               {comentario === "" && (
-                <span className="comentario-hint">
+                <span className="opg-comment-hint">
                   Escribe tu comentario general aquí...
                   <br />
                   <small>Comparte tu experiencia en el establecimiento, servicio general, ambiente o cualquier aspecto de la barbería.</small>
                 </span>
               )}
-              <span className="contador-caracteres">
+              <span className="opg-char-counter">
                 {comentario.length}/{maxCaracteres}
               </span>
             </div>
 
             {/* Botón para enviar comentario */}
-            <button className="boton-enviar">
+            <button className="opg-submit-btn">
               Enviar comentario a la barbería
             </button>
           </div>
         </div>
 
         {/* Botones de acción en el pie */}
-        <div className="acciones-footer">
-          <button className="boton-regresar">Regresar</button>
-          <button className="boton-comentario-barbero">
+        <div className="opg-footer-actions">
+          <button className="opg-btn-back">Regresar</button>
+          <button className="opg-btn-comment-barbero">
             Hacer comentario general al barbero
           </button>
         </div>

@@ -73,9 +73,7 @@ export default function HistorialCitas() {
 
   return (
     <div className="contenido-historial">
-      <header className="encabezado-historial">
-        <h1>Historial de citas</h1>
-      </header>
+      <h1 className="titulo-pagina-historial">Historial de citas</h1>
 
       <div className="layout-historial">
         <main className="contenido-central-historial">

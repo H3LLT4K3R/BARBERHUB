@@ -38,43 +38,43 @@ export default function CitaConfirmada() {
   const horarioCorto = formatearHorarioCorto(fechaObj, cita.hora);
 
   return (
-    <div className="pagina-cita">
+    <div className="cc-page">
       <PageNavbar />
-      <div className="contenido-cita">
-        <div className="tarjeta-cita">
-          
+      <div className="cc-body">
+        <div className="cc-card">
+
           {/* Icono de confirmación */}
-          <div className="icono-confirmacion" aria-hidden>
+          <div className="cc-icon" aria-hidden>
             <IconCircleCheck size={36} stroke={2} color="#fff" />
           </div>
 
           {/* Título principal */}
-          <h1 className="titulo-cita">Cita confirmada</h1>
+          <h1 className="cc-title">Cita confirmada</h1>
 
           {/* Mensaje de confirmación */}
-          <p className="mensaje-cita">
+          <p className="cc-message">
             Tu cita ha sido confirmada. Llega antes del{" "}
             <strong>{horarioCorto}</strong>. El servicio estará esperándote en{" "}
             <strong>{cita.establecimiento}</strong>.
           </p>
 
           {/* Resumen de la cita */}
-          <div className="resumen-cita">
-            <div className="resumen-encabezado">
-              <span className="resumen-hora">{horarioCorto}</span>
-              <span className="resumen-precio">
+          <div className="cc-summary">
+            <div className="cc-summary-header">
+              <span className="cc-summary-time">{horarioCorto}</span>
+              <span className="cc-summary-price">
                 ${cita.precio} {cita.moneda}
               </span>
             </div>
 
-            <div className="resumen-detalle">
+            <div className="cc-summary-detail">
               <BrandLogo
-                className="resumen-logo-btn"
-                imgClassName="resumen-logo"
+                className="cc-summary-logo-btn"
+                imgClassName="cc-summary-logo"
               />
               <div>
-                <div className="nombre-servicio">{cita.servicio}</div>
-                <div className="nombre-barberia">
+                <div className="cc-service-name">{cita.servicio}</div>
+                <div className="cc-barberia-name">
                   Barbería {cita.establecimiento}
                 </div>
               </div>
@@ -82,17 +82,17 @@ export default function CitaConfirmada() {
           </div>
 
           {/* Botones de acción */}
-          <div className="acciones-cita">
+          <div className="cc-actions">
             <button
               type="button"
-              className="boton-outline"
+              className="cc-btn-outline"
               onClick={() => navigate("/mis-citas", { state: { cita } })}
             >
               Ver mis citas
             </button>
             <button
               type="button"
-              className="boton-principal"
+              className="cc-btn-primary"
               onClick={() => navigate("/")}
             >
               Ir al Inicio
