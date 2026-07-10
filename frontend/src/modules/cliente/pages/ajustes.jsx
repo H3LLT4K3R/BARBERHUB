@@ -35,7 +35,6 @@ export default function Ajustes() {
 
           <button className="boton-cambiar-foto">
             <span>Cambiar foto de perfil</span>
-            <span className="icono-foto">🖼️</span>
           </button>
 
           <div className="grid-estadisticas">
@@ -63,7 +62,6 @@ export default function Ajustes() {
 
             <div className="fila-ajuste">
               <div className="etiqueta-ajuste">
-                <span className="icono-ajuste naranja">🔔</span>
                 <span>Recordatorio de cita</span>
               </div>
               <label className="switch-ajuste">
@@ -74,7 +72,6 @@ export default function Ajustes() {
 
             <div className="fila-ajuste">
               <div className="etiqueta-ajuste">
-                <span className="icono-ajuste azul">✔️</span>
                 <span>Cita confirmada</span>
               </div>
               <label className="switch-ajuste">
@@ -85,7 +82,6 @@ export default function Ajustes() {
 
             <div className="fila-ajuste">
               <div className="etiqueta-ajuste">
-                <span className="icono-ajuste verde">🎟️</span>
                 <span>Nuevos cupones</span>
               </div>
               <label className="switch-ajuste">
@@ -101,7 +97,6 @@ export default function Ajustes() {
 
             <div className="fila-ajuste">
               <div className="etiqueta-ajuste">
-                <span className="icono-ajuste morado">🔒</span>
                 <span>Contraseña</span>
               </div>
               <div className="acciones-password">
@@ -112,7 +107,6 @@ export default function Ajustes() {
 
             <div className="fila-ajuste">
               <div className="etiqueta-ajuste">
-                <span className="icono-ajuste rosa">🛡️</span>
                 <span>Verificación de 2 pasos</span>
               </div>
               <label className="switch-ajuste">
@@ -128,7 +122,6 @@ export default function Ajustes() {
 
             <div className="fila-info">
               <div className="etiqueta-ajuste">
-                <span className="icono-ajuste gris">👤</span>
                 <span>Nombre</span>
               </div>
               <span className="valor-info">Luis Méndez</span>
@@ -136,7 +129,6 @@ export default function Ajustes() {
 
             <div className="fila-info">
               <div className="etiqueta-ajuste">
-                <span className="icono-ajuste gris">✉️</span>
                 <span>Correo</span>
               </div>
               <span className="valor-info">luis.mendez@gmail.com</span>

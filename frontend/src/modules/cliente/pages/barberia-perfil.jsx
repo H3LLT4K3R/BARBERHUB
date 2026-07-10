@@ -1,4 +1,4 @@
-import React from "react"; // Buena práctica incluirlo explícitamente según la configuración
+import React from "react"; 
 import { useNavigate, useParams } from "react-router-dom";
 import {
   IconMapPin,
@@ -66,6 +66,11 @@ export default function BarberiaPerfil() {
   // Acción: ver más servicios
   const verMasServicios = () => {
     navigate(`/barberia/${barberia.id}/servicios`);
+  };
+
+  // Acción: ver más opiniones
+  const verMasOpiniones = () => {
+    navigate("/opinion-barberia");
   };
 
   return (
@@ -170,13 +175,16 @@ export default function BarberiaPerfil() {
               <h2>Opiniones</h2>
             </header>
             <ul className="lista-opiniones">
-              {barberia.opiniones.map((texto, i) => (
+              {barberia.opiniones.slice(0, 3).map((texto, i) => (
                 <li key={i} className="item-opinion">
                   <IconChevronRight size={16} className="chevron-opinion" />
                   <p>{texto}</p>
                 </li>
               ))}
             </ul>
+            <button type="button" className="boton-ver-mas" onClick={verMasOpiniones}>
+              Ver más opiniones
+            </button>
           </section>
         </div>
       </main>
