@@ -1,7 +1,9 @@
-/* Contenedor principal */
+/* ==========================================================================
+   ── CONTENEDOR PRINCIPAL Y FORMULARIO ──
+   ========================================================================== */
 .owner-usuarios-container {
   padding: 32px 24px;
-  max-width: 700px; /* Un poco más estrecho para que el formulario luzca elegante */
+  max-width: 700px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;
@@ -10,22 +12,21 @@
 .owner-usuarios-title {
   font-size: 28px;
   font-weight: 800;
-  color: #111827; /* Negro muy oscuro para alto contraste */
+  color: #111827; 
   margin-bottom: 8px;
 }
 
 .owner-usuarios-description {
-  color: #4b5563; /* Gris oscuro para legibilidad */
+  color: #4b5563; 
   margin-bottom: 32px;
   font-size: 16px;
 }
 
-/* Tarjeta del formulario */
 .owner-usuarios-card {
   background-color: #ffffff;
   padding: 32px;
   border-radius: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Sombra más suave y moderna */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); 
   border: 1px solid #e5e7eb;
 }
 
@@ -35,7 +36,7 @@
   gap: 12px;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #f3f4f6; /* Línea divisoria sutil */
+  border-bottom: 1px solid #f3f4f6; 
 }
 
 .owner-usuarios-card-title {
@@ -44,7 +45,6 @@
   color: #111827;
 }
 
-/* Formulario e Inputs */
 .owner-usuarios-form {
   display: flex;
   flex-direction: column;
@@ -69,20 +69,19 @@
   box-sizing: border-box;
   font-size: 15px;
   color: #111827;
-  background-color: #f9fafb; /* Fondo gris súper clarito por defecto */
+  background-color: #f9fafb; 
 }
 
 .owner-usuarios-input::placeholder {
-  color: #9ca3af; /* Placeholder visible pero sutil */
+  color: #9ca3af; 
 }
 
 .owner-usuarios-input:focus {
   border-color: #D4AF37;
-  background-color: #ffffff; /* Al dar clic se pone blanco */
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15); /* Efecto de brillo dorado (Glow) */
+  background-color: #ffffff; 
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15); 
 }
 
-/* Botones de Selección de Rol */
 .owner-usuarios-role-container {
   display: flex;
   gap: 16px;
@@ -118,7 +117,6 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* Botón de Enviar */
 .owner-usuarios-submit-btn {
   margin-top: 12px;
   padding: 14px;
@@ -134,7 +132,7 @@
 
 .owner-usuarios-submit-btn:hover {
   background-color: #333333;
-  transform: translateY(-1px); /* Efecto de elevarse un poco */
+  transform: translateY(-1px); 
 }
 
 /* 📱 DISEÑO RESPONSIVO PARA CELULARES */
@@ -146,44 +144,45 @@
     padding: 20px;
   }
   .owner-usuarios-role-container {
-    flex-direction: column; /* Apila los botones de roles hacia abajo */
+    flex-direction: column;
     gap: 12px;
   }
 }
 
 /* ==========================================================================
-   ── INDICADORES DE ESTADO (ACTIVO / INACTIVO) ──
+   ── INDICADORES DE ESTADO (ACTIVO / INACTIVO) Y ROLES ──
    ========================================================================== */
 .account-badges-group {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
   flex-shrink: 0;
 }
 
 .status-badge {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  font-size: 9px;
+  gap: 6px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 0.25rem 0.6rem;
+  padding: 4px 10px;
   border-radius: 50px;
-  background-color: var(--color-gray-light);
-  color: var(--text-muted);
-  border: 1px solid var(--color-border);
+  /* Colores fijos en lugar de variables para evitar fallos */
+  background-color: #f3f4f6; 
+  color: #6b7280; 
+  border: 1px solid #e5e7eb;
 }
 
 .status-badge.is-active {
-  background-color: #f0fdf4;
+  background-color: #dcfce7;
   color: #166534;
   border-color: #bbf7d0;
 }
 
 .status-badge.is-inactive {
-  background-color: #fef2f2;
+  background-color: #ffe4e6;
   color: #991b1b;
-  border-color: #fecaca;
+  border-color: #fecdd3;
 }
 
 .status-dot {
@@ -192,10 +191,148 @@
   border-radius: 50%;
 }
 
-.status-badge.is-active .status-dot {
-  background-color: #22c55e;
+.status-badge.is-active .status-dot { background-color: #22c55e; }
+.status-badge.is-inactive .status-dot { background-color: #ef4444; }
+
+/* Etiquetas de los Roles */
+.account-role-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
 
-.status-badge.is-inactive .status-dot {
-  background-color: #ef4444;
+.role-admin {
+  background-color: #fef08a; /* Fondo dorado suave */
+  color: #854d0e; /* Texto oscuro para contraste */
+  border: 1px solid #eab308;
+}
+
+.role-barber {
+  background-color: #111827; /* Fondo negro */
+  color: #D4AF37; /* Letras doradas */
+  border: 1px solid #111827;
+}
+
+/* ==========================================================================
+   ── LISTA DE CUENTAS REGISTRADAS (FILAS Y MODO EDICIÓN) ──
+   ========================================================================== */
+.accounts-list-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.account-row-card {
+  display: flex;
+  flex-direction: row; /* Fuerza diseño en línea horizontal */
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  padding: 16px;
+  border-radius: 12px;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.account-info-col {
+  display: flex;
+  flex-direction: column; /* Apila nombre arriba y correo abajo */
+  flex: 1;
+  min-width: 0; 
+}
+
+.account-name-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-email-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+/* Botones de Acción (Iconos) */
+.account-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.action-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.action-icon-btn.edit { color: #3b82f6; }
+.action-icon-btn.edit:hover { background-color: #eff6ff; }
+
+.action-icon-btn.delete { color: #ef4444; }
+.action-icon-btn.delete:hover { background-color: #fef2f2; }
+
+.action-icon-btn.save { color: #166534; background-color: #dcfce7; }
+.action-icon-btn.cancel { color: #991b1b; background-color: #ffe4e6; }
+
+/* Inputs para cuando le das clic a "Editar" */
+.account-edit-mode {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  flex-wrap: wrap; 
+}
+
+.add-account-input,
+.add-account-select {
+  flex: 1;
+  min-width: 120px;
+  background-color: #f9fafb;
+  color: #111827;
+  font-weight: 500;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.add-account-input:focus,
+.add-account-select:focus {
+  border-color: #D4AF37;
+  background-color: #ffffff;
+}
+
+/* Responsivo para la lista de cuentas en celulares */
+@media (max-width: 768px) {
+  .account-row-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .account-badges-group, .account-actions-group {
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 8px;
+  }
 }
