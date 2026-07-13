@@ -1,5 +1,5 @@
-/* Página principal */
-.pagina-comentario {
+/*pagina principal*/
+.ce-pagina {
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
   background-color: #ffffff;
   min-height: 100vh;
@@ -9,8 +9,8 @@
   padding: 24px;
 }
 
-/* Tarjeta central */
-.tarjeta-comentario {
+/*tarjeta central*/
+.ce-tarjeta {
   background-color: #0e0e0e;
   border: 1px solid #c9a23f;
   border-radius: 14px;
@@ -25,13 +25,13 @@
 }
 
 /* Logo superior */
-.logo-comentario {
+.ce-logo {
   width: 200px;
   object-fit: contain;
 }
 
 /* Título principal */
-.titulo-comentario {
+.ce-titulo {
   font-size: 28px;
   font-weight: 800;
   color: #f0c75e;
@@ -39,15 +39,15 @@
 }
 
 /* Texto de confirmación */
-.texto-comentario {
+.ce-texto {
   font-size: 16px;
   color: #ffffff;
   margin: 0;
   line-height: 1.6;
 }
 
-/* Botón de acción */
-.boton-aceptar {
+/*botón de acción de aceptar*/
+.ce-boton-aceptar {
   border: 1px solid #f0c75e;
   background-color: transparent;
   color: #f0c75e;
@@ -61,7 +61,36 @@
   margin-top: 8px;
 }
 
-.boton-aceptar:hover {
+.ce-boton-aceptar:hover {
   background-color: #f0c75e;
   color: #0e0e0e;
+}
+
+/*responsivo*/
+@media (max-width: 480px) {
+  .ce-pagina {
+    padding: 16px;
+  }
+
+  .ce-tarjeta {
+    padding: 36px 24px;
+    gap: 18px;
+  }
+
+  .ce-logo {
+    width: 140px;
+  }
+
+  .ce-titulo {
+    font-size: 22px;
+  }
+
+  .ce-texto {
+    font-size: 14px;
+  }
+
+  .ce-boton-aceptar {
+    width: 100%;
+    padding: 14px 24px;
+  }
 }
