@@ -1,7 +1,5 @@
-/* ==========================================================================
-   Contenedor Principal de la Página de Confirmación
-   ========================================================================== */
-.cc-page {
+/*CONTENEDOR PRINCIPAL DE LA PÁGINA DE CONFIRMACIÓN*/
+.cc-pagina {
   min-height: 100vh;
   background: #f5f5f5;
   font-family: 'Inter', system-ui, sans-serif;
@@ -12,7 +10,7 @@
 }
 
 /* Área que envuelve la tarjeta al lado de la barra lateral */
-.cc-body {
+.cc-contenido {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -22,10 +20,8 @@
   box-sizing: border-box;
 }
 
-/* ==========================================================================
-   Tarjeta Blanca de Confirmación
-   ========================================================================== */
-.cc-card {
+/*tarjeta blanca de confirmación*/
+.cc-tarjeta {
   background: #ffffff;
   border: 1.5px solid #ddd0ba;
   border-radius: 24px;
@@ -42,7 +38,7 @@
 }
 
 /* Icono circular de check verde */
-.cc-icon {
+.cc-icono {
   background-color: #22c55e;
   width: 64px;
   height: 64px;
@@ -55,7 +51,7 @@
   flex-shrink: 0;
 }
 
-.cc-title {
+.cc-titulo {
   font-family: Georgia, Times New Roman, serif;
   font-size: 28px;
   font-weight: 700;
@@ -64,7 +60,7 @@
   width: 100%;
 }
 
-.cc-message {
+.cc-mensaje {
   font-size: 15px;
   color: #555555;
   line-height: 1.6;
@@ -72,15 +68,13 @@
   width: 100%;
 }
 
-.cc-message strong {
+.cc-mensaje strong {
   color: #111111;
   font-weight: 600;
 }
 
-/* ==========================================================================
-   Resumen de la Cita (Caja interna)
-   ========================================================================== */
-.cc-summary {
+/*resumen de la cita: caja interna*/
+.cc-resumen {
   background: #fffdf9;
   border: 1px solid #f0ebe3;
   border-radius: 16px;
@@ -91,7 +85,7 @@
   text-align: left;
 }
 
-.cc-summary-header {
+.cc-resumen-encabezado {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -100,33 +94,33 @@
   padding-bottom: 12px;
 }
 
-.cc-summary-time {
+.cc-resumen-hora {
   font-weight: 700;
   color: #111111;
   font-size: 15px;
 }
 
-.cc-summary-price {
+.cc-resumen-precio {
   font-weight: 700;
   color: #c9a227;
   font-size: 16px;
 }
 
 /* Detalle inferior del resumen (Logo + Nombres) */
-.cc-summary-detail {
+.cc-resumen-detalle {
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
-.cc-summary-logo-btn {
+.cc-resumen-logo-boton {
   background: none;
   border: none;
   padding: 0;
   flex-shrink: 0;
 }
 
-.cc-summary-logo {
+.cc-resumen-logo {
   width: 52px;
   height: 52px;
   border-radius: 12px;
@@ -135,28 +129,26 @@
   border: 1px solid #f0ebe3;
 }
 
-.cc-service-name {
+.cc-nombre-servicio {
   font-size: 15px;
   font-weight: 600;
   color: #111111;
   margin-bottom: 2px;
 }
 
-.cc-barberia-name {
+.cc-nombre-barberia {
   font-size: 13px;
   color: #777777;
 }
 
-/* ==========================================================================
-   Botones de Acción Inferiores
-   ========================================================================== */
-.cc-actions {
+/*botones de acción inferiores*/
+.cc-acciones {
   display: flex;
   gap: 14px;
   width: 100%;
 }
 
-.cc-actions button {
+.cc-acciones button {
   flex: 1;
   padding: 12px 22px;
   border-radius: 12px;
@@ -168,37 +160,53 @@
   transition: background 0.2s, transform 0.1s;
 }
 
-.cc-btn-outline {
+.cc-boton-secundario {
   background: transparent;
   border: 1.5px solid #c9a227;
   color: #c9a227;
 }
 
-.cc-btn-outline:hover {
+.cc-boton-secundario:hover {
   background: rgba(201, 162, 39, 0.08);
 }
 
-.cc-btn-primary {
+.cc-boton-principal {
   background: #c9a227;
   border: none;
   color: #ffffff;
 }
 
-.cc-btn-primary:hover {
+.cc-boton-principal:hover {
   background: #b8911e;
 }
 
-.cc-btn-primary:active, .cc-btn-outline:active {
+.cc-boton-principal:active,
+.cc-boton-secundario:active {
   transform: scale(0.98);
 }
 
-/* Adaptación responsiva para móviles */
+/*responsivo*/
 @media (max-width: 480px) {
-  .cc-actions {
+  .cc-acciones {
     flex-direction: column;
     gap: 10px;
   }
-  .cc-actions button {
+  .cc-acciones button {
     width: 100%;
+  }
+}
+
+@media (max-width: 360px) {
+  .cc-tarjeta {
+    padding: 28px 20px;
+  }
+
+  .cc-titulo {
+    font-size: 22px;
+  }
+
+  .cc-icono {
+    width: 52px;
+    height: 52px;
   }
 }
