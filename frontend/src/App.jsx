@@ -125,22 +125,22 @@ export default function App() {
         {/* ── RUTAS DEL CLIENTE (Con menú lateral negro de usuario) ── */}
         <Route path="/explorar" element={<AuthLayout><Explorar /></AuthLayout>} />
         {/* Aquí está el componente correcto para la vista del cliente 👇 */}
-        <Route path="/barberia-perfil/:id" element={<AuthLayout><BarberiaPerfilComponent /></AuthLayout>} />
-        <Route path="/barberia/:id/servicios" element={<AuthLayout><MasServicios /></AuthLayout>} />
-        <Route path="/agenda-local" element={<AuthLayout><AgendaLocal /></AuthLayout>} />
-        <Route path="/datos-reserva" element={<AuthLayout><DatosReserva /></AuthLayout>} />
-        <Route path="/cita-confirmada" element={<AuthLayout><CitaConfirmada /></AuthLayout>} />
+        <Route path="/barberia-perfil/:id" element={<BarberiaPerfilComponent />} />
+        <Route path="/barberia/:id/servicios" element={<MasServicios />} />
+        <Route path="/agenda-local" element={<AgendaLocal />} />
+        <Route path="/datos-reserva" element={<DatosReserva />} />
+        <Route path="/cita-confirmada" element={<CitaConfirmada />} />
         <Route path="/mis-citas" element={<AuthLayout><MisCitas /></AuthLayout>} />
-        <Route path="/cita/:id" element={<AuthLayout><DetalleCita /></AuthLayout>} />
-        <Route path="/opinion-barberia" element={<AuthLayout><OpinionBarberia /></AuthLayout>} />
-        <Route path="/opinion-barbero" element={<AuthLayout><OpinionBarbero /></AuthLayout>} />
+        <Route path="/cita/:id" element={<DetalleCita />} />
+        <Route path="/opinion-barberia" element={<OpinionBarberia />} />
+        <Route path="/opinion-barbero" element={<OpinionBarbero />} />
         <Route path="/historial-citas" element={<AuthLayout><HistorialCitas /></AuthLayout>} />
         <Route path="/favoritos" element={<AuthLayout><Favoritos /></AuthLayout>} />
         <Route path="/notificaciones" element={<AuthLayout><Notificaciones /></AuthLayout>} />
         <Route path="/ajustes" element={<AuthLayout><Ajustes /></AuthLayout>} />
-        <Route path="/opinion-barberia-general" element={<AuthLayout><OpinionBarberiaGeneral /></AuthLayout>} />
-        <Route path="/comentario-enviado" element={<AuthLayout><ComentarioEnviado /></AuthLayout>} />
-        <Route path="/pago-anticipo" element={<AuthLayout><PagoAnticipo /></AuthLayout>} />
+        <Route path="/opinion-barberia-general" element={<OpinionBarberiaGeneral />} />
+        <Route path="/comentario-enviado" element={<ComentarioEnviado />} />
+        <Route path="/pago-anticipo" element={<PagoAnticipo />} />
       </Routes>
     </BrowserRouter>
   );
