@@ -1,4 +1,7 @@
-.pagina-agenda {
+/* ==========================================================================
+   PÁGINA BASE
+   ========================================================================== */
+.al-pagina {
   min-height: 100vh;
   background-color: #ffffff;
   display: flex;
@@ -6,8 +9,10 @@
   font-family: "Inter", system-ui, sans-serif;
 }
 
-/* ENCABEZADO SUPERIOR */
-.encabezado-agenda {
+/* ==========================================================================
+   ENCABEZADO SUPERIOR
+   ========================================================================== */
+.al-encabezado {
   background-color: #121212;
   padding: 22px 60px;
   display: flex;
@@ -16,13 +21,13 @@
   color: #ffffff;
 }
 
-.info-marca {
+.al-info-marca {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
-.logo-barberia {
+.al-logo {
   width: 55px;
   height: 55px;
   border-radius: 50%;
@@ -30,7 +35,7 @@
   object-fit: cover;
 }
 
-.texto-marca h2 {
+.al-texto-marca h2 {
   font-size: 1.45rem;
   font-weight: 700;
   color: #e5be6b;
@@ -38,12 +43,12 @@
   letter-spacing: 0.5px;
 }
 
-.texto-marca span {
+.al-texto-marca span {
   font-size: 0.95rem;
   color: #8e8e93;
 }
 
-.titulo-agenda {
+.al-titulo {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 2.1rem;
   font-weight: 600;
@@ -51,8 +56,10 @@
   margin: 0;
 }
 
-/*LAYOUT PRINCIPAL*/
-.contenido-agenda {
+/* ==========================================================================
+   LAYOUT PRINCIPAL
+   ========================================================================== */
+.al-contenido {
   flex: 1;
   display: grid;
   grid-template-columns: 1.3fr 0.7fr;
@@ -64,7 +71,7 @@
   box-sizing: border-box;
 }
 
-.titulo-mes {
+.al-titulo-mes {
   font-size: 1.6rem;
   font-weight: 800;
   color: #000000;
@@ -72,7 +79,7 @@
   letter-spacing: 0.5px;
 }
 
-.titulo-horarios {
+.al-titulo-horarios {
   font-size: 1.2rem;
   font-weight: 800;
   color: #444444;
@@ -80,8 +87,10 @@
   letter-spacing: 0.5px;
 }
 
-/* CALENDARIO */
-.grid-calendario {
+/* ==========================================================================
+   CALENDARIO
+   ========================================================================== */
+.al-grid-calendario {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   border-top: 1px solid #e5e5e7;
@@ -89,7 +98,7 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
 }
 
-.encabezado-dia {
+.al-dia-header {
   background-color: #f2f2f7;
   padding: 20px 5px;
   font-size: 1.1rem;
@@ -99,7 +108,7 @@
   border-right: 1px solid #ffffff;
 }
 
-.celda-dia {
+.al-celda-dia {
   aspect-ratio: 1.35 / 1;
   padding: 22px;
   font-size: 1.35rem;
@@ -111,30 +120,32 @@
   transition: all 0.15s ease;
 }
 
-.celda-dia:hover:not(.vacia) {
+.al-celda-dia:hover:not(.vacia) {
   background-color: #f5f5f7;
 }
 
-.celda-dia.activo {
+.al-celda-dia.activo {
   background-color: #fffdf9;
   border: 3px solid #e5be6b;
   font-weight: 800;
 }
 
-.celda-dia.vacia {
+.al-celda-dia.vacia {
   background-color: #f9f9fb;
   cursor: default;
 }
 
-/* HORARIOS*/
-.grid-horarios {
+/* ==========================================================================
+   HORARIOS
+   ========================================================================== */
+.al-grid-horarios {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   margin-bottom: 45px;
 }
 
-.boton-hora {
+.al-boton-hora {
   padding: 22px 12px;
   font-size: 1.25rem;
   font-weight: 700;
@@ -146,32 +157,34 @@
 }
 
 /* Verde = Disponible */
-.boton-hora.disponible {
+.al-boton-hora.disponible {
   background-color: #a3e8bb;
   color: #121212;
 }
 
-.boton-hora.disponible:hover {
+.al-boton-hora.disponible:hover {
   background-color: #8cd9a7;
   transform: translateY(-2px);
 }
 
 /* Gris = Seleccionado */
-.boton-hora.seleccionado {
+.al-boton-hora.seleccionado {
   background-color: #d1d1d6;
   color: #121212;
   cursor: default;
 }
 
 /* Rojo = Ocupado */
-.boton-hora.ocupado {
+.al-boton-hora.ocupado {
   background-color: #ffb3b3;
   color: #7f2727;
   cursor: not-allowed;
 }
 
-/*LEYENDA */
-.caja-leyenda {
+/* ==========================================================================
+   LEYENDA
+   ========================================================================== */
+.al-leyenda {
   display: flex;
   gap: 30px;
   margin-bottom: 50px;
@@ -180,25 +193,27 @@
   color: #444444;
 }
 
-.item-leyenda {
+.al-leyenda-item {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.punto-leyenda {
+.al-leyenda-punto {
   width: 32px;
   height: 20px;
   border-radius: 6px;
   display: inline-block;
 }
 
-.punto-leyenda.seleccionado { background-color: #d1d1d6; }
-.punto-leyenda.disponible { background-color: #a3e8bb; }
-.punto-leyenda.ocupado { background-color: #ffb3b3; }
+.al-leyenda-punto.seleccionado { background-color: #d1d1d6; }
+.al-leyenda-punto.disponible { background-color: #a3e8bb; }
+.al-leyenda-punto.ocupado { background-color: #ffb3b3; }
 
-/* BOTÓN CONTINUAR */
-.boton-continuar {
+/* ==========================================================================
+   BOTÓN CONTINUAR
+   ========================================================================== */
+.al-boton-continuar {
   width: 100%;
   padding: 22px;
   background-color: #121212;
@@ -211,16 +226,78 @@
   transition: all 0.2s ease;
 }
 
-.boton-continuar:hover {
+.al-boton-continuar:hover {
   background-color: #252525;
   transform: translateY(-2px);
 }
 
-/* Responsive */
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
 @media (max-width: 1150px) {
-  .contenido-agenda {
+  .al-contenido {
     grid-template-columns: 1fr;
     gap: 50px;
     padding: 40px 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .al-encabezado {
+    padding: 18px 24px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .al-titulo {
+    font-size: 1.5rem;
+  }
+
+  .al-contenido {
+    padding: 24px 20px;
+    gap: 36px;
+  }
+
+  .al-celda-dia {
+    padding: 12px;
+    font-size: 1rem;
+  }
+
+  .al-dia-header {
+    padding: 12px 4px;
+    font-size: 0.85rem;
+  }
+
+  .al-grid-horarios {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .al-boton-hora {
+    padding: 16px 8px;
+    font-size: 1rem;
+  }
+
+  .al-leyenda {
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 0.95rem;
+  }
+
+  .al-boton-continuar {
+    padding: 16px;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .al-grid-horarios {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .al-celda-dia {
+    font-size: 0.85rem;
+    padding: 8px;
   }
 }
