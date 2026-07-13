@@ -1,9 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // 1. Importamos el hook de navegación
+import { X } from "lucide-react";
 import "../styles/historial-citas.css";
 
 const citasData = [
   {
     id: 1,
+    barberiaId: "urban-cuts", // ID simulado para la navegación
     servicio: "Corte + Barba",
     barbero: "Carlos Reyes",
     barberia: "Barbería La Reforma",
@@ -20,6 +23,7 @@ const citasData = [
   },
   {
     id: 2,
+    barberiaId: "urban-cuts", // ID simulado
     servicio: "Corte Clásico",
     barbero: "Carlos Reyes",
     barberia: "Barbería La Reforma",
@@ -36,6 +40,7 @@ const citasData = [
   },
   {
     id: 3,
+    barberiaId: "la-navaja", // ID simulado
     servicio: "Corte Clásico",
     barbero: "Miguel G",
     barberia: "Barbería La Navaja",
@@ -53,6 +58,7 @@ const citasData = [
 ];
 
 export default function HistorialCitas() {
+  const navigate = useNavigate(); // 2. Inicializamos el hook useNavigate
   const [filtroEstado, setFiltroEstado] = useState("Todas");
   const [citaSeleccionada, setCitaSeleccionada] = useState(citasData[0]);
 
@@ -68,6 +74,19 @@ export default function HistorialCitas() {
       case "Completada": return "estado-completada";
       case "Rechazada": return "estado-rechazada";
       default: return "";
+    }
+  };
+
+  // 3. Funciones manejadoras de la redirección
+  const manejarVolverAAgendar = () => {
+    if (citaSeleccionada) {
+      navigate("/agenda-local", { state: { barberiaId: citaSeleccionada.barberiaId } });
+    }
+  };
+
+  const manejarVerBarberia = () => {
+    if (citaSeleccionada) {
+      navigate(`/barberia-perfil/urban-cuts${citaSeleccionada.barberiaId}`);
     }
   };
 
@@ -135,7 +154,16 @@ export default function HistorialCitas() {
         {citaSeleccionada && (
           <aside className="sidebar-detalle">
             <div className="detalle-cita">
-              <h3 className="titulo-detalle">Detalle de cita</h3>
+              <div className="detalle-cita-header">
+                <h3 className="titulo-detalle">Detalle de cita</h3>
+                <button
+                  className="btn-cerrar-detalle"
+                  onClick={() => setCitaSeleccionada(null)}
+                  aria-label="Cerrar detalle"
+                >
+                  <X size={18} />
+                </button>
+              </div>
               <p className="timestamp-detalle">{citaSeleccionada.fecha} {citaSeleccionada.hora}</p>
 
               <div className="tarjeta-barberia-detalle">
@@ -177,9 +205,14 @@ export default function HistorialCitas() {
                 </div>
               )}
 
+              {/* 4. Vinculamos las funciones a los eventos onClick correspondientes */}
               <div className="acciones-detalle">
-                <button className="btn-reagendar">Volver a agendar</button>
-                <button className="btn-ver-barberia">Ver barbería</button>
+                <button className="btn-reagendar" onClick={manejarVolverAAgendar}>
+                  Volver a agendar
+                </button>
+                <button className="btn-ver-barberia" onClick={manejarVerBarberia}>
+                  Ver barbería
+                </button>
               </div>
             </div>
           </aside>

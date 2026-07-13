@@ -166,23 +166,25 @@
   overflow: hidden;
 }
 
-.info-cita h3 {
+.item-cita-historial .info-cita h3 {
   font-size: 1.3rem;
   font-weight: 700;
   margin: 0 0 8px 0;
-  color: var(--text-main);
-   white-space: nowrap;       
-  overflow: hidden;          
+  color: #000000 !important;
+  white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
+  display: block;
 }
 
-.info-cita p {
+.item-cita-historial .info-cita p {
   font-size: 1rem;
-  color: var(--text-muted);
+  color: #555555 !important;
   margin: 0;
-  white-space: nowrap;      
-  overflow: hidden;          
-  text-overflow: ellipsis;   
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 }
 
 .acciones-cita {
@@ -270,6 +272,38 @@
   font-weight: 700;
   margin: 0 0 6px 0;
   color: var(--text-main);
+}
+
+.detalle-cita-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.detalle-cita-header .titulo-detalle {
+  margin: 0;
+}
+
+.btn-cerrar-detalle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background-color: #f0f0f2;
+  color: #555555;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.btn-cerrar-detalle:hover {
+  background-color: #fdeaea;
+  color: var(--status-danger);
 }
 
 .timestamp-detalle {

@@ -144,7 +144,7 @@
   padding: 40px;
   background-color: var(--color-principal);
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .contenedor-cards {
@@ -152,7 +152,7 @@
   flex-direction: column;
   gap: 20px;
   width: 100%;
-  max-width: 1200px;
+  max-width: 1300px;
 }
 
 /* Contador de no leídas */
@@ -261,4 +261,47 @@
   height: 12px;
   background-color: var(--color-dorado);
   border-radius: 50%;
+}
+
+
+@media (max-width: 768px) {
+  .contenido {
+    padding: 20px;
+  }
+
+  .tarjeta-notificacion {
+    flex-wrap: wrap;
+    padding: 18px 20px;
+    gap: 14px;
+  }
+
+  .info-notificacion {
+    flex: 1 1 200px;
+  }
+
+  .meta-notificacion {
+    flex-direction: row;
+    justify-content: flex-end;
+    width: 100%;
+    padding-left: 80px; /* alinea con el texto, dejando espacio del ícono */
+  }
+}
+
+@media (max-width: 480px) {
+  .icono-placeholder {
+    width: 44px;
+    height: 44px;
+  }
+
+  .info-notificacion h3 {
+    font-size: 1.1rem;
+  }
+
+  .descripcion-notificacion {
+    font-size: 0.9rem;
+  }
+
+  .meta-notificacion {
+    padding-left: 0;
+  }
 }

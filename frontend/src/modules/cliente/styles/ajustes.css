@@ -22,6 +22,7 @@
   width: 100%;
   max-width: 1200px;
   gap: 50px;
+  align-items: flex-start;
 }
 
 /*Columna izquierda*/
