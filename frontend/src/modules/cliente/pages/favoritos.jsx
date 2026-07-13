@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // 1. Importamos el hook de navegación
 import "../styles/favoritos.css";
 
-// Mock de datos de barberías favoritas
+// Mock de datos de barberías favoritas con IDs de ruta añadidos
 const favoritosData = [
   {
     id: 1,
+    barberiaId: "urban-cuts", // ID para la URL
     nombre: "Barbería La Reforma",
     direccion: "Av. Sor Juana 142  0.8km",
     estado: "Abierto",
@@ -13,6 +15,7 @@ const favoritosData = [
   },
   {
     id: 2,
+    barberiaId: "la-navaja-clasica", // ID para la URL
     nombre: "Barbería La Navaja clásica",
     direccion: "Av. Sor Juana 142  0.8km",
     estado: "Abierto",
@@ -21,6 +24,7 @@ const favoritosData = [
   },
   {
     id: 3,
+    barberiaId: "black-edge", // ID para la URL
     nombre: "Carlos Reyes",
     direccion: "Barbería Black Edge",
     estado: "Cerrado",
@@ -30,14 +34,25 @@ const favoritosData = [
 ];
 
 export default function Favoritos() {
+  const navigate = useNavigate(); //Inicializamos el hook useNavigate
   const [menuActivo, setMenuActivo] = useState("Favoritos");
   const [tarjetaSeleccionada, setTarjetaSeleccionada] = useState(2);
+
+  // Funciones para controlar la navegación al hacer clic
+  const manejarAgendar = (e, barberiaId) => {
+    e.stopPropagation(); // Evita que se seleccione la tarjeta al pulsar el botón
+    navigate("/agenda-local", { state: { barberiaId: barberiaId } });
+  };
+
+  const manejarVerBarberia = (e, barberiaId) => {
+    e.stopPropagation(); // Evita que se seleccione la tarjeta al pulsar el botón
+    navigate(`/barberia-perfil//${barberiaId}`);
+  };
 
   return (
     <div className="fav-dashboard">
       {/* Contenedor Principal (Entorno Blanco) */}
       <div className="fav-main-wrapper" style={{ paddingTop: "0px" }}>
-        {/* Se removió el header redundante para que el contenido suba */}
         
         <main className="fav-content-layout">
           <div className="fav-cards-container">
@@ -64,8 +79,19 @@ export default function Favoritos() {
                 <div className="acciones-favorito">
                   <span className="calificacion-favorito">{barberia.calificacion}</span>
                   <div className="grupo-botones-favorito">
-                    <button className="btn-favorito btn-dorado">Agendar</button>
-                    <button className="btn-favorito btn-gris">Ver barbería</button>
+                    {/*  Evento onClick a los botones */}
+                    <button 
+                      className="btn-favorito btn-dorado"
+                      onClick={(e) => manejarAgendar(e, barberia.barberiaId)}
+                    >
+                      Agendar
+                    </button>
+                    <button 
+                      className="btn-favorito btn-gris"
+                      onClick={(e) => manejarVerBarberia(e, barberia.barberiaId)}
+                    >
+                      Ver barbería
+                    </button>
                   </div>
                 </div>
               </div>
@@ -74,7 +100,7 @@ export default function Favoritos() {
         </main>
       </div>
 
-      {/* Uso de menuActivo para evitar alertas/errores de ESLint no-unused-vars */}
+      {/*  menuActivo para evitar alertas/errores */}
       <span style={{ display: "none" }} onClick={() => setMenuActivo("Favoritos")}>
         {menuActivo}
       </span>

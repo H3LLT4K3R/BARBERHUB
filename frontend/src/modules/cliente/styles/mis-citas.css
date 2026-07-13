@@ -14,13 +14,13 @@
 .contenido-citas {
   padding: 40px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   font-family: 'Inter', system-ui, sans-serif;
 }
 
 .contenedor-citas {
   width: 100%;
-  max-width: 1050px;
+  max-width: 1300px;
 }
 
 .titulo-seccion {
@@ -238,4 +238,54 @@
 .boton-comentario-gris:hover {
   background-color: #d5d5d5;
   color: #333333;
+}
+
+/*Responsivo*/
+@media (max-width: 768px) {
+  .contenido-citas {
+    padding: 20px;
+  }
+
+  .tarjeta-cita {
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+  }
+
+  .bloque-derecho {
+    align-items: stretch;
+    min-width: 0;
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .contenedor-precio {
+    justify-content: flex-start;
+  }
+
+  .stepper-progreso {
+    flex-wrap: wrap;
+    row-gap: 12px;
+  }
+
+  .linea-step {
+     flex: 1;
+     height: 3px;
+     background-color: var(--step-gris);
+     z-index: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .info-header {
+    flex-wrap: wrap;
+  }
+
+  .linea-step {
+    width: 24px;
+  }
+
+  .label-step {
+    font-size: 0.75rem;
+  }
 }
