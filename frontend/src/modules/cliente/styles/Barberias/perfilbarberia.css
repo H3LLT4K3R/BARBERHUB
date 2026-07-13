@@ -2,11 +2,14 @@
    ── VARIABLES GLOBALES (PALETA BARBERHUB UNIFICADA) ──
    ========================================================================== */
 :root {
-  /* Variables Integrales (Base del Sidebar) */
+  /* Variables Integrales */
   --sidebar-width: 260px;
   --black: #000000;
   --bh-gold: #E9C46A;
-  --text-muted: #A3A3A3;
+  
+  /* Se cambió a un gris más fuerte para que no se vea transparente */
+  --text-muted: #6B7280; 
+  
   --bg-main: #ffffff;
   --white: #ffffff;
 
@@ -26,19 +29,16 @@
   background-color: var(--color-gray-light);
   min-height: 100vh;
   box-sizing: border-box;
+  overflow-x: hidden; /* Evita cualquier scroll horizontal accidental */
 }
 
 .barber-cards-row-grid-three {
   display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
+  /* auto-fit adapta las columnas al tamaño de la pantalla automáticamente */
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
   gap: 1.5rem;
   align-items: start;
-}
-
-@media (min-width: 1024px) {
-  .barber-cards-row-grid-three {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
+  width: 100%;
 }
 
 .layout-column {
@@ -86,7 +86,6 @@
   cursor: pointer;
   overflow: hidden;
   border: 3px solid var(--bh-gold);
-  /* Sombra ajustada al RGBA del nuevo #E9C46A */
   box-shadow: 0 4px 12px rgba(233, 196, 106, 0.2); 
 }
 
@@ -103,11 +102,12 @@
 }
 .profile-title-name-input:focus { border-bottom-color: var(--bh-gold); }
 
-.profile-subtitle-geo { font-size: 0.8rem; color: #cbd5e1; display: flex; align-items: center; justify-content: center; gap: 0.35rem; margin-bottom: 0; }
+/* Ajustado a un gris más visible sobre negro */
+.profile-subtitle-geo { font-size: 0.8rem; color: #9ca3af; display: flex; align-items: center; justify-content: center; gap: 0.35rem; margin-bottom: 0; }
 .inline-geo-icon { width: 0.9rem; height: 0.9rem; color: var(--bh-gold); }
 
 .profile-quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.12); gap: 0.5rem; }
-.quick-action-btn { background: none; border: none; color: #cbd5e1; font-size: 0.75rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 0.45rem; cursor: pointer; transition: color 0.2s ease, transform 0.1s ease; }
+.quick-action-btn { background: none; border: none; color: #9ca3af; font-size: 0.75rem; font-weight: 600; display: flex; flex-direction: column; align-items: center; gap: 0.45rem; cursor: pointer; transition: color 0.2s ease, transform 0.1s ease; }
 .quick-action-btn:active { transform: scale(0.95); }
 .quick-action-btn .action-svg { width: 1.3rem; height: 1.3rem; stroke-width: 2px; }
 
@@ -160,20 +160,54 @@
    ── SERVICIOS Y BOTÓN GUARDAR ──
    ========================================================================== */
 .sub-section-title-large { font-size: 13px; font-weight: 800; color: var(--black); margin-bottom: 0.85rem; }
-.add-service-inline-card { background-color: var(--color-gray-light); border: 1px dashed var(--color-border); border-radius: 0.75rem; padding: 0.75rem; margin-bottom: 1rem; }
-.add-service-inline-card h5 { font-size: 11px; font-weight: 700; color: var(--color-gray-dark); margin: 0 0 0.5rem 0; }
-.add-service-fields-row { display: flex; gap: 0.4rem; }
-.add-service-input-text { flex: 1; border: 1px solid var(--color-border); border-radius: 0.35rem; font-size: 11px; padding: 0.35rem 0.5rem; outline: none; }
-.add-service-input-price { width: 60px; border: 1px solid var(--color-border); border-radius: 0.35rem; font-size: 11px; padding: 0.35rem 0.25rem; text-align: center; outline: none; }
-.add-service-submit-pill { background-color: var(--black); color: var(--bh-gold); border: none; border-radius: 0.35rem; padding: 0 0.6rem; cursor: pointer; display: flex; align-items: center; }
-.delete-service-row-btn { background: none; border: none; color: #ef4444; cursor: pointer; padding: 0.25rem; }
+
+/* Tarjeta punteada de añadir servicio con texto en negro forzado */
+.add-service-inline-card { 
+  background-color: var(--color-gray-light); 
+  border: 1px dashed var(--text-muted); 
+  border-radius: 0.75rem; 
+  padding: 0.75rem; 
+  margin-bottom: 1rem; 
+  color: var(--black); 
+}
+
+.add-service-inline-card h1,
+.add-service-inline-card h2,
+.add-service-inline-card h3,
+.add-service-inline-card h4,
+.add-service-inline-card h5,
+.add-service-inline-card h6,
+.add-service-inline-card p,
+.add-service-inline-card span { 
+  font-size: 12px; 
+  font-weight: 800 !important; 
+  color: var(--black) !important; 
+  margin: 0 0 0.6rem 0; 
+}
+
+.add-service-fields-row { display: flex; gap: 0.4rem; align-items: center; width: 100%; }
+
+/* INPUTS PARA AÑADIR NUEVO SERVICIO (Más visibles y no se encogen) */
+.add-service-input-text { flex: 1; min-width: 0; background-color: var(--white); color: var(--black); font-weight: 600; border: 1px solid var(--text-muted); border-radius: 0.35rem; font-size: 11px; padding: 0.35rem 0.5rem; outline: none; }
+.add-service-input-price { width: 60px; flex-shrink: 0; background-color: var(--white); color: var(--black); font-weight: 600; border: 1px solid var(--text-muted); border-radius: 0.35rem; font-size: 11px; padding: 0.35rem 0.25rem; text-align: center; outline: none; }
+
+/* Placeholder fuerte */
+.add-service-input-text::placeholder, .add-service-input-price::placeholder { color: var(--text-muted); opacity: 1; font-weight: 500; }
+
+.add-service-submit-pill { flex-shrink: 0; height: 28px; background-color: var(--black); color: var(--bh-gold); border: none; border-radius: 0.35rem; padding: 0 0.6rem; cursor: pointer; display: flex; align-items: center; }
+.delete-service-row-btn { flex-shrink: 0; background: none; border: none; color: #ef4444; cursor: pointer; padding: 0.25rem; }
 
 .services-cards-stack { display: flex; flex-direction: column; gap: 0.65rem; }
-.service-premium-row-card { display: flex; align-items: center; justify-content: space-between; background-color: #fafafa; border: 1px solid var(--color-border); padding: 0.55rem 0.75rem; border-radius: 0.65rem; }
+
+/* LISTA DE SERVICIOS EXISTENTES */
+.service-premium-row-card { display: flex; align-items: center; justify-content: space-between; background-color: var(--white); border: 1px solid var(--text-muted); padding: 0.55rem 0.75rem; border-radius: 0.65rem; }
 .service-inputs-group-block { display: flex; align-items: center; flex: 1; gap: 0.5rem; }
-.premium-service-name-input { background: transparent; border: none; font-size: 12px; font-weight: 600; color: var(--black); outline: none; flex: 1; }
-.price-tag-prefix { font-size: 11px; font-weight: 700; color: var(--bh-gold-dark); }
-.premium-service-price-input { background: transparent; border: none; font-size: 12px; font-weight: 700; color: var(--bh-gold-dark); width: 55px; outline: none; }
+
+.premium-service-name-input { background: transparent; border: none; font-size: 12px; font-weight: 700; color: var(--black); outline: none; flex: 1; min-width: 0; }
+
+/* Tono dorado oscuro para que el precio resalte sobre blanco */
+.price-tag-prefix { font-size: 12px; font-weight: 800; color: #b4850d; }
+.premium-service-price-input { background: transparent; border: none; font-size: 12px; font-weight: 800; color: #b4850d; width: 55px; flex-shrink: 0; outline: none; }
 
 .btn-primary-gold { width: 100%; background-color: var(--black); color: var(--bh-gold); border: none; padding: 0.65rem 0; border-radius: 0.5rem; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
 .btn-primary-gold:hover { background-color: #222; }
@@ -187,6 +221,7 @@
 .text-gold-rating { color: var(--bh-gold) !important; }
 
 .calendar-subtabs-navigation { display: flex; border-bottom: 1px solid var(--color-border); margin-bottom: 0.75rem; }
+
 .calendar-subtab-item { flex: 1; background: none; border: none; padding: 0.5rem 0; font-size: 11px; font-weight: 600; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.35rem; border-bottom: 2px solid transparent; transition: all 0.2s; }
 .calendar-subtab-item.active { color: var(--black); border-bottom-color: var(--bh-gold); font-weight: 700; }
 

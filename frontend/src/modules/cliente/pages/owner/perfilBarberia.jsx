@@ -259,7 +259,7 @@ export default function PerfilBarberia() {
               {activeTab === 'Acerca' && (
                 <>
                   <p className="description-paragraph-text">Somos una barbería con mucha experiencia en... <span className="read-more-gold">Leer más...</span></p>
-                  <div className="mb-4 bg-gray-50 p-3 rounded-xl border border-gray-100">
+                  <div className="mb-4 bg-black-50 p-3 rounded-xl border border-gray-100">
                     <div className="flex justify-between items-center mb-3">
                       <h4 className="sub-section-title m-0">Horarios de atención</h4>
                       <button onClick={() => setIsEditingHours(!isEditingHours)} className={`modern-hours-toggle-btn ${isEditingHours ? 'editing-active' : ''}`}>{isEditingHours ? <><Check className="w-3 h-3" /> Listo</> : <><Edit2 className="w-3 h-3" /> Modificar</>}</button>

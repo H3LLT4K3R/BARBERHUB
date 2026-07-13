@@ -12,14 +12,14 @@ export default function OwnerSidebar() {
     { path: '/owner-inventario', label: 'Inventario (Stock)' },
     { path: '/owner-estadisticas', label: 'Estadísticas' },
     { path: '/owner-seguridad', label: 'Seguridad' },
-    { path: '/owner-control', label: 'Control de Negocio' }
-    
+    { path: '/owner-control', label: 'Control de Negocio' },
+    { path: '/owner-usuarios', label: 'Gestión de Usuarios' }
   ];
 
   return (
-    <aside style={{ width: '256px', height: '100vh', backgroundColor: 'white', borderRight: '1px solid #e5e7eb' }}>
+    <aside style={{ width: '256px', height: '100vh', backgroundColor: 'black', borderRight: '1px solid #ffffff' }}>
       
-      <div style={{ padding: '32px 16px', textAlign: 'center', borderBottom: '1px solid #e5e7eb' }}>
+      <div style={{ padding: '16.5px 16px', textAlign: 'center', borderBottom: '1px solid #fdfdfd' }}>
         <h1 style={{ fontSize: '24px', fontWeight: 'bold', margin: 0 }}>
           Panel <span style={{ color: '#D4AF37' }}>Owner</span>
         </h1>
@@ -39,8 +39,8 @@ export default function OwnerSidebar() {
                 textAlign: 'center',
                 textDecoration: 'none',
                 fontWeight: '600',
-                backgroundColor: isActive ? 'black' : 'transparent',
-                color: isActive ? '#D4AF37' : '#6b7280',
+                backgroundColor: isActive ? 'white' : 'transparent',
+                color: isActive ? '#D4AF37' : '#ccc8c8',
                 transition: 'all 0.3s'
               }}
             >

@@ -44,6 +44,7 @@ import OwnerAgenda from "./modules/cliente/pages/owner/owner-agenda";
 import OwnerEstadisticas from "./modules/cliente/pages/owner/owner-estadisticas";
 import OwnerSeguridad from "./modules/cliente/pages/owner/owner-seguridad";
 import OwnerControlNegocio from "./modules/cliente/pages/owner/owner-control-negocio";
+import OwnerUsuarios from "./modules/cliente/pages/owner/owner-usuarios"; //
 
 function AuthLayout({ children }) {
   return <SidebarLayout>{children}</SidebarLayout>;
@@ -121,6 +122,15 @@ export default function App() {
             </OwnerLayout>
           } 
         />
+        <Route 
+          path="/owner-usuarios" 
+          element={
+            <OwnerLayout>
+              <OwnerUsuarios />
+            </OwnerLayout>
+          } 
+        />
+
 
         {/* ── RUTAS DEL CLIENTE (Con menú lateral negro de usuario) ── */}
         <Route path="/explorar" element={<AuthLayout><Explorar /></AuthLayout>} />
