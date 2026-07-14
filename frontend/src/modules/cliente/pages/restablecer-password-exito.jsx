@@ -24,18 +24,18 @@ export default function RestablecerPasswordExito() {
   }, [navigate]);
 
   return (
-    <div className="rpx-wrapper">
-      <nav className="rpx-navbar">
-        <BrandLogo className="rpx-nav-logo" imgClassName="rpx-logo-img" />
+    <div className="rpx-pagina">
+      <nav className="rpx-encabezado">
+        <BrandLogo className="rpx-logo-boton" imgClassName="rpx-logo" />
       </nav>
 
-      <div className="rpx-content">
-        <div className="rpx-icon-wrap" aria-hidden>
+      <div className="rpx-contenido">
+        <div className="rpx-icono" aria-hidden>
           <IconCheck size={40} stroke={3} color="#fff" />
         </div>
 
-        <h1 className="rpx-title">Tu contraseña se ha actualizado correctamente</h1>
-        <p className="rpx-subtitle">
+        <h1 className="rpx-titulo">Tu contraseña se ha actualizado correctamente</h1>
+        <p className="rpx-subtitulo">
           En unos segundos serás redirigido al inicio de sesión.
         </p>
       </div>

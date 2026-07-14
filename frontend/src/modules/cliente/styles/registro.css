@@ -1,35 +1,35 @@
 /* ── VARIABLES ── */
 :root {
-  --black: #000000;
-  --white: #ffffff;
-  --gold: #c9a227;
-  --gold-hover: #b8911e;
-  --terra: #b5836e;
-  --terra-hover: #9e6f58;
-  --gray: #888888;
-  --lgray: #aaaaaa;
-  --border: #d8c8b0;
-  --divider-blue: #4a8fd4;
-  --font: "Inter", system-ui, sans-serif;
+  --reg-negro: #000000;
+  --reg-blanco: #ffffff;
+  --reg-dorado: #c9a227;
+  --reg-dorado-hover: #b8911e;
+  --reg-terracota: #b5836e;
+  --reg-terracota-hover: #9e6f58;
+  --reg-gris: #888888;
+  --reg-gris-claro: #aaaaaa;
+  --reg-borde: #d8c8b0;
+  --reg-divisor: #4a8fd4;
+  --reg-fuente: "Inter", system-ui, sans-serif;
 }
 
-/* ── LAYOUT ── */
-.reg-wrapper {
+/*layout principal*/
+.reg-pagina {
   display: grid;
   grid-template-columns: 1fr 1fr;
   min-height: 100vh;
-  font-family: var(--font);
+  font-family: var(--reg-fuente);
 }
 
-/* ── COLUMNA IZQUIERDA ── */
-.reg-left {
-  background: var(--black);
+/*columna izquierda: pasos*/
+.reg-columna-izquierda {
+  background: var(--reg-negro);
   display: flex;
   flex-direction: column;
-  border-right: 1px solid var(--divider-blue);
+  border-right: 1px solid var(--reg-divisor);
 }
 
-.reg-left-content {
+.reg-columna-izquierda-contenido {
   padding: 36px 44px 40px;
   display: flex;
   flex-direction: column;
@@ -38,21 +38,21 @@
   min-height: 100vh;
 }
 
-.reg-logo {
+.reg-logo-boton {
   padding: 0;
   border: none;
   background: none;
   cursor: pointer;
 }
 
-.reg-logo-img {
+.reg-logo {
   width: 100px;
   height: auto;
   display: block;
   object-fit: contain;
 }
 
-.reg-steps-label {
+.reg-pasos-label {
   font-size: 11px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.45);
@@ -61,29 +61,29 @@
   margin-top: -8px;
 }
 
-.reg-steps {
+.reg-pasos {
   display: flex;
   flex-direction: column;
 }
 
-.reg-step-item {
+.reg-paso-item {
   display: flex;
   gap: 18px;
   align-items: flex-start;
 }
 
-.reg-step-left {
+.reg-paso-izquierda {
   display: flex;
   flex-direction: column;
   align-items: center;
   flex-shrink: 0;
 }
 
-.reg-step-circle {
+.reg-paso-circulo {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: var(--gold);
+  background: var(--reg-dorado);
   color: #000;
   font-size: 17px;
   font-weight: 700;
@@ -94,7 +94,7 @@
   z-index: 1;
 }
 
-.reg-step-line {
+.reg-paso-linea {
   width: 2px;
   flex: 1;
   min-height: 36px;
@@ -102,63 +102,63 @@
   margin: 4px 0;
 }
 
-.reg-step-text {
+.reg-paso-texto {
   padding-bottom: 30px;
 }
 
-.reg-step-item:last-child .reg-step-text {
+.reg-paso-item:last-child .reg-paso-texto {
   padding-bottom: 0;
 }
 
-.reg-step-text h4 {
+.reg-paso-texto h4 {
   font-size: 17px;
   font-weight: 700;
   color: #fff;
   margin-bottom: 6px;
 }
 
-.reg-step-text p {
+.reg-paso-texto p {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.55);
   line-height: 1.6;
   max-width: 320px;
 }
 
-/* ── COLUMNA DERECHA ── */
-.reg-right {
-  background: var(--white);
+/*columna derecha: formulario*/
+.reg-columna-derecha {
+  background: var(--reg-blanco);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 48px 56px;
 }
 
-.reg-form-wrap {
+.reg-formulario-contenedor {
   width: 100%;
   max-width: 460px;
 }
 
-.reg-title {
+.reg-titulo {
   font-size: 32px;
   font-weight: 800;
-  color: var(--black);
+  color: var(--reg-negro);
   text-align: center;
   margin-bottom: 32px;
 }
 
-.reg-form {
+.reg-formulario {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.reg-password-block {
+.reg-bloque-password {
   display: flex;
   flex-direction: column;
   width: 100%;
 }
 
-.reg-row-2 {
+.reg-fila-doble {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
@@ -167,12 +167,12 @@
 .reg-input {
   width: 100%;
   padding: 13px 16px;
-  border: 1.5px solid var(--border);
+  border: 1.5px solid var(--reg-borde);
   border-radius: 10px;
-  font-family: var(--font);
+  font-family: var(--reg-fuente);
   font-size: 14px;
-  color: var(--black);
-  background: var(--white);
+  color: var(--reg-negro);
+  background: var(--reg-blanco);
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -182,7 +182,7 @@
 }
 
 .reg-input:focus {
-  border-color: var(--terra);
+  border-color: var(--reg-terracota);
   box-shadow: 0 0 0 3px rgba(181, 131, 110, 0.15);
 }
 
@@ -192,14 +192,14 @@
   text-align: center;
 }
 
-.reg-btn-submit {
+.reg-boton-enviar {
   width: 100%;
   padding: 14px;
   border-radius: 10px;
   border: none;
-  background: var(--terra);
+  background: var(--reg-terracota);
   color: #fff;
-  font-family: var(--font);
+  font-family: var(--reg-fuente);
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
@@ -208,62 +208,87 @@
   transition: background 0.2s, transform 0.15s;
 }
 
-.reg-btn-submit:hover {
-  background: var(--terra-hover);
+.reg-boton-enviar:hover {
+  background: var(--reg-terracota-hover);
   transform: translateY(-1px);
 }
 
-.reg-btn-submit:disabled {
+.reg-boton-enviar:disabled {
   opacity: 0.7;
   cursor: not-allowed;
   transform: none;
 }
 
-.reg-login-row {
+.reg-fila-login {
   text-align: center;
   font-size: 14px;
-  color: var(--lgray);
+  color: var(--reg-gris-claro);
   margin-top: 22px;
 }
 
-.reg-link-gold {
+.reg-enlace-dorado {
   background: none;
   border: none;
   cursor: pointer;
-  font-family: var(--font);
+  font-family: var(--reg-fuente);
   font-size: 14px;
   font-weight: 600;
-  color: var(--gold);
+  color: var(--reg-dorado);
   padding: 0;
   transition: color 0.2s;
 }
 
-.reg-link-gold:hover {
-  color: var(--gold-hover);
+.reg-enlace-dorado:hover {
+  color: var(--reg-dorado-hover);
   text-decoration: underline;
 }
 
+/*Responsivo*/
 @media (max-width: 768px) {
-  .reg-wrapper {
+  .reg-pagina {
     grid-template-columns: 1fr;
   }
 
-  .reg-left {
+  .reg-columna-izquierda {
     min-height: auto;
     border-right: none;
-    border-bottom: 1px solid var(--divider-blue);
+    border-bottom: 1px solid var(--reg-divisor);
   }
 
-  .reg-left-content {
+  .reg-columna-izquierda-contenido {
     min-height: auto;
     padding: 32px 28px;
   }
 
-  .reg-right {
+  .reg-columna-derecha {
     padding: 40px 24px;
   }
 
-  .reg-row-2 {
+  .reg-fila-doble {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .reg-titulo {
+    font-size: 26px;
+  }
+
+  .reg-paso-circulo {
+    width: 38px;
+    height: 38px;
+    font-size: 15px;
+  }
+
+  .reg-paso-texto h4 {
+    font-size: 15px;
+  }
+
+  .reg-paso-texto p {
+    font-size: 12px;
+  }
+
+  .reg-columna-derecha {
+    padding: 32px 20px;
   }
 }
