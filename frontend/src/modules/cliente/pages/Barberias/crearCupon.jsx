@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import '../../styles/Barberias/crearCupon.css';
 
 export default function CrearCupon() {

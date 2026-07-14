@@ -1,0 +1,152 @@
+:root {
+  --black : #111111; --white : #ffffff;
+  --cream : #f0e6d6; --gold  : #c9a227;
+  --gold2 : #b8911e; --terra : #b87252;
+  --gray  : #666666; --lgray : #aaaaaa;
+  --border: #ddd0ba; --green : #4caf7d;
+  --font  : 'Inter', sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: #f5f5f5; }
+
+/* NAVBAR */
+.ss-navbar {
+  background: var(--black); height: 62px;
+  display: flex; align-items: center;
+  justify-content: space-between; padding: 0 40px;
+  position: sticky; top: 0; z-index: 100;
+}
+.ss-nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.ss-logo-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.ss-nav-brand { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 1px; }
+.ss-nav-links { display: flex; gap: 28px; }
+.ss-nav-links a { color: rgba(255,255,255,0.65); font-size: 13px; text-decoration: none; transition: color .2s; }
+.ss-nav-links a:hover { color: var(--gold); }
+
+/* CONTENT */
+.ss-wrapper { min-height: 100vh; background: #f5f5f5; }
+.ss-content { max-width: 960px; margin: 0 auto; padding: 36px 24px; }
+.ss-title { font-size: 22px; font-weight: 700; color: var(--black); margin-bottom: 32px; }
+
+/* STEPPER */
+.ss-stepper {
+  display: flex; align-items: flex-start;
+  justify-content: center; gap: 0;
+  margin-bottom: 36px; padding: 24px 32px;
+  background: var(--white); border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+.ss-step-wrap { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.ss-step-top { display: flex; align-items: center; width: 100%; }
+.ss-step-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--white); color: var(--lgray);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all .3s;
+}
+.ss-step-icon.done  { background: var(--cream); border-color: var(--gold); color: var(--gold); }
+.ss-step-icon.active { background: var(--gold); border-color: var(--gold); color: #000; }
+.ss-step-line { flex: 1; height: 2px; background: var(--border); margin: 0 4px; transition: background .3s; }
+.ss-step-line.done { background: var(--gold); }
+.ss-step-badge {
+  font-size: 10px; font-weight: 600; padding: 3px 10px;
+  border-radius: 12px; margin-top: 8px;
+  background: var(--cream); color: var(--lgray);
+  border: 1px solid var(--border);
+}
+.ss-step-badge.active { background: #1e1a0d; color: var(--gold); border-color: var(--gold); }
+.ss-step-badge.done   { background: var(--cream); color: var(--gold); border-color: var(--gold); }
+.ss-step-label { font-size: 11px; color: var(--lgray); margin-top: 4px; text-align: center; }
+.ss-step-label.active { color: var(--gold); font-weight: 600; }
+.ss-step-label.done   { color: var(--gold); }
+
+/* CARD CENTRAL */
+.ss-barber-card {
+  display: flex; align-items: flex-start; gap: 16px;
+  background: var(--white); border-radius: 14px;
+  border: 1px solid var(--border); padding: 20px 24px;
+  margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+.ss-barber-photo { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+.ss-barber-avatar {
+  width: 80px; height: 80px; border-radius: 10px;
+  background: var(--cream); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 700; color: var(--gold); flex-shrink: 0;
+}
+.ss-barber-info { flex: 1; }
+.ss-barber-name { font-size: 16px; font-weight: 700; color: var(--black); margin-bottom: 6px; }
+.ss-barber-meta { font-size: 12px; color: var(--gray); display: flex; align-items: center; gap: 4px; margin-bottom: 4px; }
+.ss-barber-rating { font-size: 12px; color: var(--gray); display: flex; align-items: center; gap: 4px; margin-bottom: 12px; }
+.ss-barber-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.ss-action-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 14px; border-radius: 8px;
+  background: var(--cream); border: 1px solid var(--border);
+  color: var(--black); font-size: 12px; font-weight: 500;
+  cursor: pointer; text-decoration: none; transition: all .2s;
+}
+.ss-action-btn:hover { border-color: var(--gold); color: var(--gold); }
+.ss-cancel-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 14px; border-radius: 8px;
+  background: transparent; border: 1px solid #e05555;
+  color: #e05555; font-size: 12px; font-weight: 500;
+  cursor: pointer; transition: all .2s;
+}
+.ss-cancel-btn:hover { background: #2a1010; }
+.ss-barber-price { font-size: 22px; font-weight: 700; color: var(--gold); flex-shrink: 0; }
+
+/* INFO GRID */
+.ss-info-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+.ss-info-card {
+  background: var(--white); border-radius: 12px;
+  border: 1px solid var(--border); padding: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.ss-info-card-title {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600; color: var(--gray);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.ss-master-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.ss-master-foto { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+.ss-master-av {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--cream); display: flex; align-items: center;
+  justify-content: center; font-size: 16px; font-weight: 700; color: var(--gold);
+}
+.ss-master-stats { display: flex; gap: 8px; }
+.ss-stat { display: flex; flex-direction: column; align-items: center; }
+.ss-stat-val { font-size: 12px; font-weight: 600; color: var(--black); display: flex; align-items: center; gap: 2px; }
+.ss-stat-lbl { font-size: 10px; color: var(--lgray); }
+.ss-master-name { font-size: 12px; font-weight: 600; color: var(--black); }
+.ss-datetime { font-size: 13px; font-weight: 600; color: var(--black); line-height: 1.5; margin-top: 4px; }
+.ss-service-item { display: flex; align-items: flex-start; gap: 7px; margin-bottom: 6px; }
+.ss-service-ico {
+  width: 24px; height: 24px; border-radius: 6px;
+  background: var(--cream); display: flex; align-items: center;
+  justify-content: center; color: var(--terra); flex-shrink: 0;
+}
+.ss-service-name { font-size: 12px; font-weight: 600; color: var(--black); }
+.ss-service-desc { font-size: 11px; color: var(--lgray); }
+.ss-pay-row { display: flex; justify-content: space-between; font-size: 12px; padding: 4px 0; }
+.ss-pay-total { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 8px; font-weight: 600; font-size: 13px; }
+
+/* Estados */
+.ss-loading { display: flex; align-items: center; justify-content: center; height: 60vh; font-size: 15px; color: var(--gray); }
+.ss-error   { display: flex; align-items: center; justify-content: center; height: 60vh; font-size: 15px; color: #e05555; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .ss-info-grid { grid-template-columns: 1fr 1fr; }
+  .ss-navbar { padding: 0 20px; }
+  .ss-nav-links { display: none; }
+}
+@media (max-width: 480px) {
+  .ss-info-grid { grid-template-columns: 1fr; }
+  .ss-barber-card { flex-wrap: wrap; }
+}

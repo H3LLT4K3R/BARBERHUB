@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "../../styles/owner/owner-agenda.css";
 
 export default function OwnerAgenda() {
