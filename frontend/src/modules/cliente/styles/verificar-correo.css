@@ -1,12 +1,24 @@
-.vc-page {
-  min-height: 100vh;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  font-family: "Inter", system-ui, sans-serif;
+:root {
+  --vc-negro: #111111;
+  --vc-blanco: #ffffff;
+  --vc-dorado: #c9a227;
+  --vc-dorado-claro: #e6c373;
+  --vc-gris: #888888;
+  --vc-gris-claro: #aaaaaa;
+  --vc-terracota: #b98a76;
+  --vc-fuente: "Inter", system-ui, sans-serif;
 }
 
-.vc-body {
+/*página principal*/
+.vc-pagina {
+  min-height: 100vh;
+  background: var(--vc-blanco);
+  display: flex;
+  flex-direction: column;
+  font-family: var(--vc-fuente);
+}
+
+.vc-contenido {
   flex: 1;
   display: flex;
   align-items: center;
@@ -14,79 +26,81 @@
   padding: 40px 24px;
 }
 
-.vc-card {
+.vc-tarjeta {
   width: 100%;
   max-width: 400px;
   text-align: center;
 }
 
-.vc-icon-wrap {
+/*Encabezado de la tarjeta*/
+.vc-icono {
   width: 72px;
   height: 72px;
   margin: 0 auto 24px;
   border-radius: 50%;
-  background: #b98a76;
+  background: var(--vc-terracota);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.vc-title {
+.vc-titulo {
   font-size: 26px;
   font-weight: 800;
-  color: #111;
+  color: var(--vc-negro);
   margin-bottom: 16px;
 }
 
-.vc-text {
+.vc-texto {
   font-size: 14px;
-  color: #888;
+  color: var(--vc-gris);
   line-height: 1.5;
 }
 
-.vc-text--sub {
+.vc-texto--sub {
   margin-bottom: 28px;
 }
 
 .vc-email {
   font-size: 15px;
   font-weight: 700;
-  color: #111;
+  color: var(--vc-negro);
   margin: 6px 0 12px;
 }
 
-.vc-form {
+/*formulario y código*/
+.vc-formulario {
   margin-bottom: 20px;
 }
 
-.vc-code-row {
+.vc-fila-codigo {
   display: flex;
   justify-content: center;
   gap: 10px;
   margin-bottom: 24px;
 }
 
-.vc-code-input {
+.vc-input-codigo {
   width: 48px;
   height: 52px;
   border: none;
   border-radius: 10px;
-  background: #e6c373;
+  background: var(--vc-dorado-claro);
   font-family: inherit;
   font-size: 22px;
   font-weight: 700;
-  color: #111;
+  color: var(--vc-negro);
   text-align: center;
   outline: none;
   transition: box-shadow 0.2s;
 }
 
-.vc-code-input:focus {
+.vc-input-codigo:focus {
   box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.35);
 }
 
-.vc-code-input::placeholder {
-  color: #111;
+.vc-input-codigo::placeholder {
+  color: var(--vc-negro);
 }
 
 .vc-error {
@@ -95,13 +109,14 @@
   margin-bottom: 14px;
 }
 
-.vc-btn-verify {
+/*botones y enlaces*/
+.vc-boton-verificar {
   width: 100%;
   padding: 15px;
   border: none;
   border-radius: 10px;
-  background: #111;
-  color: #e6c373;
+  background: var(--vc-negro);
+  color: var(--vc-dorado-claro);
   font-family: inherit;
   font-size: 16px;
   font-weight: 700;
@@ -109,70 +124,87 @@
   transition: background 0.2s, opacity 0.2s;
 }
 
-.vc-btn-verify:hover:not(:disabled) {
+.vc-boton-verificar:hover:not(:disabled) {
   background: #222;
 }
 
-.vc-btn-verify:disabled {
+.vc-boton-verificar:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
 
-.vc-resend {
+.vc-reenvio {
   font-size: 14px;
-  color: #888;
+  color: var(--vc-gris);
   margin-bottom: 10px;
 }
 
-.vc-link-gold {
+.vc-enlace-dorado {
   background: none;
   border: none;
   padding: 0;
   font-family: inherit;
   font-size: 14px;
   font-weight: 600;
-  color: #c9a227;
+  color: var(--vc-dorado);
   cursor: pointer;
 }
 
-.vc-link-gold:hover:not(:disabled) {
+.vc-enlace-dorado:hover:not(:disabled) {
   text-decoration: underline;
 }
 
-.vc-link-gold:disabled {
+.vc-enlace-dorado:disabled {
   opacity: 0.6;
   cursor: wait;
 }
 
-.vc-timer {
+.vc-temporizador {
   font-size: 13px;
-  color: #aaa;
+  color: var(--vc-gris-claro);
   margin-bottom: 28px;
 }
 
-.vc-back {
+.vc-boton-volver {
   background: none;
   border: none;
   font-family: inherit;
   font-size: 14px;
   font-weight: 700;
-  color: #111;
+  color: var(--vc-negro);
   cursor: pointer;
   padding: 0;
 }
 
-.vc-back:hover {
+.vc-boton-volver:hover {
   text-decoration: underline;
 }
 
+/*Responsivo*/
 @media (max-width: 380px) {
-  .vc-code-row {
+  .vc-fila-codigo {
     gap: 6px;
   }
 
-  .vc-code-input {
+  .vc-input-codigo {
     width: 42px;
     height: 48px;
     font-size: 20px;
+  }
+}
+
+@media (max-width: 320px) {
+  .vc-contenido {
+    padding: 24px 16px;
+  }
+
+  .vc-titulo {
+    font-size: 22px;
+  }
+
+  .vc-input-codigo {
+    width: 36px;
+    height: 44px;
+    font-size: 18px;
   }
 }
