@@ -1,0 +1,273 @@
+/*=============================================
+  VARIABLES GLOBALES Y CONTENEDOR
+=============================================*/
+:root {
+  --color-gold: #E5C158;
+  --color-black: #111827;
+  --color-gray-dark: #374151;
+  --color-gray: #6b7280;
+  --color-gray-light: #f3f4f6;
+  --color-border: #e5e7eb;
+  
+  /* Colores de Alertas */
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+  --success-text: #065f46;
+  --success-icon: #059669;
+  
+  --error-bg: #fff1f2;
+  --error-border: #fecdd3;
+  --error-text: #9f1239;
+  --error-icon: #e11d48;
+}
+
+.control-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 30px;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: var(--color-black);
+}
+
+/* Animaciones Generales */
+.fade-in {
+  animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.zoom-in {
+  animation: zoomIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/*=============================================
+  ENCABEZADO
+=============================================*/
+.control-header-main {
+  margin-bottom: 30px;
+}
+
+.control-header-main h2 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+}
+
+.control-header-main p {
+  font-size: 0.95rem;
+  color: var(--color-gray);
+  margin: 0;
+}
+
+/*=============================================
+  TARJETA DE CONTROL
+=============================================*/
+.control-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  max-width: 800px;
+}
+
+.card-header-border {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+.card-header-border h3 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 10px 0;
+}
+
+.icon-gold {
+  color: var(--color-gold);
+}
+
+.card-header-border p {
+  font-size: 0.9rem;
+  color: var(--color-gray);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/*=============================================
+  FORMULARIO E INPUTS
+=============================================*/
+.control-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.input-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-input {
+  height: 46px;
+  padding: 0 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: var(--color-black);
+  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.1);
+}
+
+.form-input:disabled {
+  background-color: var(--color-gray-light);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/*=============================================
+  BOTÓN DE ENVÍO Y SPINNER
+=============================================*/
+.btn-submit {
+  height: 46px;
+  padding: 0 24px;
+  background-color: var(--color-black);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background-color: var(--color-gray-dark);
+}
+
+.btn-submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Animación del círculo de carga */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/*=============================================
+  BANNERS DE ESTADO (Éxito / Error)
+=============================================*/
+.status-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.banner-success {
+  background-color: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-text);
+}
+
+.banner-error {
+  background-color: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error-text);
+}
+
+.banner-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.banner-success .banner-icon { color: var(--success-icon); }
+.banner-error .banner-icon { color: var(--error-icon); }
+
+.banner-text strong {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.banner-text span {
+  display: block;
+  font-size: 0.85rem;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+/*=============================================
+  RESPONSIVE
+=============================================*/
+@media (max-width: 640px) {
+  .control-wrapper {
+    padding: 20px;
+  }
+  
+  .control-card {
+    padding: 24px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .btn-submit {
+    width: 100%;
+    justify-content: center;
+  }
+}

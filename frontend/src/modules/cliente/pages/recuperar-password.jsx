@@ -29,28 +29,28 @@ export default function RecuperarPassword() {
   };
 
   return (
-    <div className="rp-wrapper">
+    <div className="rp-pagina">
 
-      {/* ── NAVBAR ── */}
-      <nav className="rp-navbar">
-        <BrandLogo className="rp-nav-logo" imgClassName="rp-logo-img" />
+      {/* ── ENCABEZADO ── */}
+      <nav className="rp-encabezado">
+        <BrandLogo className="rp-logo-boton" imgClassName="rp-logo" />
       </nav>
 
       {/* ── CONTENIDO ── */}
-      <div className="rp-content">
-        <div className="rp-card">
+      <div className="rp-contenido">
+        <div className="rp-tarjeta">
 
           {/* Título */}
-          <h1 className="rp-title">¿Olvidaste tu contraseña?</h1>
-          <p className="rp-subtitle">
+          <h1 className="rp-titulo">¿Olvidaste tu contraseña?</h1>
+          <p className="rp-subtitulo">
             Ingresa tu correo electrónico para recuperar<br />
             su contraseña
           </p>
 
           {/* Formulario */}
-          <form className="rp-form" onSubmit={handleSubmit}>
-            <div className="rp-input-wrap">
-              <div className="rp-input-icon">
+          <form className="rp-formulario" onSubmit={handleSubmit}>
+            <div className="rp-input-contenedor">
+              <div className="rp-input-icono">
                 <IconMail size={22} color="#c9a227" />
               </div>
               <input
@@ -66,7 +66,7 @@ export default function RecuperarPassword() {
             {error && <p className="rp-error">{error}</p>}
 
             <button
-              className="rp-btn-submit"
+              className="rp-boton-enviar"
               type="submit"
               disabled={loading}
             >
@@ -75,14 +75,14 @@ export default function RecuperarPassword() {
           </form>
 
           {/* Mensaje de confirmación */}
-          <p className="rp-hint">
+          <p className="rp-texto-ayuda">
             Te enviaremos un correo para restablecer tu contraseña.{" "}
             <strong>Revisa tu correo</strong>
           </p>
 
           {/* Volver al login */}
           <button
-            className="rp-back-btn"
+            className="rp-boton-volver"
             type="button"
             onClick={() => navigate("/login")}
           >

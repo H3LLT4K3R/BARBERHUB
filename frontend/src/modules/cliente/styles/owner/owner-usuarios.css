@@ -1,0 +1,338 @@
+/* ==========================================================================
+   ── CONTENEDOR PRINCIPAL Y FORMULARIO ──
+   ========================================================================== */
+.owner-usuarios-container {
+  padding: 32px 24px;
+  max-width: 700px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.owner-usuarios-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: #111827; 
+  margin-bottom: 8px;
+}
+
+.owner-usuarios-description {
+  color: #4b5563; 
+  margin-bottom: 32px;
+  font-size: 16px;
+}
+
+.owner-usuarios-card {
+  background-color: #ffffff;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); 
+  border: 1px solid #e5e7eb;
+}
+
+.owner-usuarios-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f3f4f6; 
+}
+
+.owner-usuarios-card-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.owner-usuarios-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.owner-usuarios-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 14px;
+}
+
+.owner-usuarios-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  font-size: 15px;
+  color: #111827;
+  background-color: #f9fafb; 
+}
+
+.owner-usuarios-input::placeholder {
+  color: #9ca3af; 
+}
+
+.owner-usuarios-input:focus {
+  border-color: #D4AF37;
+  background-color: #ffffff; 
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15); 
+}
+
+.owner-usuarios-role-container {
+  display: flex;
+  gap: 16px;
+}
+
+.owner-usuarios-role-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #4b5563;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.owner-usuarios-role-btn:hover {
+  border-color: #9ca3af;
+  background-color: #f9fafb;
+}
+
+.owner-usuarios-role-btn.active {
+  border: 2px solid #000000;
+  background-color: #ffffff;
+  font-weight: 700;
+  color: #000000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.owner-usuarios-submit-btn {
+  margin-top: 12px;
+  padding: 14px;
+  background-color: #000000;
+  color: #ffffff;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.owner-usuarios-submit-btn:hover {
+  background-color: #333333;
+  transform: translateY(-1px); 
+}
+
+/* 📱 DISEÑO RESPONSIVO PARA CELULARES */
+@media (max-width: 600px) {
+  .owner-usuarios-container {
+    padding: 16px;
+  }
+  .owner-usuarios-card {
+    padding: 20px;
+  }
+  .owner-usuarios-role-container {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* ==========================================================================
+   ── INDICADORES DE ESTADO (ACTIVO / INACTIVO) Y ROLES ──
+   ========================================================================== */
+.account-badges-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 50px;
+  /* Colores fijos en lugar de variables para evitar fallos */
+  background-color: #f3f4f6; 
+  color: #6b7280; 
+  border: 1px solid #e5e7eb;
+}
+
+.status-badge.is-active {
+  background-color: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.status-badge.is-inactive {
+  background-color: #ffe4e6;
+  color: #991b1b;
+  border-color: #fecdd3;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-badge.is-active .status-dot { background-color: #22c55e; }
+.status-badge.is-inactive .status-dot { background-color: #ef4444; }
+
+/* Etiquetas de los Roles */
+.account-role-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.role-admin {
+  background-color: #fef08a; /* Fondo dorado suave */
+  color: #854d0e; /* Texto oscuro para contraste */
+  border: 1px solid #eab308;
+}
+
+.role-barber {
+  background-color: #111827; /* Fondo negro */
+  color: #D4AF37; /* Letras doradas */
+  border: 1px solid #111827;
+}
+
+/* ==========================================================================
+   ── LISTA DE CUENTAS REGISTRADAS (FILAS Y MODO EDICIÓN) ──
+   ========================================================================== */
+.accounts-list-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.account-row-card {
+  display: flex;
+  flex-direction: row; /* Fuerza diseño en línea horizontal */
+  align-items: center;
+  justify-content: space-between;
+  background-color: #ffffff;
+  border: 1px solid #d1d5db;
+  padding: 16px;
+  border-radius: 12px;
+  gap: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.account-info-col {
+  display: flex;
+  flex-direction: column; /* Apila nombre arriba y correo abajo */
+  flex: 1;
+  min-width: 0; 
+}
+
+.account-name-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-email-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+/* Botones de Acción (Iconos) */
+.account-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.action-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.action-icon-btn.edit { color: #3b82f6; }
+.action-icon-btn.edit:hover { background-color: #eff6ff; }
+
+.action-icon-btn.delete { color: #ef4444; }
+.action-icon-btn.delete:hover { background-color: #fef2f2; }
+
+.action-icon-btn.save { color: #166534; background-color: #dcfce7; }
+.action-icon-btn.cancel { color: #991b1b; background-color: #ffe4e6; }
+
+/* Inputs para cuando le das clic a "Editar" */
+.account-edit-mode {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  flex-wrap: wrap; 
+}
+
+.add-account-input,
+.add-account-select {
+  flex: 1;
+  min-width: 120px;
+  background-color: #f9fafb;
+  color: #111827;
+  font-weight: 500;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.add-account-input:focus,
+.add-account-select:focus {
+  border-color: #D4AF37;
+  background-color: #ffffff;
+}
+
+/* Responsivo para la lista de cuentas en celulares */
+@media (max-width: 768px) {
+  .account-row-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .account-badges-group, .account-actions-group {
+    width: 100%;
+    justify-content: flex-start;
+    margin-top: 8px;
+  }
+}

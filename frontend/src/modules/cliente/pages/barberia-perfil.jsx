@@ -1,4 +1,4 @@
-import React from "react"; // Buena práctica incluirlo explícitamente según la configuración
+import React from "react"; 
 import { useNavigate, useParams } from "react-router-dom";
 import {
   IconMapPin,
@@ -25,7 +25,7 @@ const ICONOS_SERVICIO = {
 /* Componente de estrellas */
 function Estrellas({ count = 5 }) {
   return (
-    <span className="estrellas-barberia" aria-hidden>
+    <span className="bp-estrellas" aria-hidden>
       {Array.from({ length: count }).map((_, i) => (
         <IconStarFilled key={i} size={16} />
       ))}
@@ -42,9 +42,9 @@ export default function BarberiaPerfil() {
   // CONTROL DE ERRORES: Si la barbería no existe en la base de datos de prueba
   if (!barberia) {
     return (
-      <div className="pagina-barberia">
+      <div className="bp-pagina">
         <AppNavbar />
-        <main className="contenido-barberia" style={{ textAlign: "center", marginTop: "50px" }}>
+        <main className="bp-contenido bp-contenido--error">
           <h2>Barbería no encontrada</h2>
           <button onClick={() => navigate("/")}>Volver al inicio</button>
         </main>
@@ -68,30 +68,35 @@ export default function BarberiaPerfil() {
     navigate(`/barberia/${barberia.id}/servicios`);
   };
 
+  // Acción: ver más opiniones
+  const verMasOpiniones = () => {
+    navigate("/opinion-barberia");
+  };
+
   return (
-    <div className="pagina-barberia">
+    <div className="bp-pagina">
       <AppNavbar />
 
-      <main className="contenido-barberia">
+      <main className="bp-contenido">
         {/* Tarjeta principal con datos de la barbería */}
-        <section className="hero-barberia" aria-label={`Perfil de ${barberia.nombre}`}>
-          <div className="hero-izquierda">
-            <img className="logo-barberia" src={barberia.imagen} alt="" />
-            <div className="info-barberia">
-              <h1 className="titulo-barberia">{barberia.nombre}</h1>
-              <div className="rating-barberia">
+        <section className="bp-hero" aria-label={`Perfil de ${barberia.nombre}`}>
+          <div className="bp-hero-izquierda">
+            <img className="bp-logo" src={barberia.imagen} alt="" />
+            <div className="bp-info">
+              <h1 className="bp-titulo">{barberia.nombre}</h1>
+              <div className="bp-rating">
                 <Estrellas />
                 <span>
                   {barberia.rating.toFixed(1)} ({barberia.totalOpiniones} opiniones)
                 </span>
               </div>
-              <p className="direccion-barberia">
+              <p className="bp-direccion">
                 <IconMapPin size={16} stroke={2} />
                 {barberia.direccion}
               </p>
-              <p className="estado-barberia">
+              <p className="bp-estado">
                 <span
-                  className={`estado-dot ${barberia.abierto ? "estado-dot--abierto" : ""}`}
+                  className={`bp-estado-dot ${barberia.abierto ? "abierto" : ""}`}
                   aria-hidden
                 />
                 {barberia.abierto ? "Abierto ahora" : "Cerrado"}
@@ -100,12 +105,12 @@ export default function BarberiaPerfil() {
           </div>
 
           {/* Botones de acción principales */}
-          <div className="acciones-hero">
-            <button type="button" className="boton-mapa" onClick={abrirMapa}>
+          <div className="bp-acciones-hero">
+            <button type="button" className="bp-boton-mapa" onClick={abrirMapa}>
               <IconMapPin size={18} stroke={2} />
               Ver en el mapa
             </button>
-            <button type="button" className="boton-agendar" onClick={agendarCita}>
+            <button type="button" className="bp-boton-agendar" onClick={agendarCita}>
               <IconCalendar size={18} stroke={2} />
               Agendar cita
             </button>
@@ -113,49 +118,49 @@ export default function BarberiaPerfil() {
         </section>
 
         {/* Tres columnas: Servicios, Barberos, Opiniones */}
-        <div className="grid-barberia">
-          
+        <div className="bp-grid">
+
           {/* Panel de Servicios */}
-          <section className="panel-barberia">
-            <header className="panel-encabezado">
-              <IconScissors size={22} stroke={1.8} className="icono-panel dorado" />
+          <section className="bp-panel">
+            <header className="bp-panel-encabezado">
+              <IconScissors size={22} stroke={1.8} className="bp-icono-panel dorado" />
               <h2>Servicios</h2>
             </header>
-            <ul className="lista-servicios">
+            <ul className="bp-lista-servicios">
               {barberia.servicios.map((s) => {
                 const Icon = ICONOS_SERVICIO[s.icono] ?? IconScissors;
                 return (
-                  <li key={s.id} className="item-servicio">
-                    <span className="servicio-izquierda">
+                  <li key={s.id} className="bp-item-servicio">
+                    <span className="bp-servicio-izquierda">
                       <Icon size={22} stroke={1.5} />
                       {s.nombre}
                     </span>
-                    <span className="precio-servicio">${s.precio}</span>
+                    <span className="bp-precio-servicio">${s.precio}</span>
                   </li>
                 );
               })}
             </ul>
-            <button type="button" className="boton-ver-mas" onClick={verMasServicios}>
+            <button type="button" className="bp-boton-ver-mas" onClick={verMasServicios}>
               Ver más servicios
             </button>
           </section>
 
           {/* Panel de Barberos */}
-          <section className="panel-barberia">
-            <header className="panel-encabezado">
-              <IconUser size={22} stroke={1.8} className="icono-panel" />
+          <section className="bp-panel">
+            <header className="bp-panel-encabezado">
+              <IconUser size={22} stroke={1.8} className="bp-icono-panel" />
               <h2>Barberos</h2>
             </header>
-            <ul className="lista-barberos">
+            <ul className="bp-lista-barberos">
               {barberia.barberos.map((b) => (
-                <li key={b.id} className="item-barbero">
-                  <img className="foto-barbero" src={b.foto} alt={b.nombre} loading="lazy" />
+                <li key={b.id} className="bp-item-barbero">
+                  <img className="bp-foto-barbero" src={b.foto} alt={b.nombre} loading="lazy" />
                   <div>
-                    <div className="nombre-barbero">{b.nombre}</div>
-                    <div className="rating-barbero">
+                    <div className="bp-nombre-barbero">{b.nombre}</div>
+                    <div className="bp-rating-barbero">
                       <IconStarFilled size={14} />
                       {b.rating.toFixed(1)}{" "}
-                      <span className="opiniones-barbero">({b.opiniones})</span>
+                      <span className="bp-opiniones-barbero">({b.opiniones})</span>
                     </div>
                   </div>
                 </li>
@@ -164,19 +169,22 @@ export default function BarberiaPerfil() {
           </section>
 
           {/* Panel de Opiniones */}
-          <section className="panel-barberia">
-            <header className="panel-encabezado">
-              <IconStarFilled size={24} className="icono-panel dorado" />
+          <section className="bp-panel">
+            <header className="bp-panel-encabezado">
+              <IconStarFilled size={24} className="bp-icono-panel dorado" />
               <h2>Opiniones</h2>
             </header>
-            <ul className="lista-opiniones">
-              {barberia.opiniones.map((texto, i) => (
-                <li key={i} className="item-opinion">
-                  <IconChevronRight size={16} className="chevron-opinion" />
+            <ul className="bp-lista-opiniones">
+              {barberia.opiniones.slice(0, 3).map((texto, i) => (
+                <li key={i} className="bp-item-opinion">
+                  <IconChevronRight size={16} className="bp-chevron-opinion" />
                   <p>{texto}</p>
                 </li>
               ))}
             </ul>
+            <button type="button" className="bp-boton-ver-mas" onClick={verMasOpiniones}>
+              Ver más opiniones
+            </button>
           </section>
         </div>
       </main>

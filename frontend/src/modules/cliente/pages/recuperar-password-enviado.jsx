@@ -18,18 +18,18 @@ export default function RecuperarPasswordEnviado() {
   }, [navigate]);
 
   return (
-    <div className="rpe-wrapper">
-      <nav className="rpe-navbar">
-        <BrandLogo className="rpe-nav-logo" imgClassName="rpe-logo-img" />
+    <div className="rpe-pagina">
+      <nav className="rpe-encabezado">
+        <BrandLogo className="rpe-logo-boton" imgClassName="rpe-logo" />
       </nav>
 
-      <div className="rpe-content">
-        <div className="rpe-icon-wrap" aria-hidden>
+      <div className="rpe-contenido">
+        <div className="rpe-icono" aria-hidden>
           <IconCheck size={40} stroke={3} color="#fff" />
         </div>
 
-        <h1 className="rpe-title">Correo enviado correctamente</h1>
-        <p className="rpe-subtitle">
+        <h1 className="rpe-titulo">Correo enviado correctamente</h1>
+        <p className="rpe-subtitulo">
           En unos segundos serás redirigido al inicio de sesión.
         </p>
       </div>

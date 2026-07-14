@@ -83,26 +83,26 @@ export default function DatosReserva() {
   };
 
   return (
-    <div className="pagina-reserva">
+    <div className="dr-pagina">
       <PageNavbar />
-      <div className="contenido-reserva">
-        <div className="tarjeta-reserva">
-          
+      <div className="dr-contenido">
+        <div className="dr-tarjeta">
+
           {/* Icono superior */}
-          <div className="icono-reserva" aria-hidden>
+          <div className="dr-icono" aria-hidden>
             <IconCircleCheck size={48} stroke={2} color="#fff" />
           </div>
 
           {/* Título y subtítulo */}
-          <h1 className="titulo-reserva">Datos de Reserva</h1>
-          <p className="subtitulo-reserva">
+          <h1 className="dr-titulo">Datos de Reserva</h1>
+          <p className="dr-subtitulo">
             No necesitas cuenta. Completa los datos para agendar en el local.
           </p>
 
           {/* Formulario */}
-          <form className="formulario-reserva" onSubmit={confirmar}>
+          <form className="dr-formulario" onSubmit={confirmar}>
             <input
-              className="input-reserva"
+              className="dr-input"
               type="text"
               placeholder="Tu Nombre Completo"
               value={nombre}
@@ -113,7 +113,7 @@ export default function DatosReserva() {
               required
             />
             <input
-              className="input-reserva"
+              className="dr-input"
               type="tel"
               placeholder="Teléfono / WhatsApp"
               value={telefono}
@@ -125,42 +125,42 @@ export default function DatosReserva() {
             />
 
             {/* Resumen de la cita */}
-            <div className="resumen-reserva">
-              <div className="fila-resumen">
-                <span className="etiqueta">ESTABLECIMIENTO</span>
-                <span className="valor">{reserva.establecimiento}</span>
+            <div className="dr-resumen">
+              <div className="dr-fila-resumen">
+                <span className="dr-etiqueta">ESTABLECIMIENTO</span>
+                <span className="dr-valor">{reserva.establecimiento}</span>
               </div>
-              <div className="fila-resumen">
-                <span className="etiqueta">HORARIO</span>
-                <span className="valor">{horarioTexto}</span>
+              <div className="dr-fila-resumen">
+                <span className="dr-etiqueta">HORARIO</span>
+                <span className="dr-valor">{horarioTexto}</span>
               </div>
-              <div className="fila-resumen">
-                <span className="etiqueta">SERVICIO</span>
-                <span className="valor">{reserva.servicio}</span>
+              <div className="dr-fila-resumen">
+                <span className="dr-etiqueta">SERVICIO</span>
+                <span className="dr-valor">{reserva.servicio}</span>
               </div>
-              <div className="fila-resumen destacado">
-                <span className="etiqueta">TOTAL ESTIMADO</span>
-                <span className="valor">
+              <div className="dr-fila-resumen destacado">
+                <span className="dr-etiqueta">TOTAL ESTIMADO</span>
+                <span className="dr-valor">
                   ${reserva.precio} {reserva.moneda}
                 </span>
               </div>
             </div>
 
             {/* Mensaje de error */}
-            {error && <p className="error-reserva">{error}</p>}
+            {error && <p className="dr-error">{error}</p>}
 
             {/* Botones de acción */}
-            <div className="acciones-reserva">
+            <div className="dr-acciones">
               <button
                 type="button"
-                className="boton-cancelar"
+                className="dr-boton-cancelar"
                 onClick={() => navigate("/agenda-local")}
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="boton-confirmar"
+                className="dr-boton-confirmar"
                 disabled={enviando}
               >
                 {enviando ? "Confirmando..." : "Confirmar Cita"}

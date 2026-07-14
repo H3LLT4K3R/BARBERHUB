@@ -80,28 +80,28 @@ export default function Registro() {
   };
 
   return (
-    <div className="reg-wrapper">
+    <div className="reg-pagina">
 
       {/* ── COLUMNA IZQUIERDA — negra con pasos ── */}
-      <div className="reg-left">
-        <div className="reg-left-content">
+      <div className="reg-columna-izquierda">
+        <div className="reg-columna-izquierda-contenido">
 
-          <BrandLogo className="reg-logo" imgClassName="reg-logo-img" />
+          <BrandLogo className="reg-logo-boton" imgClassName="reg-logo" />
 
           {/* Título sección */}
-          <p className="reg-steps-label">COMO FUNCIONA EL REGISTRO</p>
+          <p className="reg-pasos-label">COMO FUNCIONA EL REGISTRO</p>
 
           {/* Pasos con línea conectora */}
-          <div className="reg-steps">
+          <div className="reg-pasos">
             {PASOS.map((paso, idx) => (
-              <div className="reg-step-item" key={paso.num}>
-                <div className="reg-step-left">
-                  <div className="reg-step-circle">{paso.num}</div>
+              <div className="reg-paso-item" key={paso.num}>
+                <div className="reg-paso-izquierda">
+                  <div className="reg-paso-circulo">{paso.num}</div>
                   {idx < PASOS.length - 1 && (
-                    <div className="reg-step-line" />
+                    <div className="reg-paso-linea" />
                   )}
                 </div>
-                <div className="reg-step-text">
+                <div className="reg-paso-texto">
                   <h4>{paso.titulo}</h4>
                   <p>{paso.desc}</p>
                 </div>
@@ -113,14 +113,14 @@ export default function Registro() {
       </div>
 
       {/* ── COLUMNA DERECHA — formulario ── */}
-      <div className="reg-right">
-        <div className="reg-form-wrap">
-          <h1 className="reg-title">Crear cuenta</h1>
+      <div className="reg-columna-derecha">
+        <div className="reg-formulario-contenedor">
+          <h1 className="reg-titulo">Crear cuenta</h1>
 
-          <form className="reg-form" onSubmit={handleSubmit}>
+          <form className="reg-formulario" onSubmit={handleSubmit}>
 
             {/* Nombre / Apellido */}
-            <div className="reg-row-2">
+            <div className="reg-fila-doble">
               <input
                 className="reg-input"
                 type="text"
@@ -164,7 +164,7 @@ export default function Registro() {
             />
 
             {/* Contraseña */}
-            <div className="reg-password-block">
+            <div className="reg-bloque-password">
               <input
                 className="reg-input"
                 type="password"
@@ -191,7 +191,7 @@ export default function Registro() {
             {error && <p className="reg-error">{error}</p>}
 
             <button
-              className="reg-btn-submit"
+              className="reg-boton-enviar"
               type="submit"
               disabled={loading}
             >
@@ -199,11 +199,11 @@ export default function Registro() {
             </button>
           </form>
 
-          <p className="reg-login-row">
+          <p className="reg-fila-login">
             ¿Ya tienes cuenta?{" "}
             <button
               type="button"
-              className="reg-link-gold"
+              className="reg-enlace-dorado"
               onClick={() => navigate("/login")}
             >
               Inicia Sesión

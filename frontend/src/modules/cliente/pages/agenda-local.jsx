@@ -5,12 +5,12 @@ import "../styles/agenda-local.css";
 export default function AgendaLocal() {
   const navigate = useNavigate();
 
-  // Estado para el día seleccionado (Mayo 2026)
+  // Estado para el día seleccionado 
   const [diaSeleccionado, setDiaSeleccionado] = useState(21);
-  // Estado para la hora seleccionada (Inicia en "9:00" que es disponible)
+  // Estado para la hora seleccionada 
   const [horaSeleccionada, setHoraSeleccionada] = useState("9:00");
 
-  // Simulación de los días de Mayo 2026 (Empezando en Viernes 1)
+  // Simulación de los días de Mayo 2026 
   const diasMayo = [
     "", "", "", "", 1, 2, 3,
     4, 5, 6, 7, 8, 9, 10,
@@ -40,7 +40,7 @@ export default function AgendaLocal() {
 
   const handleContinuar = () => {
     if (!diaSeleccionado || !horaSeleccionada) return;
-    
+
     navigate("/datos-reserva", {
       state: {
         fecha: `2026-05-${diaSeleccionado.toString().padStart(2, "0")}`,
@@ -52,39 +52,39 @@ export default function AgendaLocal() {
   };
 
   return (
-    <div className="pagina-agenda">
+    <div className="al-pagina">
       {/* Encabezado Superior */}
-      <header className="encabezado-agenda">
-        <div className="info-marca">
-          <img src="/barberhublogo.jpg" alt="Logo" className="logo-barberia" />
-          <div className="texto-marca">
+      <header className="al-encabezado">
+        <div className="al-info-marca">
+          <img src="/barberhublogo.jpg" alt="Logo" className="al-logo" />
+          <div className="al-texto-marca">
             <h2>URBAN CUTS</h2>
             <span>Barbería</span>
           </div>
         </div>
-        <h1 className="titulo-agenda">Agenda tu próximo corte</h1>
+        <h1 className="al-titulo">Agenda tu próximo corte</h1>
       </header>
 
       {/* Contenido Principal */}
-      <main className="contenido-agenda">
-        
+      <main className="al-contenido">
+
         {/* Columna Izquierda: Calendario */}
-        <section className="seccion-calendario">
-          <h3 className="titulo-mes">MAYO 2026</h3>
-          
-          <div className="grid-calendario">
+        <section className="al-seccion-calendario">
+          <h3 className="al-titulo-mes">MAYO 2026</h3>
+
+          <div className="al-grid-calendario">
             {["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"].map((d) => (
-              <div key={d} className="encabezado-dia">{d}</div>
+              <div key={d} className="al-dia-header">{d}</div>
             ))}
 
             {diasMayo.map((dia, index) => {
-              if (dia === "") return <div key={`empty-${index}`} className="celda-dia vacia"></div>;
-              
+              if (dia === "") return <div key={`empty-${index}`} className="al-celda-dia vacia"></div>;
+
               const esSeleccionado = diaSeleccionado === dia;
               return (
                 <div
                   key={`dia-${dia}`}
-                  className={`celda-dia ${esSeleccionado ? "activo" : ""}`}
+                  className={`al-celda-dia ${esSeleccionado ? "activo" : ""}`}
                   onClick={() => setDiaSeleccionado(dia)}
                 >
                   {dia}
@@ -93,17 +93,17 @@ export default function AgendaLocal() {
             })}
           </div>
 
-          </section>
+        </section>
 
-          {/* Columna Derecha: Horarios Disponibles */}
-          <section className="seccion-horarios">
-          <h3 className="titulo-horarios">HORARIOS DISPONIBLES</h3>
+        {/* Columna Derecha: Horarios Disponibles */}
+        <section className="al-seccion-horarios">
+          <h3 className="al-titulo-horarios">HORARIOS DISPONIBLES</h3>
 
-          <div className="grid-horarios">
+          <div className="al-grid-horarios">
             {horariosBase.map((item) => {
               const esElSeleccionadoActual = horaSeleccionada === item.hora;
-              
-              // Definición dinámica de clases según tus reglas:
+
+             
               let claseEstado = "disponible"; // Por defecto Verde
               if (item.ocupado) {
                 claseEstado = "ocupado"; // Rojo estático
@@ -114,7 +114,7 @@ export default function AgendaLocal() {
               return (
                 <button
                   key={item.hora}
-                  className={`boton-hora ${claseEstado}`}
+                  className={`al-boton-hora ${claseEstado}`}
                   disabled={item.ocupado}
                   onClick={() => setHoraSeleccionada(item.hora)}
                 >
@@ -125,22 +125,22 @@ export default function AgendaLocal() {
           </div>
 
           {/* Código de Colores / Leyenda */}
-          <div className="caja-leyenda">
-            <div className="item-leyenda">
-              <span className="punto-leyenda seleccionado"></span>
+          <div className="al-leyenda">
+            <div className="al-leyenda-item">
+              <span className="al-leyenda-punto seleccionado"></span>
               <span>Seleccionado</span>
             </div>
-            <div className="item-leyenda">
-              <span className="punto-leyenda disponible"></span>
+            <div className="al-leyenda-item">
+              <span className="al-leyenda-punto disponible"></span>
               <span>Disponible</span>
             </div>
-            <div className="item-leyenda">
-              <span className="punto-leyenda ocupado"></span>
+            <div className="al-leyenda-item">
+              <span className="al-leyenda-punto ocupado"></span>
               <span>Ocupado</span>
             </div>
           </div>
 
-          <button className="boton-continuar" onClick={handleContinuar}>
+          <button className="al-boton-continuar" onClick={handleContinuar}>
             Continuar
           </button>
         </section>

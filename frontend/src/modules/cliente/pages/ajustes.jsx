@@ -22,32 +22,31 @@ export default function Ajustes() {
   };
 
   return (
-    <div className="contenido-ajustes">
-      <div className="ajustes-grid">
+    <div className="ajt-contenido">
+      <div className="ajt-grid">
 
         {/* Columna Izquierda: Tarjeta de Perfil y Estadísticas */}
-        <div className="columna-izquierda-ajustes">
-          <div className="tarjeta-perfil">
-            <div className="avatar-perfil">LM</div>
+        <div className="ajt-columna-izquierda">
+          <div className="ajt-tarjeta-perfil">
+            <div className="ajt-avatar">LM</div>
             <h3>Luis Méndez</h3>
             <p>luis.mendez@gmail.com</p>
           </div>
 
-          <button className="boton-cambiar-foto">
+          <button className="ajt-boton-cambiar-foto">
             <span>Cambiar foto de perfil</span>
-            <span className="icono-foto">🖼️</span>
           </button>
 
-          <div className="grid-estadisticas">
-            <button className="boton-estadistica" onClick={() => handleStatClick("visitas")}>
+          <div className="ajt-grid-estadisticas">
+            <button className="ajt-boton-estadistica" onClick={() => handleStatClick("visitas")}>
               <strong>6</strong>
               <span>Visitas</span>
             </button>
-            <button className="boton-estadistica" onClick={() => handleStatClick("puntos")}>
+            <button className="ajt-boton-estadistica" onClick={() => handleStatClick("puntos")}>
               <strong>50</strong>
               <span>Puntos</span>
             </button>
-            <button className="boton-estadistica" onClick={() => handleStatClick("calificacion")}>
+            <button className="ajt-boton-estadistica" onClick={() => handleStatClick("calificacion")}>
               <strong>4.8</strong>
               <span>Calificación</span>
             </button>
@@ -55,98 +54,91 @@ export default function Ajustes() {
         </div>
 
         {/* Columna Derecha: Secciones de Configuración */}
-        <div className="columna-derecha-ajustes">
+        <div className="ajt-columna-derecha">
 
           {/* Sección Notificaciones */}
-          <section className="seccion-ajustes">
+          <section className="ajt-seccion">
             <h2>Notificaciones</h2>
 
-            <div className="fila-ajuste">
-              <div className="etiqueta-ajuste">
-                <span className="icono-ajuste naranja">🔔</span>
+            <div className="ajt-fila-ajuste">
+              <div className="ajt-etiqueta">
                 <span>Recordatorio de cita</span>
               </div>
-              <label className="switch-ajuste">
+              <label className="ajt-switch">
                 <input type="checkbox" checked={recordatorio} onChange={() => setRecordatorio(!recordatorio)} />
-                <span className="slider-ajuste"></span>
+                <span className="ajt-slider"></span>
               </label>
             </div>
 
-            <div className="fila-ajuste">
-              <div className="etiqueta-ajuste">
-                <span className="icono-ajuste azul">✔️</span>
+            <div className="ajt-fila-ajuste">
+              <div className="ajt-etiqueta">
                 <span>Cita confirmada</span>
               </div>
-              <label className="switch-ajuste">
+              <label className="ajt-switch">
                 <input type="checkbox" checked={citaConfirmada} onChange={() => setCitaConfirmada(!citaConfirmada)} />
-                <span className="slider-ajuste"></span>
+                <span className="ajt-slider"></span>
               </label>
             </div>
 
-            <div className="fila-ajuste">
-              <div className="etiqueta-ajuste">
-                <span className="icono-ajuste verde">🎟️</span>
+            <div className="ajt-fila-ajuste">
+              <div className="ajt-etiqueta">
                 <span>Nuevos cupones</span>
               </div>
-              <label className="switch-ajuste">
+              <label className="ajt-switch">
                 <input type="checkbox" checked={nuevosCupones} onChange={() => setNuevosCupones(!nuevosCupones)} />
-                <span className="slider-ajuste"></span>
+                <span className="ajt-slider"></span>
               </label>
             </div>
           </section>
 
           {/* Sección Seguridad */}
-          <section className="seccion-ajustes">
+          <section className="ajt-seccion">
             <h2>Seguridad</h2>
 
-            <div className="fila-ajuste">
-              <div className="etiqueta-ajuste">
-                <span className="icono-ajuste morado">🔒</span>
+            <div className="ajt-fila-ajuste">
+              <div className="ajt-etiqueta">
                 <span>Contraseña</span>
               </div>
-              <div className="acciones-password">
-                <span className="dots-password">..........</span>
-                <button className="boton-editar-inline" onClick={handlePasswordChange}>Editar</button>
+              <div className="ajt-acciones-password">
+                <span className="ajt-dots-password">..........</span>
+                <button className="ajt-boton-editar-inline" onClick={handlePasswordChange}>Editar</button>
               </div>
             </div>
 
-            <div className="fila-ajuste">
-              <div className="etiqueta-ajuste">
-                <span className="icono-ajuste rosa">🛡️</span>
+            <div className="ajt-fila-ajuste">
+              <div className="ajt-etiqueta">
                 <span>Verificación de 2 pasos</span>
               </div>
-              <label className="switch-ajuste">
+              <label className="ajt-switch">
                 <input type="checkbox" checked={verificacion2Pasos} onChange={() => setVerificacion2Pasos(!verificacion2Pasos)} />
-                <span className="slider-ajuste"></span>
+                <span className="ajt-slider"></span>
               </label>
             </div>
           </section>
 
           {/* Sección Datos Personales */}
-          <section className="seccion-ajustes">
+          <section className="ajt-seccion">
             <h2>Datos personales</h2>
 
-            <div className="fila-info">
-              <div className="etiqueta-ajuste">
-                <span className="icono-ajuste gris">👤</span>
+            <div className="ajt-fila-info">
+              <div className="ajt-etiqueta">
                 <span>Nombre</span>
               </div>
-              <span className="valor-info">Luis Méndez</span>
+              <span className="ajt-valor-info">Luis Méndez</span>
             </div>
 
-            <div className="fila-info">
-              <div className="etiqueta-ajuste">
-                <span className="icono-ajuste gris">✉️</span>
+            <div className="ajt-fila-info">
+              <div className="ajt-etiqueta">
                 <span>Correo</span>
               </div>
-              <span className="valor-info">luis.mendez@gmail.com</span>
+              <span className="ajt-valor-info">luis.mendez@gmail.com</span>
             </div>
           </section>
 
           {/* Zona Peligrosa */}
-          <div className="zona-eliminar">
-            <span className="texto-eliminar">Eliminar cuenta</span>
-            <button className="boton-eliminar" onClick={handleDeleteAccount}>Eliminar</button>
+          <div className="ajt-zona-eliminar">
+            <span className="ajt-texto-eliminar">Eliminar cuenta</span>
+            <button className="ajt-boton-eliminar" onClick={handleDeleteAccount}>Eliminar</button>
           </div>
 
         </div>

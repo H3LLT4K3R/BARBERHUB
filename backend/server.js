@@ -1,19 +1,16 @@
 import express from 'express';
 import cors from 'cors';
+import pagosRoutes from './routes/pagos.js';
 
 const app = express();
 const PORT = 3000;
 
-// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Ruta de prueba
-app.get('/api/estado', (req, res) => {
-  res.json({ mensaje: '¡El backend está conectado y funcionando!' });
-});
+// 🔴 LA CLAVE: Lo dejamos como '/api' para que coincida con tu frontend original
+app.use('/api', pagosRoutes);
 
-// Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });

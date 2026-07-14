@@ -1,202 +1,189 @@
-import { useState } from "react";
-import "../../styles/owner/owner-finanzas.css";
-
-const menuItems = [
-  { label: "Finanzas", icon: "💰" },
-  { label: "Gestión de Agenda", icon: "📅" },
-  { label: "Inventario (Stock)", icon: "📦" },
-  { label: "Ingresos", icon: "📈" },
-];
-
-const registrosIniciales = [
-  {
-    id: 1,
-    servicio: "TaperFade",
-    cliente: "Cliente: David G.",
-    atendio: "Juan",
-    metodoPago: "—",
-    monto: 0,
-  },
-];
-
-const egresosIniciales = [
-  {
-    id: 1,
-    concepto: "Compra Insumos (Cera / Navajas)",
-    responsable: "Responsable: Carlos (Admin)",
-    monto: 0,
-  },
-];
+import React, { useState } from 'react';
+import { TrendingUp, TrendingDown, Wallet, Plus, Trash2, Receipt, DollarSign } from 'lucide-react';
+import '../../styles/owner/owner-finanzas.css';
 
 export default function OwnerFinanzas() {
-  const [seccionActiva, setSeccionActiva] = useState("Finanzas");
-  const [registros] = useState(registrosIniciales);
-  const [egresos, setEgresos] = useState(egresosIniciales);
-  const [conceptoGasto, setConceptoGasto] = useState("");
-  const [montoGasto, setMontoGasto] = useState("");
+  const [ingresosTotales] = useState(19850);
+  const [egresos, setEgresos] = useState([
+    { id: 1, concepto: 'Compra Insumos (Cera / Navajas)', responsable: 'Carlos (Admin)', monto: 1200 }
+  ]);
+  
+  const [concepto, setConcepto] = useState('');
+  const [monto, setMonto] = useState('');
 
-  const ingresosTotales = registros.reduce((acc, r) => acc + r.monto, 0);
-  const egresosTotales = egresos.reduce((acc, e) => acc + e.monto, 0);
-  const gananciaTotal = ingresosTotales - egresosTotales;
+  const totalEgresos = egresos.reduce((sum, item) => sum + item.monto, 0);
+  const gananciaTotal = ingresosTotales - totalEgresos;
 
-  const agregarEgreso = () => {
-    if (!conceptoGasto.trim() || !montoGasto) return;
-    setEgresos([
-      ...egresos,
-      {
-        id: Date.now(),
-        concepto: conceptoGasto,
-        responsable: "Responsable: —",
-        monto: Number(montoGasto),
-      },
-    ]);
-    setConceptoGasto("");
-    setMontoGasto("");
+  const handleAddEgreso = (e) => {
+    e.preventDefault();
+    if (!concepto || !monto) return;
+
+    const newEgreso = {
+      id: Date.now(),
+      concepto: concepto,
+      responsable: 'Propietario (Tú)',
+      monto: parseFloat(monto)
+    };
+
+    setEgresos([...egresos, newEgreso]);
+    setConcepto('');
+    setMonto('');
+  };
+
+  const handleEliminarEgreso = (id) => {
+    setEgresos(egresos.filter(item => item.id !== id));
   };
 
   return (
-    <div className="of-layout">
-      {/* Header */}
-      <header className="of-header">
-        <img src="/logo.png" alt="Barber Hub" className="of-logo" />
+    <div className="finanzas-wrapper fade-in">
+      
+      {/* Encabezado */}
+      <header className="finanzas-header">
+        <div className="header-title">
+          <Wallet className="icon-gold" size={28} />
+          <div>
+            <h1>Consolidado de Finanzas</h1>
+            <p>Monitoreo de ingresos por captación, egresos y utilidad neta.</p>
+          </div>
+        </div>
       </header>
 
-      <div className="of-body">
-        {/* Sidebar */}
-        <aside className="of-sidebar">
-          <h2 className="of-sidebar-titulo">
-            Panel <span className="of-owner-tag">Owner</span>
-          </h2>
+      {/* Tarjetas KPI (Key Performance Indicators) */}
+      <div className="finanzas-kpi-grid">
+        
+        <div className="kpi-card">
+          <div className="kpi-icon bg-green-light">
+            <TrendingUp size={24} className="text-green" />
+          </div>
+          <div className="kpi-info">
+            <h3>Ingresos Totales</h3>
+            <p className="kpi-amount text-green">
+              ${ingresosTotales.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+            </p>
+          </div>
+        </div>
 
-          <nav className="of-sidebar-menu">
-            {menuItems.map((item) => (
-              <button
-                key={item.label}
-                className={`of-sidebar-item ${
-                  seccionActiva === item.label ? "activo" : ""
-                }`}
-                onClick={() => setSeccionActiva(item.label)}
-              >
-                {item.label}
-              </button>
-            ))}
-          </nav>
+        <div className="kpi-card">
+          <div className="kpi-icon bg-red-light">
+            <TrendingDown size={24} className="text-red" />
+          </div>
+          <div className="kpi-info">
+            <h3>Egresos Totales</h3>
+            <p className="kpi-amount text-red">
+              ${totalEgresos.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+            </p>
+          </div>
+        </div>
 
-          <div className="of-perfil">
-            <div className="of-avatar">MG</div>
-            <div className="of-perfil-info">
-              <span className="of-perfil-nombre">Marcos Gonzales</span>
-              <span className="of-perfil-rol">Owner</span>
+        <div className="kpi-card card-dark">
+          <div className="kpi-icon bg-gold-transparent">
+            <DollarSign size={24} className="text-gold" />
+          </div>
+          <div className="kpi-info">
+            <h3>Ganancia Neta</h3>
+            <p className="kpi-amount text-gold">
+              ${gananciaTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })}
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Contenedores de Detalle */}
+      <div className="finanzas-content-grid">
+        
+        {/* Panel Izquierdo: Ingresos */}
+        <div className="finanzas-panel">
+          <div className="panel-header">
+            <h2>Últimos Cobros</h2>
+            <span className="badge">Hoy</span>
+          </div>
+          
+          <div className="registro-list">
+            {/* Ejemplo estático del cobro */}
+            <div className="registro-item">
+              <div className="registro-icono bg-gray-light">
+                <Receipt size={20} className="text-gray" />
+              </div>
+              <div className="registro-detalles">
+                <p className="registro-titulo">Taper Fade</p>
+                <p className="registro-sub">Cliente: David G. • Atendió: Juan</p>
+              </div>
+              <div className="registro-valor">
+                <p className="valor-positivo">+$300.00</p>
+                <p className="registro-metodo">Efectivo</p>
+              </div>
             </div>
           </div>
-        </aside>
+        </div>
 
-        {/* Contenido principal */}
-        <main className="of-main">
-          <h1 className="of-titulo">CONSILADO DE FINANZAS</h1>
-          <p className="of-subtitulo">
-            Monitoreo de ingresos por captación, egresos y utilidad.
-          </p>
-
-          {/* Tarjetas resumen */}
-          <div className="of-resumen">
-            <div className="of-card-resumen">
-              <span className="of-card-label">Ingresos Totales</span>
-              <span className="of-card-monto">
-                ${ingresosTotales.toLocaleString()}
-              </span>
-            </div>
-
-            <div className="of-card-resumen">
-              <span className="of-card-label">Egresos Totales</span>
-              <span className="of-card-monto">
-                ${egresosTotales.toLocaleString()}
-              </span>
-            </div>
-
-            <div className="of-card-resumen of-card-oscura">
-              <span className="of-card-label">Ganancia total</span>
-              <span className="of-card-monto of-monto-dorado">
-                ${gananciaTotal.toLocaleString()}
-              </span>
-            </div>
+        {/* Panel Derecho: Control de Egresos */}
+        <div className="finanzas-panel border-top-gold">
+          <div className="panel-header">
+            <h2>Registrar Egreso</h2>
           </div>
-
-          {/* Tablas */}
-          <div className="of-tablas">
-            {/* Registro de cobros */}
-            <div className="of-panel-claro">
-              <h3 className="of-panel-titulo">Registro de Cobros e Ingresos</h3>
-
-              <table className="of-tabla">
-                <thead>
-                  <tr>
-                    <th>Servicio / Cliente</th>
-                    <th>Atendió / Captó</th>
-                    <th>Método Pago</th>
-                    <th className="of-col-monto">Monto</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {registros.map((r) => (
-                    <tr key={r.id}>
-                      <td>
-                        <span className="of-celda-principal">{r.servicio}</span>
-                        <span className="of-celda-secundaria">{r.cliente}</span>
-                      </td>
-                      <td className="of-celda-bold">{r.atendio}</td>
-                      <td>{r.metodoPago}</td>
-                      <td className="of-col-monto of-monto-positivo">
-                        +${r.monto}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          
+          <form onSubmit={handleAddEgreso} className="form-egreso">
+            <div className="input-group">
+              <label>Concepto del gasto</label>
+              <input 
+                type="text" 
+                placeholder="Ej. Compra de navajas..." 
+                value={concepto}
+                onChange={(e) => setConcepto(e.target.value)}
+                className="input-moderno"
+              />
             </div>
-
-            {/* Control de egresos */}
-            <div className="of-panel-oscuro">
-              <h3 className="of-panel-titulo-dorado">Control de Egresos</h3>
-
-              <div className="of-form-egreso">
-                <input
-                  type="text"
-                  placeholder="Concepto de gasto"
-                  className="of-input-concepto"
-                  value={conceptoGasto}
-                  onChange={(e) => setConceptoGasto(e.target.value)}
-                />
-                <div className="of-input-monto-wrapper">
-                  <span className="of-simbolo-pesos">$</span>
-                  <input
-                    type="number"
-                    className="of-input-monto"
-                    value={montoGasto}
-                    onChange={(e) => setMontoGasto(e.target.value)}
+            <div className="form-row">
+              <div className="input-group flex-1">
+                <label>Monto</label>
+                <div className="input-with-icon">
+                  <span className="input-icon">$</span>
+                  <input 
+                    type="number" 
+                    placeholder="0.00" 
+                    value={monto}
+                    onChange={(e) => setMonto(e.target.value)}
+                    className="input-moderno pl-8"
                   />
                 </div>
-                <button className="of-btn-agregar" onClick={agregarEgreso}>
-                  +
-                </button>
               </div>
-
-              <div className="of-lista-egresos">
-                {egresos.map((e) => (
-                  <div key={e.id} className="of-egreso-item">
-                    <div>
-                      <span className="of-egreso-concepto">{e.concepto}</span>
-                      <span className="of-egreso-responsable">
-                        {e.responsable}
-                      </span>
-                    </div>
-                    <span className="of-egreso-monto">-${e.monto}</span>
-                  </div>
-                ))}
-              </div>
+              <button type="submit" className="btn-agregar" disabled={!concepto || !monto}>
+                <Plus size={20} />
+                Agregar
+              </button>
             </div>
+          </form>
+          
+          <div className="registro-list mt-6">
+            <h3 className="list-subtitle">Historial de Gastos</h3>
+            
+            {egresos.length === 0 ? (
+              <div className="empty-state">No hay egresos registrados.</div>
+            ) : (
+              egresos.map((item) => (
+                <div key={item.id} className="registro-item">
+                  <div className="registro-detalles">
+                    <p className="registro-titulo">{item.concepto}</p>
+                    <p className="registro-sub">Registró: {item.responsable}</p>
+                  </div>
+                  <div className="registro-acciones">
+                    <p className="valor-negativo">-${item.monto.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</p>
+                    <button 
+                      type="button" 
+                      onClick={() => handleEliminarEgreso(item.id)} 
+                      className="btn-icon-eliminar"
+                      title="Eliminar registro"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
-        </main>
+        </div>
+
       </div>
     </div>
   );
