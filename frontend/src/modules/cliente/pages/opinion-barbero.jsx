@@ -13,21 +13,40 @@ const barberos = [
 export default function OpinionBarbero() {
   const [barberoSeleccionado, setBarberoSeleccionado] = useState(barberos[0]);
   const [rating, setRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
   const [comentario, setComentario] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [enviado, setEnviado] = useState(false);
+
   const maxCaracteres = 1000;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!comentario.trim() && rating === 0) return;
+
+    setEnviando(true);
+    setTimeout(() => {
+      setEnviando(false);
+      setEnviado(true);
+    }, 1200);
+  };
+
+  const handleSelectBarbero = (b) => {
+    setBarberoSeleccionado(b);
+    setEnviado(false); // Reinicia confirmación al cambiar de barbero
+  };
 
   return (
     <div className="pagina-barbero">
-      {/* Encabezado Superior Negro de Extremo a Extremo */}
+      {/* Encabezado Superior */}
       <header className="encabezado-superior">
         <div className="contenedor-logo">
           <img src="/logo.png" alt="Barber Hub" className="logo-barberhub" />
         </div>
       </header>
 
-      {/* Contenedor Flotante Central */}
+      {/* Contenedor Central */}
       <main className="contenedor-central-opiniones">
-        
         <h1 className="titulo-principal-dorado">
           Valora tu experiencia
           <br />
@@ -35,17 +54,18 @@ export default function OpinionBarbero() {
         </h1>
 
         <div className="layout-dos-columnas">
-          
           {/* COLUMNA IZQUIERDA: Selección de Barberos */}
-          <div className="bloque-izquierdo-barberos">
+          <section className="bloque-izquierdo-barberos">
             <h2 className="titulo-seccion-barberos">Selecciona a tu barbero</h2>
-            
+
             <div className="malla-barberos">
               {barberos.map((b) => (
                 <button
                   key={b.id}
+                  type="button"
                   className={`item-barbero-btn ${barberoSeleccionado.id === b.id ? "activo" : ""}`}
-                  onClick={() => setBarberoSeleccionado(b)}
+                  onClick={() => handleSelectBarbero(b)}
+                  aria-label={`Seleccionar a ${b.nombre}`}
                 >
                   <div className="wrapper-avatar">
                     <img src={b.foto} alt={b.nombre} className="img-avatar-barbero" />
@@ -54,60 +74,85 @@ export default function OpinionBarbero() {
                 </button>
               ))}
             </div>
-          </div>
+          </section>
 
-          {/* COLUMNA DERECHA: Tarjeta de Opinión Centrada */}
-          <div className="tarjeta-opinion-derecha">
-            <div className="avatar-destacado-container">
-              <img
-                src={barberoSeleccionado.foto}
-                alt={barberoSeleccionado.nombre}
-                className="img-avatar-destacado"
-              />
-            </div>
-            
-            <h3 className="nombre-barbero-destacado">{barberoSeleccionado.nombre}</h3>
-            <p className="txt-subtitulo-opinion">Tu opinión es importante</p>
+          {/* COLUMNA DERECHA: Tarjeta de Opinión */}
+          <section className="tarjeta-opinion-derecha">
+            <form onSubmit={handleSubmit} className="form-opinion-wrapper">
+              <div className="avatar-destacado-container">
+                <img
+                  src={barberoSeleccionado.foto}
+                  alt={barberoSeleccionado.nombre}
+                  className="img-avatar-destacado"
+                />
+              </div>
 
-            {/* Estrellas interactiva */}
-            <div className="contenedor-estrellas-oro">
-              {Array.from({ length: 5 }, (_, i) => (
-                <span
-                  key={i}
-                  className={`estrella-click ${i < rating ? "marcada" : ""}`}
-                  onClick={() => setRating(i + 1)}
-                >
-                  ★
+              <h3 className="nombre-barbero-destacado">{barberoSeleccionado.nombre}</h3>
+              <p className="txt-subtitulo-opinion">Tu opinión es importante</p>
+
+              {/* Estrellas interactivas */}
+              <div
+                className="contenedor-estrellas-oro"
+                role="radiogroup"
+                aria-label="Calificación con estrellas"
+              >
+                {[1, 2, 3, 4, 5].map((starIndex) => {
+                  const activa = hoverRating ? starIndex <= hoverRating : starIndex <= rating;
+                  return (
+                    <button
+                      key={starIndex}
+                      type="button"
+                      className={`btn-estrella-star ${activa ? "marcada" : ""}`}
+                      onClick={() => setRating(starIndex)}
+                      onMouseEnter={() => setHoverRating(starIndex)}
+                      onMouseLeave={() => setHoverRating(0)}
+                      aria-label={`Calificar ${starIndex} de 5 estrellas`}
+                    >
+                      ★
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Textarea */}
+              <div className="caja-textarea-wrapper">
+                <textarea
+                  className="input-textarea-comentario"
+                  placeholder={`Escribe tu comentario aquí...\nComparte tu experiencia con ${barberoSeleccionado.nombre}.`}
+                  maxLength={maxCaracteres}
+                  value={comentario}
+                  onChange={(e) => setComentario(e.target.value)}
+                  disabled={enviado}
+                />
+                <span className="contador-interno-caracteres">
+                  {comentario.length}/{maxCaracteres}
                 </span>
-              ))}
-            </div>
+              </div>
 
-            {/* Caja de Texto Inteligente */}
-            <div className="caja-textarea-wrapper">
-              <textarea
-                className="input-textarea-comentario"
-                placeholder={`Escribe tu comentario aquí...\nCompartte tu experiencia con ${barberoSeleccionado.nombre}.`}
-                maxLength={maxCaracteres}
-                value={comentario}
-                onChange={(e) => setComentario(e.target.value)}
-              />
-              <span className="contador-interno-caracteres">
-                {comentario.length}/{maxCaracteres}
-              </span>
-            </div>
-
-            <button className="btn-enviar-opinion-dorado">
-              Enviar mi comentario
-            </button>
-          </div>
-
+              {/* Mensaje de respuesta o botón */}
+              {enviado ? (
+                <div className="msj-exito-opinion">
+                  ✓ ¡Comentario para {barberoSeleccionado.nombre} enviado!
+                </div>
+              ) : (
+                <button
+                  type="submit"
+                  className="btn-enviar-opinion-dorado"
+                  disabled={enviando}
+                >
+                  {enviando ? "ENVIANDO..." : "ENVIAR MI COMENTARIO"}
+                </button>
+              )}
+            </form>
+          </section>
         </div>
 
-        {/* Botón Regresar centrado abajo */}
+        {/* Botón Regresar */}
         <div className="bloque-regresar-footer">
-          <button className="btn-regresar-enlace">Regresar</button>
+          <button type="button" className="btn-regresar-enlace">
+            Regresar
+          </button>
         </div>
-
       </main>
     </div>
   );

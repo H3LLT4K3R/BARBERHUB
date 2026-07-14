@@ -1,281 +1,206 @@
+/* ==========================================
+   1. ESTRUCTURA GENERAL Y VARIABLES
+   ========================================== */
 :root {
-  --fav-bg-sidebar: #121212;
-  --fav-bg-main: #ffffff;
-  --fav-gold-primary: #e5be6b;
-  --fav-gold-border: #edd193;
-  --fav-text-white: #ffffff;
-  --fav-text-main: #000000;
-  --fav-text-muted: #555555;
-  --fav-focus-blue: #2196f3;
-  
-  /* Estados */
-  --fav-color-abierto: #10b981;
-  --fav-color-cerrado: #b91c1c;
+  --favoritos-bg-principal: #ffffff;
+  --favoritos-dorado-principal: #e5be6b;
+  --favoritos-dorado-borde: #edd193;
+  --favoritos-texto-negro: #000000;
+  --favoritos-texto-gris: #555555;
+  --favoritos-azul-seleccion: #2196f3;
+  --favoritos-estado-abierto: #10b981;
+  --favoritos-estado-cerrado: #b91c1c;
 }
 
-/* Panel general */
-.panel-favoritos {
-  display: flex;
-  min-height: 100vh;
-  background-color: var(--fav-bg-main);
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-}
-
-/* Sidebar izquierdo */
-.sidebar-favoritos {
-  width: 250px;
-  background-color: var(--fav-bg-sidebar);
-  display: flex;
-  flex-direction: column;
-  padding: 25px 0;
+.favoritos-contenedor {
+  min-height: calc(100vh - 70px);
+  background-color: var(--favoritos-bg-principal);
+  padding: 32px 40px;
   box-sizing: border-box;
 }
 
-.marca-favoritos {
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  margin-bottom: 40px;
-}
-
-.logo-favoritos {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  margin-right: 12px;
-}
-
-.marca-favoritos h2 {
-  font-size: 1.2rem;
-  letter-spacing: 1px;
-  color: var(--fav-text-white);
-  margin: 0;
-}
-
-/* Menú de navegación */
-.menu-favoritos {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 0 15px;
-  flex: 1;
-}
-
-.btn-menu-favoritos {
-  background: none;
-  border: none;
-  color: #aaaaaa;
-  text-align: left;
-  padding: 14px 22px;
-  font-size: 1.05rem;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  font-weight: 500;
-}
-
-.btn-menu-favoritos:hover {
-  color: var(--fav-text-white);
-  background-color: #222222;
-}
-
-.btn-menu-favoritos.activo {
-  background-color: var(--fav-gold-primary);
-  color: #000000;
-  font-weight: 700;
-}
-
-/* Perfil de usuario */
-.perfil-favoritos {
-  display: flex;
-  align-items: center;
-  padding: 20px;
-  border-top: 1px solid #222222;
-  margin-top: auto;
-}
-
-.avatar-favoritos {
-  width: 48px;
-  height: 48px;
-  background-color: #f3d89d;
-  color: #000000;
-  font-weight: 700;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  margin-right: 12px;
-}
-
-.info-usuario-favoritos {
-  display: flex;
-  flex-direction: column;
-}
-
-.nombre-usuario-favoritos {
-  color: var(--fav-text-white);
-  font-weight: 600;
-  font-size: 1.05rem;
-}
-
-.rol-usuario-favoritos {
-  color: #888888;
-  font-size: 0.85rem;
-  margin-top: 2px;
-}
-
-/* Contenedor principal */
-.contenido-favoritos {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background-color: var(--fav-bg-main);
-}
-
-.encabezado-favoritos {
-  background-color: #000000;
-  padding: 25px 40px;
-}
-
-.encabezado-favoritos h1 {
-  font-size: 1.6rem;
-  font-weight: 600;
-  margin: 0;
-  color: var(--fav-text-white);
-}
-
-.layout-favoritos {
-  flex: 1;
-  padding: 40px;
-  background-color: var(--fav-bg-main);
-  display: flex;
-  justify-content: center;
-}
-
-.tarjetas-favoritos {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  width: 100%;
+.favoritos-layout {
   max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-/*  Tarjeta de barbería */
-.tarjeta-favorito {
+.favoritos-lista-tarjetas {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+/* ==========================================
+   2. TARJETAS DE BARBERÍA
+   ========================================== */
+.favoritos-tarjeta {
   display: flex;
   align-items: center;
-  background-color: var(--fav-bg-main);
-  border: 1.5px solid var(--fav-gold-border);
+  background-color: var(--favoritos-bg-principal);
+  border: 1.5px solid var(--favoritos-dorado-borde);
   border-radius: 18px;
   padding: 24px 30px;
-  gap: 30px;
+  gap: 28px;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
 }
 
-.tarjeta-favorito.seleccionada {
-  border: 2.5px solid var(--fav-focus-blue);
+.favoritos-tarjeta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+}
+
+.favoritos-tarjeta.seleccionada {
+  border: 2.5px solid var(--favoritos-azul-seleccion);
   box-shadow: 0 6px 20px rgba(33, 150, 243, 0.12);
 }
 
-.imagen-favorito {
-  width: 130px;
+.favoritos-imagen {
+  width: 120px;
   height: 90px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: 12px;
+  flex-shrink: 0;
 }
 
-.info-favorito {
+/* ==========================================
+   3. INFORMACIÓN DETALLADA
+   ========================================== */
+.favoritos-info-principal {
   flex: 1;
+  min-width: 0;
 }
 
-.info-favorito h3 {
-  font-size: 1.3rem;
+.favoritos-nombre {
+  font-size: 1.25rem;
   font-weight: 700;
-  margin: 0 0 8px 0;
-  color: var(--fav-text-main);
+  margin: 0 0 6px 0;
+  color: var(--favoritos-texto-negro);
 }
 
-.direccion-favorito {
-  font-size: 1rem;
-  color: var(--fav-text-muted);
+.favoritos-direccion {
+  font-size: 0.95rem;
+  color: var(--favoritos-texto-gris);
   margin: 0 0 10px 0;
 }
 
-/* Estado abierto/cerrado */
-.estado-favorito {
+.favoritos-estado {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.punto-estado {
-  width: 14px;
-  height: 14px;
+.favoritos-indicador-estado {
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
+  display: inline-block;
 }
 
-.punto-estado.abierto {
-  background-color: var(--fav-color-abierto);
+.favoritos-indicador-estado.abierto {
+  background-color: var(--favoritos-estado-abierto);
 }
 
-.punto-estado.cerrado {
-  background-color: var(--fav-color-cerrado);
+.favoritos-indicador-estado.cerrado {
+  background-color: var(--favoritos-estado-cerrado);
 }
 
-.texto-estado {
-  font-size: 0.95rem;
+.favoritos-texto-estado {
+  font-size: 0.9rem;
   font-weight: 600;
-  color: var(--fav-text-main);
+  color: var(--favoritos-texto-negro);
 }
 
-/* Acciones a la derecha */
-.acciones-favorito {
+/* ==========================================
+   4. CALIFICACIÓN Y BOTONES DE ACCIÓN
+   ========================================== */
+.favoritos-acciones {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 20px;
+  gap: 16px;
+  flex-shrink: 0;
 }
 
-.calificacion-favorito {
-  font-size: 1.8rem;
-  font-weight: 700;
+.favoritos-calificacion {
+  font-size: 1.6rem;
+  font-weight: 800;
   color: #c9a054;
   line-height: 1;
 }
 
-.grupo-botones-favorito {
+.favoritos-grupo-botones {
   display: flex;
-  gap: 15px;
+  gap: 12px;
 }
 
-/* Botones de acción */
-.btn-favorito {
+.favoritos-boton {
   border: none;
-  padding: 10px 24px;
+  padding: 10px 20px;
   border-radius: 20px;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background-color 0.2s ease;
 }
 
-.btn-dorado {
-  background-color: var(--fav-gold-primary);
-  color: #000000;
+.favoritos-boton-dorado {
+  background-color: var(--favoritos-dorado-principal);
+  color: var(--favoritos-texto-negro);
 }
 
-.btn-dorado:hover {
+.favoritos-boton-dorado:hover {
   background-color: #edd193;
 }
 
-.btn-gris {
+.favoritos-boton-gris {
   background-color: #e8e8ed;
-  color: var(--fav-text-main);
+  color: var(--favoritos-texto-negro);
 }
 
-.btn-gris:hover {
+.favoritos-boton-gris:hover {
   background-color: #dcdce1;
+}
+
+/* ==========================================
+   5. DISEÑO RESPONSIVO
+   ========================================== */
+@media (max-width: 768px) {
+  .favoritos-contenedor {
+    padding: 20px 16px;
+  }
+
+  .favoritos-tarjeta {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    gap: 16px;
+  }
+
+  .favoritos-imagen {
+    width: 100%;
+    height: 160px;
+  }
+
+  .favoritos-acciones {
+    width: 100%;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 14px;
+  }
+
+  .favoritos-grupo-botones {
+    flex: 1;
+  }
+
+  .favoritos-boton {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+  }
 }

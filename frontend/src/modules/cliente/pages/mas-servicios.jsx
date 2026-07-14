@@ -7,6 +7,7 @@ import {
   IconRazor,
   IconUser,
   IconChevronLeft,
+  IconCalendarEvent,
 } from "@tabler/icons-react";
 import AppNavbar from "../components/app-navbar";
 import { getBarberiaById } from "../data/barberias.js";
@@ -23,7 +24,7 @@ const ICONOS_SERVICIO = {
 /* Componente de estrellas */
 function Estrellas({ count = 5 }) {
   return (
-    <span className="estrellas" aria-hidden>
+    <span className="estrellas" aria-hidden="true">
       {Array.from({ length: count }).map((_, i) => (
         <IconStarFilled key={i} size={16} />
       ))}
@@ -31,14 +32,35 @@ function Estrellas({ count = 5 }) {
   );
 }
 
-/* Componente principal: Más Servicios  */
+/* Componente principal: Más Servicios */
 export default function MasServicios() {
   const navigate = useNavigate();
   const { id } = useParams();
   const barberia = getBarberiaById(id);
 
+  // Manejo de caso de error si la barbería no existe
+  if (!barberia) {
+    return (
+      <div className="pagina-servicios">
+        <AppNavbar />
+        <main className="contenido-servicios error-state">
+          <h2>Barbería no encontrada</h2>
+          <p>La barbería que estás buscando no existe o fue removida.</p>
+          <button
+            type="button"
+            className="boton-regresar"
+            onClick={() => navigate("/explorar")}
+          >
+            <IconChevronLeft size={18} />
+            Volver a Explorar
+          </button>
+        </main>
+      </div>
+    );
+  }
+
   // Servicios extendidos o normales
-  const servicios = barberia.serviciosExtendidos ?? barberia.servicios;
+  const servicios = barberia.serviciosExtendidos ?? barberia.servicios ?? [];
   const mitad = Math.ceil(servicios.length / 2);
   const colA = servicios.slice(0, mitad);
   const colB = servicios.slice(mitad);
@@ -52,13 +74,17 @@ export default function MasServicios() {
         {/* Sección hero con datos de barbería */}
         <section className="hero-servicios">
           <div className="hero-izquierda">
-            <img className="logo-barberia" src={barberia.imagen} alt="" />
-            <div>
+            <img
+              className="logo-barberia"
+              src={barberia.imagen}
+              alt={`Logotipo de ${barberia.nombre}`}
+            />
+            <div className="info-barberia-hero">
               <h1 className="titulo-barberia">{barberia.nombre}</h1>
               <div className="rating-barberia">
                 <Estrellas />
                 <span>
-                  {barberia.rating.toFixed(1)} ({barberia.totalOpiniones} opiniones)
+                  {barberia.rating?.toFixed(1) ?? "5.0"} ({barberia.totalOpiniones ?? 0} opiniones)
                 </span>
               </div>
               <p className="direccion-barberia">
@@ -79,41 +105,45 @@ export default function MasServicios() {
         <section className="lista-servicios">
           <h2>Servicios disponibles</h2>
 
-          <div className="grid-servicios">
-            {/* Columna A */}
-            <ul className="columna-servicios">
-              {colA.map((s) => {
-                const Icon = ICONOS_SERVICIO[s.icono] ?? IconScissors;
-                return (
-                  <li key={s.id} className="item-servicio">
-                    <span className="servicio-izquierda">
-                      <Icon size={22} stroke={1.7} />
-                      {s.nombre}
-                    </span>
-                    <span className="precio-servicio">${s.precio}</span>
-                  </li>
-                );
-              })}
-            </ul>
+          {servicios.length === 0 ? (
+            <p className="sin-servicios">No hay servicios disponibles registrados por el momento.</p>
+          ) : (
+            <div className="grid-servicios">
+              {/* Columna A */}
+              <ul className="columna-servicios">
+                {colA.map((s) => {
+                  const Icon = ICONOS_SERVICIO[s.icono] ?? IconScissors;
+                  return (
+                    <li key={s.id || s.nombre} className="item-servicio">
+                      <span className="servicio-izquierda">
+                        <Icon size={22} stroke={1.7} />
+                        <span className="nombre-servicio">{s.nombre}</span>
+                      </span>
+                      <span className="precio-servicio">${Number(s.precio).toFixed(2)}</span>
+                    </li>
+                  );
+                })}
+              </ul>
 
-            {/* Columna B */}
-            <ul className="columna-servicios">
-              {colB.map((s) => {
-                const Icon = ICONOS_SERVICIO[s.icono] ?? IconScissors;
-                return (
-                  <li key={s.id} className="item-servicio">
-                    <span className="servicio-izquierda">
-                      <Icon size={22} stroke={1.7} />
-                      {s.nombre}
-                    </span>
-                    <span className="precio-servicio">${s.precio}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+              {/* Columna B */}
+              <ul className="columna-servicios">
+                {colB.map((s) => {
+                  const Icon = ICONOS_SERVICIO[s.icono] ?? IconScissors;
+                  return (
+                    <li key={s.id || s.nombre} className="item-servicio">
+                      <span className="servicio-izquierda">
+                        <Icon size={22} stroke={1.7} />
+                        <span className="nombre-servicio">{s.nombre}</span>
+                      </span>
+                      <span className="precio-servicio">${Number(s.precio).toFixed(2)}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
 
-          {/* Botón regresar */}
+          {/* Botones de acción */}
           <div className="acciones-servicios">
             <button
               type="button"
@@ -121,7 +151,16 @@ export default function MasServicios() {
               onClick={() => navigate(`/barberia/${barberia.id}`)}
             >
               <IconChevronLeft size={18} />
-              Regresar
+              Regresar a la Barbería
+            </button>
+
+            <button
+              type="button"
+              className="boton-agendar"
+              onClick={() => navigate(`/agendar/${barberia.id}`)}
+            >
+              <IconCalendarEvent size={18} />
+              Agendar Cita
             </button>
           </div>
         </section>

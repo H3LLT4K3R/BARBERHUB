@@ -108,7 +108,6 @@
   border-radius: 22px;
   background: rgba(184, 114, 82, 0.14);
   border: 1px solid rgba(184, 114, 82, 0.35);
-  color: #fff;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 1.5px;
@@ -424,16 +423,17 @@
   padding: 22px 40px;
   text-align: center;
   font-size: 13px;
-  color: var(--lgray);
+  color: var(--gray);
+  font-weight: 500;
 }
 
 /* ── RESPONSIVE ── */
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   .lp-navbar { padding: 0 20px; }
   .lp-hero { padding: 68px 20px 60px; }
   .lp-two-exp, .lp-testi { padding: 60px 20px; }
   .lp-exp-grid, .lp-testi-grid { grid-template-columns: 1fr; }
-  .lp-search-wrap { flex-wrap: wrap; border-radius: 14px; padding: 12px 16px; gap: 8px; }
+  .lp-search-wrap { flex-wrap: wrap; border-radius: 16px; padding: 12px 16px; gap: 10px; }
   .lp-search-sep { display: none; }
-  .lp-btn-search { width: 100%; border-radius: 8px; padding: 11px; }
+  .lp-btn-search { width: 100%; border-radius: 30px; padding: 12px; }
 }

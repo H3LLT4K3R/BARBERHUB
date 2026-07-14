@@ -4,14 +4,14 @@
   --blanco: #ffffff;
   --dorado: #c9a227;
   --dorado-hover: #b8911e;
-  --acento-lima: #b5c94e;
+  --acento-terra: #b87252;
   --gris: #4a4a4a;
   --gris-claro: #9a9a9a;
   --borde: #d8c8b0;
   --fuente: "Inter", system-ui, sans-serif;
 }
 
-/* Layout general  */
+/* Layout general */
 .pagina-login {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -83,7 +83,7 @@
 }
 
 .acento-login {
-  color: var(--acento-lima);
+  color: var(--acento-terra);
 }
 
 .texto-hero-login p {
@@ -157,6 +157,11 @@
   gap: 16px;
 }
 
+.campo-input-wrap {
+  position: relative;
+  width: 100%;
+}
+
 .input-login {
   width: 100%;
   padding: 14px 18px;
@@ -177,6 +182,34 @@
 .input-login:focus {
   border-color: var(--dorado);
   box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.12);
+}
+
+/* Password Toggle */
+.wrapper-password {
+  display: flex;
+  align-items: center;
+}
+
+.input-password {
+  padding-right: 48px;
+}
+
+.btn-toggle-password {
+  position: absolute;
+  right: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.btn-toggle-password:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .recuperar-login {
@@ -243,18 +276,11 @@
   }
 
   .login-columna-izquierda {
-    min-height: 280px;
-  }
-
-  .contenido-izquierdo {
-    min-height: 280px;
-  }
-
-  .texto-hero-login {
-    margin-top: 32px;
+    display: none;
   }
 
   .login-columna-derecha {
     padding: 40px 24px;
+    min-height: 100vh;
   }
 }

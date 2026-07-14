@@ -1,13 +1,14 @@
-/* ── COMPONENTE CONTENEDOR ── */
-.explorar-container {
+/* ==========================================
+   1. ESTRUCTURA GENERAL Y CONTENEDORES
+   ========================================== */
+.explorar-contenedor {
   min-height: calc(100vh - 70px);
   background: #ffffff;
   padding: 32px 40px;
   box-sizing: border-box;
 }
 
-/* CONTENEDOR GENERAL EN GRID (Split Tarjetas / Mapa) */
-.explorar-main {
+.explorar-layout-principal {
   display: grid;
   grid-template-columns: 1fr 450px;
   gap: 32px;
@@ -15,12 +16,14 @@
   margin: 0 auto;
 }
 
-.explorar-content {
+.explorar-contenido {
   min-width: 0;
 }
 
-/* BANNER DE FILTROS EN NEGRO PREMIUM */
-.explorar-section-header {
+/* ==========================================
+   2. BANNER Y CONTROLES DE FILTRO
+   ========================================== */
+.explorar-seccion-filtros {
   background-color: #000000;
   border-radius: 16px;
   padding: 24px;
@@ -31,7 +34,7 @@
   gap: 20px;
 }
 
-.explorar-header-left {
+.explorar-filtros-izquierda {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -39,27 +42,27 @@
   width: 100%;
 }
 
-.explorar-title {
+.explorar-titulo-seccion {
   font-size: 18px;
   font-weight: 800;
   color: #ffffff;
   margin: 0;
 }
 
-.explorar-filters {
+.explorar-grupo-entradas {
   display: flex;
   gap: 16px;
   margin-top: 12px;
   flex-wrap: wrap;
 }
 
-.explorar-filter-group {
+.explorar-campo-filtro {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.explorar-filter-label {
+.explorar-etiqueta-filtro {
   font-size: 11px;
   color: #E9C46A;
   font-weight: bold;
@@ -68,7 +71,7 @@
 .explorar-input-fecha,
 .explorar-select-hora {
   background-color: #1a1a1a;
-  border: 1px solid #333;
+  border: 1px solid #333333;
   border-radius: 20px;
   padding: 6px 14px;
   color: #FFFFFF;
@@ -80,43 +83,21 @@
   cursor: pointer;
 }
 
-.explorar-filter-btn {
-  padding: 8px 20px;
-  border: 1px solid #374151;
-  border-radius: 9999px;
-  background: #1f2937;
-  color: #E9C46A; /* Dorado premium */
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.explorar-filter-btn:hover {
-  background: #2d3748;
-}
-
-.explorar-filter-btn.active {
-  background: #E9C46A;
-  color: #000000;
-  border-color: #E9C46A;
-}
-
-/* Deslizador de Radio Interno */
-.explorar-radius-control {
+/* Deslizador de Radio */
+.explorar-control-radio {
   display: flex;
   flex-direction: column;
   gap: 8px;
   min-width: 220px;
 }
 
-.explorar-radius-label {
+.explorar-etiqueta-radio {
   font-size: 13px;
   font-weight: 700;
   color: #E9C46A;
 }
 
-.explorar-radius-slider {
+.explorar-deslizador-radio {
   width: 100%;
   height: 6px;
   -webkit-appearance: none;
@@ -126,7 +107,7 @@
   outline: none;
 }
 
-.explorar-radius-slider::-webkit-slider-thumb {
+.explorar-deslizador-radio::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 18px;
@@ -136,14 +117,16 @@
   cursor: pointer;
 }
 
-/* ── LISTADO Y TARJETAS DE BARBERÍAS ── */
-.explorar-barberias-list {
+/* ==========================================
+   3. TARJETAS DE BARBERÍAS
+   ========================================== */
+.explorar-lista-barberias {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.explorar-barberia-card {
+.explorar-tarjeta-barberia {
   background: #ffffff;
   border: 2px solid #E9C46A;
   border-radius: 20px;
@@ -152,15 +135,15 @@
   overflow: hidden;
 }
 
-/* Bloque Izquierdo: Datos */
-.explorar-barberia-left-block {
+/* Bloque Datos */
+.explorar-tarjeta-info {
   padding: 24px;
   border-right: 1px solid #E5E7EB;
   display: flex;
   gap: 16px;
 }
 
-.explorar-barberia-icon {
+.explorar-icono-barberia {
   font-size: 22px;
   flex-shrink: 0;
   width: 50px;
@@ -173,7 +156,7 @@
   border-radius: 50%;
 }
 
-.explorar-barberia-info {
+.explorar-detalles-barberia {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -181,14 +164,14 @@
   gap: 4px;
 }
 
-.explorar-barberia-name {
+.explorar-nombre-barberia {
   font-size: 16px;
   font-weight: 800;
   color: #000000;
   margin: 0;
 }
 
-.explorar-barberia-rating {
+.explorar-valoracion {
   display: flex;
   align-items: center;
   gap: 4px;
@@ -196,21 +179,30 @@
   color: #9CA3AF;
 }
 
-.explorar-stars {
+.explorar-estrellas {
   display: flex;
   gap: 1px;
 }
 
-.explorar-star {
+.explorar-estrella {
   width: 13px;
   height: 13px;
+  stroke: #E9C46A;
 }
 
-.explorar-opiniones {
+.explorar-estrella.activa {
+  fill: #E9C46A;
+}
+
+.explorar-estrella.inactiva {
+  fill: none;
+}
+
+.explorar-total-opiniones {
   margin-left: 2px;
 }
 
-.explorar-barberia-address {
+.explorar-direccion-barberia {
   font-size: 12px;
   color: #6B7280;
   margin: 2px 0;
@@ -219,13 +211,13 @@
   gap: 4px;
 }
 
-.explorar-address-icon {
+.explorar-icono-ubicacion {
   width: 12px;
   height: 12px;
   flex-shrink: 0;
 }
 
-.explorar-barberia-distance {
+.explorar-distancia-etiqueta {
   font-size: 11px;
   font-weight: 800;
   color: #000000;
@@ -236,15 +228,15 @@
   margin: 4px 0;
 }
 
-.explorar-barberia-price {
+.explorar-precio-barberia {
   font-size: 13px;
   font-weight: 700;
   color: #4B5563;
   margin: 2px 0 0 0;
 }
 
-/* Bloque Derecho: Horarios */
-.explorar-barberia-right-block {
+/* Bloque Horarios */
+.explorar-tarjeta-horarios {
   padding: 24px 20px;
   display: flex;
   flex-direction: column;
@@ -253,11 +245,11 @@
   background-color: #ffffff;
 }
 
-.explorar-slots-section {
+.explorar-seccion-turnos {
   width: 100%;
 }
 
-.explorar-slots-title {
+.explorar-titulo-turnos {
   font-size: 12px;
   font-weight: 800;
   color: #000000;
@@ -265,14 +257,14 @@
   text-align: center;
 }
 
-.explorar-slots {
+.explorar-grilla-turnos {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
   width: 100%;
 }
 
-.explorar-slot {
+.explorar-boton-turno {
   padding: 6px 0;
   border: 1px solid #000000;
   border-radius: 4px;
@@ -285,22 +277,19 @@
   transition: all 0.15s;
 }
 
-.explorar-slot:hover:not(:disabled) {
+.explorar-boton-turno:hover:not(:disabled) {
   background: #f3f4f6;
 }
 
-.explorar-slot.unavailable {
+.explorar-boton-turno.ocupado {
   background: #dc2626 !important;
   border-color: #dc2626 !important;
   color: #ffffff !important;
   opacity: 1;
-}
-
-.explorar-slot:disabled {
   cursor: not-allowed;
 }
 
-.explorar-profile-link {
+.explorar-enlace-perfil {
   background: none;
   border: none;
   color: #9CA3AF;
@@ -312,12 +301,14 @@
   text-decoration: none;
 }
 
-.explorar-profile-link:hover {
+.explorar-enlace-perfil:hover {
   color: #6b7280;
 }
 
-/* ── CONTENEDOR MAPA ── */
-.explorar-map-container {
+/* ==========================================
+   4. CONTENEDOR DEL MAPA
+   ========================================== */
+.explorar-contenedor-mapa {
   width: 100%;
   height: 550px;
   border-radius: 20px;
@@ -327,49 +318,54 @@
   top: 94px;
 }
 
-.explorar-map-iframe {
+.explorar-iframe-mapa {
   width: 100%;
   height: 100%;
   border: none;
 }
 
-/* ── ESTADOS ── */
-.explorar-loading {
+/* ==========================================
+   5. ESTADOS Y UTILIDADES
+   ========================================== */
+.explorar-pantalla-carga {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - 70px);
   gap: 16px;
-  color: #666;
+  color: #666666;
 }
 
-.explorar-spinner {
+.explorar-indicador-carga {
   width: 40px;
   height: 40px;
   border: 4px solid #f3f3f3;
   border-top-color: #E9C46A;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: girar 1s linear infinite;
 }
 
-@keyframes spin {
+@keyframes girar {
   to { transform: rotate(360deg); }
 }
 
-.explorar-empty {
+.explorar-lista-vacia {
   text-align: center;
   padding: 40px;
   color: #6b7280;
   font-weight: 600;
 }
 
-/* ── RESPONSIVE ── */
+/* ==========================================
+   6. DISEÑO RESPONSIVO
+   ========================================== */
 @media (max-width: 1150px) {
-  .explorar-main {
+  .explorar-layout-principal {
     grid-template-columns: 1fr;
   }
-  .explorar-map-container {
+  
+  .explorar-contenedor-mapa {
     position: relative;
     top: 0;
     height: 350px;
@@ -378,14 +374,20 @@
 }
 
 @media (max-width: 640px) {
-  .explorar-section-header {
+  .explorar-contenedor {
+    padding: 16px;
+  }
+
+  .explorar-seccion-filtros {
     flex-direction: column;
     align-items: stretch;
   }
-  .explorar-barberia-card {
+
+  .explorar-tarjeta-barberia {
     grid-template-columns: 1fr;
   }
-  .explorar-barberia-left-block {
+
+  .explorar-tarjeta-info {
     border-right: none;
     border-bottom: 1px solid #E5E7EB;
   }

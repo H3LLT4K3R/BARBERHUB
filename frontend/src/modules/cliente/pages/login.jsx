@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { IconEye, IconEyeOff } from "@tabler/icons-react";
 import { apiFetch, saveSession } from "../../../utils/api.js";
 import BrandLogo from "../components/brand-logo";
 import "../styles/login.css";
 
-/* Componente principal: Login*/
+/* Componente principal: Login */
 export default function Login() {
   const navigate = useNavigate();
   const { state } = useLocation();
@@ -16,6 +17,7 @@ export default function Login() {
   });
 
   // Estados auxiliares
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const mensajeExito = state?.cuentaVerificada ? state.mensaje : null;
@@ -31,19 +33,25 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    const payload = {
+      email: form.email.trim(),
+      password: form.password,
+    };
+
     try {
       const data = await apiFetch("/auth/login", {
         method: "POST",
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       saveSession({ token: data.token, user: data.user });
       navigate("/explorar");
     } catch (err) {
       if (err.code === "EMAIL_NO_VERIFICADO") {
-        navigate("/verificar-correo", { state: { email: form.email.trim() } });
+        navigate("/verificar-correo", { state: { email: payload.email } });
         return;
       }
-      setError(err.message);
+      setError(err.message || "Ocurrió un error al iniciar sesión.");
     } finally {
       setLoading(false);
     }
@@ -74,7 +82,7 @@ export default function Login() {
 
           {/* Footer izquierdo */}
           <div className="footer-izquierdo">
-            © 2026 Barber Hub · Todos los derechos reservados
+            © 2026 URBAN CUTS · Todos los derechos reservados
           </div>
         </div>
       </div>
@@ -94,28 +102,47 @@ export default function Login() {
 
           {/* Formulario */}
           <form className="form-login" onSubmit={handleSubmit}>
-            <input
-              className="input-login"
-              type="email"
-              name="email"
-              placeholder="Correo electrónico"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
+            <div className="campo-input-wrap">
+              <input
+                className="input-login"
+                type="email"
+                name="email"
+                placeholder="Correo electrónico"
+                value={form.email}
+                onChange={handleChange}
+                required
+                autoComplete="email"
+              />
+            </div>
 
-            <input
-              className="input-login"
-              type="password"
-              name="password"
-              placeholder="Contraseña"
-              value={form.password}
-              onChange={handleChange}
-              required
-            />
+            <div className="campo-input-wrap wrapper-password">
+              <input
+                className="input-login input-password"
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Contraseña"
+                value={form.password}
+                onChange={handleChange}
+                required
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                className="btn-toggle-password"
+                onClick={() => setShowPassword(!showPassword)}
+                title={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                tabIndex={-1}
+              >
+                {showPassword ? (
+                  <IconEyeOff size={20} color="#9a9a9a" />
+                ) : (
+                  <IconEye size={20} color="#9a9a9a" />
+                )}
+              </button>
+            </div>
 
             {/* Mensaje de error */}
-            {error && <p className="error-login">{error}</p>}
+            {error && <p className="error-login" role="alert">{error}</p>}
 
             {/* Link recuperar contraseña */}
             <div className="recuperar-login">

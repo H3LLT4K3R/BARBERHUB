@@ -1,7 +1,6 @@
 :root {
   --oro-principal: #ebd07f;
   --oro-oscuro: #d8b24a;
-  --gris-bordes: #ebd07f; /* Cambiado a tono oro suave como en tu referencia */
   --gris-placeholder: #a0aec0;
   --radio-cajas: 14px;
 }
@@ -13,11 +12,10 @@
 }
 
 body {
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: "Segoe UI", Roboto, system-ui, sans-serif;
   background-color: #ffffff;
 }
 
-/* Contenedor General Plano sin Sidebar */
 .pagina-barbero {
   width: 100%;
   min-height: 100vh;
@@ -46,37 +44,37 @@ body {
   object-fit: contain;
 }
 
-/* Contenedor Central del Contenido */
+/* Contenedor Central */
 .contenedor-central-opiniones {
-  max-width: 1140px;
+  max-width: 1100px;
   width: 100%;
   margin: 0 auto;
   padding: 40px 20px 60px;
 }
 
-/* Título Serif elegante */
 .titulo-principal-dorado {
   text-align: center;
   font-family: Georgia, "Times New Roman", serif;
   font-weight: 700;
-  font-size: 38px;
+  font-size: 36px;
   color: var(--oro-principal);
   line-height: 1.3;
-  margin-bottom: 50px;
+  margin-bottom: 40px;
 }
 
-/* Distribución exacta de columnas de la imagen 2 */
+/* Layout dos columnas */
 .layout-dos-columnas {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 80px; /* Separación amplia entre bloques */
+  gap: 50px;
   width: 100%;
 }
 
-/* Columna Izquierda: Bloque de barberos */
+/* Columna Izquierda */
 .bloque-izquierdo-barberos {
-  width: 42%;
+  flex: 1;
+  max-width: 480px;
 }
 
 .titulo-seccion-barberos {
@@ -90,7 +88,7 @@ body {
 .malla-barberos {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 28px 16px;
+  gap: 20px 16px;
 }
 
 .item-barbero-btn {
@@ -100,19 +98,24 @@ body {
   flex-direction: column;
   align-items: center;
   cursor: pointer;
-  padding: 8px;
+  padding: 10px 6px;
   border-radius: var(--radio-cajas);
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  outline: none;
 }
 
-/* Recuadro oro fino al seleccionar */
+.item-barbero-btn:hover {
+  transform: translateY(-2px);
+}
+
 .item-barbero-btn.activo {
   border: 1px solid var(--oro-principal);
+  background-color: #fffdf7;
 }
 
 .wrapper-avatar {
-  width: 76px;
-  height: 76px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   padding: 3px;
   border: 2px solid var(--oro-oscuro);
@@ -136,25 +139,27 @@ body {
   text-align: center;
 }
 
-/* Columna Derecha: Tarjeta de Opinión Pulida */
-.tarjeta-opinion-right {
-  width: 52%;
-}
-
+/* Columna Derecha */
 .tarjeta-opinion-derecha {
-  width: 52%;
+  flex: 1;
+  max-width: 520px;
   border: 1px solid var(--oro-principal);
   border-radius: var(--radio-cajas);
-  padding: 40px 36px;
+  padding: 36px 32px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 16px rgba(235, 208, 127, 0.08);
+}
+
+.form-opinion-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #ffffff;
+  width: 100%;
 }
 
 .avatar-destacado-container {
-  width: 86px;
-  height: 86px;
+  width: 82px;
+  height: 82px;
   border-radius: 50%;
   padding: 3px;
   border: 2px solid var(--oro-oscuro);
@@ -181,99 +186,149 @@ body {
   margin-bottom: 16px;
 }
 
-/* Estrellas en color oro */
+/* Estrellas */
 .contenedor-estrellas-oro {
   display: flex;
-  gap: 4px;
-  margin-bottom: 24px;
+  gap: 6px;
+  margin-bottom: 20px;
 }
 
-.estrella-click {
-  font-size: 26px;
+.btn-estrella-star {
+  background: none;
+  border: none;
+  font-size: 28px;
   color: #e2e8f0;
   cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: transform 0.15s ease, color 0.15s ease;
 }
 
-.estrella-click.marcada {
+.btn-estrella-star:hover {
+  transform: scale(1.15);
+}
+
+.btn-estrella-star.marcada {
   color: #f5c542;
 }
 
-/* Caja de Textarea */
+/* Textarea */
 .caja-textarea-wrapper {
   position: relative;
   width: 100%;
+  margin-bottom: 8px;
 }
 
 .input-textarea-comentario {
   width: 100%;
-  min-height: 130px;
+  min-height: 120px;
   border: 1px solid var(--oro-principal);
   border-radius: var(--radio-cajas);
-  padding: 16px;
+  padding: 14px 16px;
   font-size: 14px;
   font-family: inherit;
   resize: none;
   color: #1a1a1a;
   box-sizing: border-box;
-  line-height: 1.5;
+  line-height: 1.4;
+  background-color: transparent;
 }
 
 .input-textarea-comentario::placeholder {
   color: var(--gris-placeholder);
-  white-space: pre-line; /* Permite saltos de línea dentro del placeholder */
+  white-space: pre-line;
 }
 
 .input-textarea-comentario:focus {
   outline: none;
   border-color: var(--oro-oscuro);
+  box-shadow: 0 0 0 2px rgba(235, 208, 127, 0.25);
 }
 
-/* Contador en esquina inferior derecha dentro de la caja */
 .contador-interno-caracteres {
   position: absolute;
-  right: 16px;
-  bottom: 12px;
+  right: 14px;
+  bottom: 10px;
   font-size: 11px;
   color: var(--gris-placeholder);
 }
 
-/* Botón Ovalado Limpio */
+/* Botón enviar */
 .btn-enviar-opinion-dorado {
   width: 100%;
   background: #ffffff;
   border: 1.5px solid var(--oro-principal);
-  color: var(--oro-oscuro);
+  color: #1a1a1a;
   font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 3px;
+  font-size: 13px;
+  letter-spacing: 2px;
   text-transform: uppercase;
   border-radius: 30px;
   padding: 14px;
   cursor: pointer;
-  margin-top: 28px;
+  margin-top: 20px;
   transition: all 0.2s ease;
 }
 
-.btn-enviar-opinion-dorado:hover {
+.btn-enviar-opinion-dorado:hover:not(:disabled) {
   background-color: var(--oro-principal);
-  color: #000000;
 }
 
-/* Footer regresar */
+.btn-enviar-opinion-dorado:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.msj-exito-opinion {
+  margin-top: 20px;
+  padding: 12px;
+  background-color: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #15803d;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 8px;
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* Footer */
 .bloque-regresar-footer {
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-top: 50px;
+  margin-top: 40px;
 }
 
 .btn-regresar-enlace {
   background: transparent;
   border: none;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   color: #000000;
   border-bottom: 2px solid #000000;
   padding-bottom: 2px;
+  transition: all 0.2s ease;
+}
+
+.btn-regresar-enlace:hover {
+  color: var(--oro-oscuro);
+  border-color: var(--oro-oscuro);
+}
+
+/* Adaptación Responsiva */
+@media (max-width: 850px) {
+  .layout-dos-columnas {
+    flex-direction: column;
+    align-items: center;
+    gap: 36px;
+  }
+
+  .bloque-izquierdo-barberos,
+  .tarjeta-opinion-derecha {
+    max-width: 100%;
+    width: 100%;
+  }
 }

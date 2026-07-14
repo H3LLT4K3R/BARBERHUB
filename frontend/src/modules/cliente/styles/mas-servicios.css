@@ -1,8 +1,21 @@
-/*  Página principal  */
+/* Variables de tema */
+:root {
+  --black  : #111111;
+  --white  : #ffffff;
+  --cream  : #f4f4f4;
+  --gold   : #c9a227;
+  --gold-hover : #b8911e;
+  --terra  : #b87252;
+  --gray   : #666666;
+  --border : #ddd0ba;
+  --font   : 'Inter', system-ui, sans-serif;
+}
+
+/* Página principal */
 .pagina-servicios {
   min-height: 100vh;
-  background: #f4f4f4;
-  font-family: "Inter", system-ui, sans-serif;
+  background: var(--cream);
+  font-family: var(--font);
 }
 
 /* Contenido principal */
@@ -12,18 +25,33 @@
   padding: 28px 40px 56px;
 }
 
-/*  Sección hero con datos de barbería  */
+.error-state {
+  text-align: center;
+  padding: 80px 20px;
+}
+.error-state h2 {
+  font-size: 28px;
+  color: var(--black);
+  margin-bottom: 12px;
+}
+.error-state p {
+  color: var(--gray);
+  margin-bottom: 24px;
+}
+
+/* Sección hero con datos de barbería */
 .hero-servicios {
-  background: #000;
+  background: var(--black);
   border-radius: 22px;
-  padding: 22px 26px;
-  color: #fff;
+  padding: 24px 30px;
+  color: var(--white);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
 .hero-izquierda {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 22px;
 }
 
 .logo-barberia {
@@ -31,15 +59,23 @@
   height: 96px;
   border-radius: 50%;
   object-fit: cover;
-  background: #fff;
+  background: var(--white);
   padding: 3px;
+  border: 2px solid var(--gold);
+  flex-shrink: 0;
+}
+
+.info-barberia-hero {
+  display: flex;
+  flex-direction: column;
 }
 
 .titulo-barberia {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(28px, 3.5vw, 44px);
-  line-height: 1.05;
+  font-size: clamp(26px, 3.2vw, 40px);
+  line-height: 1.1;
   margin-bottom: 8px;
+  color: var(--white);
 }
 
 .rating-barberia {
@@ -49,12 +85,13 @@
   gap: 8px;
   margin-bottom: 8px;
   font-size: 14px;
+  color: #e5e5e5;
 }
 
 .estrellas {
   display: inline-flex;
   gap: 3px;
-  color: #d9b85e;
+  color: var(--gold);
 }
 
 .direccion-barberia,
@@ -62,8 +99,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #d9b85e;
-  font-size: 15px;
+  color: #ccc;
+  font-size: 14px;
 }
 
 .direccion-barberia {
@@ -71,36 +108,51 @@
 }
 
 .estado-dot {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  background: #666;
+  background: var(--gray);
+  display: inline-block;
 }
 
 .estado-dot--abierto {
   background: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
 }
 
-/*Sección de servicios */
+/* Sección de servicios */
 .lista-servicios {
-  padding: 22px 2px 0;
+  padding: 32px 4px 0;
 }
 
 .lista-servicios h2 {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(36px, 4vw, 52px);
-  color: #111;
-  margin-bottom: 22px;
+  font-size: clamp(30px, 3.5vw, 44px);
+  color: var(--black);
+  margin-bottom: 24px;
+}
+
+.sin-servicios {
+  font-size: 15px;
+  color: var(--gray);
+  padding: 20px 0;
 }
 
 .grid-servicios {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 38px;
+  background: var(--white);
+  padding: 28px 32px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
 }
 
 .columna-servicios {
   list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .item-servicio {
@@ -108,33 +160,50 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  padding: 10px 0;
-  font-size: 16px;
-  color: #111;
+  padding: 12px 0;
+  border-bottom: 1px dashed #e8e8e8;
+  font-size: 15px;
+  color: var(--black);
+}
+
+.item-servicio:last-child {
+  border-bottom: none;
 }
 
 .servicio-izquierda {
   display: flex;
   align-items: center;
   gap: 12px;
+  color: var(--black);
+}
+
+.servicio-izquierda svg {
+  color: var(--terra);
+  flex-shrink: 0;
+}
+
+.nombre-servicio {
+  font-weight: 500;
 }
 
 .precio-servicio {
-  color: #d0a948;
-  font-weight: 600;
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 16px;
 }
 
-/* Acciones (botón regresar) */
+/* Acciones (botones) */
 .acciones-servicios {
-  margin-top: 22px;
+  margin-top: 28px;
   display: flex;
-  justify-content: flex-start;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
 }
 
 .boton-regresar {
-  border-radius: 14px;
-  padding: 12px 28px;
+  border-radius: 12px;
+  padding: 12px 24px;
   font-size: 14px;
   font-family: inherit;
   font-weight: 600;
@@ -143,8 +212,36 @@
   align-items: center;
   gap: 8px;
   background: transparent;
-  border: 1.5px solid #d0a948;
-  color: #d0a948;
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  transition: all 0.2s ease;
+}
+
+.boton-regresar:hover {
+  background: rgba(201, 162, 39, 0.08);
+  border-color: var(--gold-hover);
+  color: var(--gold-hover);
+}
+
+.boton-agendar {
+  border-radius: 12px;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--gold);
+  border: none;
+  color: var(--black);
+  transition: all 0.2s ease;
+}
+
+.boton-agendar:hover {
+  background: var(--gold-hover);
+  transform: translateY(-1px);
 }
 
 /* Responsive */
@@ -153,16 +250,30 @@
     padding: 20px 16px 38px;
   }
 
+  .hero-izquierda {
+    flex-direction: column;
+    text-align: center;
+    gap: 14px;
+  }
+
+  .direccion-barberia,
+  .estado-barberia,
+  .rating-barberia {
+    justify-content: center;
+  }
+
   .grid-servicios {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 0;
+    padding: 20px;
   }
 
   .acciones-servicios {
-    flex-direction: column;
+    flex-direction: column-reverse;
   }
 
-  .boton-regresar {
+  .boton-regresar,
+  .boton-agendar {
     width: 100%;
     justify-content: center;
   }

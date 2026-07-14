@@ -1,7 +1,8 @@
 :root {
-  --color-dorado: #ebd07f;
+  --color-dorado: #f0c75e;
+  --color-dorado-oscuro: #d8b24a;
   --color-borde-gris: #e5e7eb;
-  --color-texto-muted: #cbd5e1;
+  --color-texto-muted: #718096;
   --color-blanco: #ffffff;
 }
 
@@ -12,12 +13,11 @@
 }
 
 body {
-  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: "Segoe UI", Roboto, system-ui, sans-serif;
   background-color: var(--color-blanco);
   color: #1a1a1a;
 }
 
-/* Contenedor Base */
 .pagina-opiniones {
   display: flex;
   width: 100%;
@@ -30,18 +30,18 @@ body {
   width: 100%;
 }
 
-/* Header superior negro plano */
+/* Header superior */
 .encabezado {
   background-color: #000000;
-  height: 64px;
+  height: 80px;
   display: flex;
   align-items: center;
-  padding: 0 40px;
+  padding: 0 32px;
   width: 100%;
 }
 
-.logo-barberhub {
-  height: 32px;
+.opg-logo-barberhub {
+  height: 48px;
   object-fit: contain;
 }
 
@@ -49,20 +49,23 @@ body {
   background: none;
   border: none;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
 }
 
-/* Área central */
+/* Contenido Principal */
 .contenido {
-  max-width: 1100px;
+  max-width: 1050px;
   width: 100%;
   margin: 0 auto;
-  padding: 40px 24px;
+  padding: 36px 24px;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-/* Encabezado de la Barbería */
+/* Informacion Barberia */
 .info-barberia {
   display: flex;
   justify-content: space-between;
@@ -71,9 +74,10 @@ body {
 }
 
 .nombre-barberia {
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 800;
   color: #000000;
+  letter-spacing: 0.5px;
   margin-bottom: 4px;
 }
 
@@ -84,9 +88,10 @@ body {
   margin-bottom: 4px;
 }
 
-.total-opiniones, .direccion-barberia {
+.total-opiniones,
+.direccion-barberia {
   font-size: 14px;
-  color: #718096;
+  color: var(--color-texto-muted);
 }
 
 .icono-check {
@@ -95,36 +100,40 @@ body {
   margin-right: 4px;
 }
 
-/* Tabs / Pestañas */
+/* Pestañas */
 .pestañas {
   display: flex;
   border: 1px solid var(--color-borde-gris);
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
+  background-color: #f8fafc;
 }
 
 .pestaña {
   border: none;
-  background-color: #f8fafc;
+  background-color: transparent;
   padding: 10px 20px;
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  color: #000000;
+  color: #4a5568;
+  transition: all 0.2s ease;
 }
 
 .pestaña.activo {
   background-color: var(--color-dorado);
+  color: #000000;
+  font-weight: 700;
 }
 
-/* Caja de Filtros */
+/* Filtros y Ordenamiento */
 .filtros-opiniones {
   display: flex;
   justify-content: space-between;
   align-items: center;
   border: 1px solid var(--color-borde-gris);
   border-radius: 8px;
-  padding: 14px 20px;
+  padding: 12px 20px;
   background-color: var(--color-blanco);
   width: 100%;
 }
@@ -133,6 +142,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .etiqueta-filtros {
@@ -141,21 +151,53 @@ body {
   margin-right: 4px;
 }
 
-.filtro, .filtro-estrellas, .boton-ordenar {
+.filtro,
+.filtro-estrellas {
   border: 1px solid var(--color-borde-gris);
   background-color: var(--color-blanco);
   border-radius: 6px;
-  padding: 6px 14px;
+  padding: 6px 12px;
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
   display: flex;
   align-items: center;
+  transition: all 0.2s ease;
+}
+
+.filtro:hover,
+.filtro-estrellas:hover {
+  border-color: var(--color-dorado);
+  background-color: #fffdf5;
+}
+
+.filtro.activo,
+.filtro-estrellas.activo {
+  border-color: var(--color-dorado);
+  background-color: #fffdf5;
+  box-shadow: 0 0 0 1px var(--color-dorado);
+}
+
+.select-ordenar {
+  border: 1px solid var(--color-borde-gris);
+  background-color: var(--color-blanco);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #1a1a1a;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.select-ordenar:focus {
+  border-color: var(--color-dorado);
 }
 
 /* Estrellas */
 .estrellas .estrella {
-  color: #e2e8f0;
+  color: #cbd5e1;
   font-size: 18px;
 }
 
@@ -167,9 +209,7 @@ body {
   font-size: 13px;
 }
 
-/* ==========================================================================
-   LISTA DE OPINIONES CON ESPACIADO INTERNO CORRECTO
-   ========================================================================== */
+/* Lista */
 .lista-opiniones {
   display: flex;
   flex-direction: column;
@@ -177,19 +217,17 @@ body {
 }
 
 .tarjeta-opinion {
-  display: flex; 
+  display: flex;
   align-items: flex-start;
-  gap: 20px; /* Un poco más de separación entre el avatar y el texto */
-  border-bottom: 1px solid var(--color-borde-gris); 
-  padding: 24px 16px; /* 16px a los lados para que el contenido no toque las orillas */
-  background-color: transparent;
+  gap: 16px;
+  border-bottom: 1px solid var(--color-borde-gris);
+  padding: 20px 8px;
   width: 100%;
-  box-sizing: border-box; /* Asegura que el padding no rompa el ancho total */
 }
 
 .avatar-cliente {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   object-fit: cover;
   flex-shrink: 0;
@@ -198,7 +236,7 @@ body {
 .cuerpo-opinion {
   display: flex;
   flex-direction: column;
-  gap: 6px; /* Espacio uniforme entre el encabezado y el texto del comentario */
+  gap: 4px;
   width: 100%;
 }
 
@@ -210,22 +248,75 @@ body {
 
 .nombre-cliente {
   font-weight: 700;
-  font-size: 16px;
+  font-size: 15px;
   color: #000000;
-  margin-right: 12px;
+  margin-right: 10px;
 }
 
 .tiempo-opinion {
-  font-size: 13px;
-  color: var(--color-texto-muted);
-  margin-left: auto; /* Mantiene la fecha alineada a la extrema derecha sin pegarse */
-  padding-right: 4px; /* Margen de cortesía interno para el tiempo */
+  font-size: 12px;
+  color: #a0aec0;
+  margin-left: auto;
 }
 
 .texto-opinion {
-  margin: 0;
+  margin: 4px 0 0 0;
   font-size: 14px;
   color: #4a5568;
   line-height: 1.5;
-  text-align: left;
+}
+
+.estado-vacio {
+  padding: 40px 0;
+  text-align: center;
+  color: var(--color-texto-muted);
+  font-size: 14px;
+}
+
+/* Botón Regresar */
+.acciones {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.boton-regresar {
+  background: transparent;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #1a1a1a;
+  border-bottom: 2px solid #1a1a1a;
+  padding-bottom: 2px;
+  transition: all 0.2s ease;
+}
+
+.boton-regresar:hover {
+  color: var(--color-dorado-oscuro);
+  border-color: var(--color-dorado-oscuro);
+}
+
+@media (max-width: 768px) {
+  .info-barberia {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .filtros-opiniones {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .pestañas {
+    width: 100%;
+  }
+
+  .pestaña {
+    flex: 1;
+    text-align: center;
+  }
 }

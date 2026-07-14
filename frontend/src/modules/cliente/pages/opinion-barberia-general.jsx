@@ -1,90 +1,122 @@
 import React, { useState } from "react";
 import "../styles/opinion-barberia-general.css";
 
-/* Componente principal: Opinión Barbería General*/
 export default function OpinionBarberiaGeneral() {
-  const [rating, setRating] = useState(5); // Estado para la calificación (estrellas)
-  const [comentario, setComentario] = useState(""); // Estado para el texto del comentario
-  const maxCaracteres = 1000; // Límite de caracteres del comentario
+  const [rating, setRating] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [comentario, setComentario] = useState("");
+  const [enviando, setEnviando] = useState(false);
+  const [enviado, setEnviado] = useState(false);
+
+  const maxCaracteres = 1000;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!comentario.trim() && rating === 0) return;
+
+    setEnviando(true);
+    // Simulación de petición al backend
+    setTimeout(() => {
+      setEnviando(false);
+      setEnviado(true);
+    }, 1200);
+  };
 
   return (
     <div className="opg-page">
-      {/* Encabezado con logo */}
+      {/* Encabezado */}
       <header className="opg-header">
         <img src="/logo.png" alt="Barber Hub" className="opg-logo-barberhub" />
       </header>
 
       <div className="opg-content">
-        {/* Título principal */}
         <h1 className="opg-title">
           Valora tu experiencia
           <br />
           con nosotros
         </h1>
 
-        {/* Tarjeta principal con formulario */}
         <div className="opg-card">
-          {/* Contenedor del Logo izquierdo */}
+          {/* Logo Barbería */}
           <div className="opg-logo-section">
-            <button className="opg-logo-button">
+            <button className="opg-logo-button" type="button">
               <img
                 src="/logo-ejemplo.png"
-                alt="Logo barbería"
+                alt="Logo URBAN CUTS"
                 className="opg-barberia-logo"
               />
             </button>
           </div>
 
-          {/* Formulario de opinión derecho */}
-          <div className="opg-form">
+          {/* Formulario */}
+          <form className="opg-form" onSubmit={handleSubmit}>
             <div className="opg-divider" />
-            <h2 className="opg-barberia-name">Urban Cuts</h2>
+            <h2 className="opg-barberia-name">URBAN CUTS</h2>
             <p className="opg-form-subtitle">Valora el establecimiento</p>
 
-            {/* Estrellas de calificación */}
-            <div className="opg-stars">
-              {Array.from({ length: 5 }, (_, i) => (
-                <span
-                  key={i}
-                  className={`opg-star ${i < rating ? "filled" : ""}`}
-                  onClick={() => setRating(i + 1)}
-                >
-                  ★
-                </span>
-              ))}
+            {/* Selector de Estrellas con Accesibilidad */}
+            <div 
+              className="opg-stars" 
+              role="radiogroup" 
+              aria-label="Calificación con estrellas"
+            >
+              {[1, 2, 3, 4, 5].map((starIndex) => {
+                const activeStar = hoverRating ? starIndex <= hoverRating : starIndex <= rating;
+                return (
+                  <button
+                    key={starIndex}
+                    type="button"
+                    className={`opg-star-btn ${activeStar ? "filled" : ""}`}
+                    onClick={() => setRating(starIndex)}
+                    onMouseEnter={() => setHoverRating(starIndex)}
+                    onMouseLeave={() => setHoverRating(0)}
+                    aria-label={`Calificar ${starIndex} de 5 estrellas`}
+                  >
+                    ★
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Área de texto para comentario */}
+            {/* Textarea con placeholder nativo y contador */}
             <div className="opg-comment-wrapper">
               <textarea
                 className="opg-comment-textarea"
                 maxLength={maxCaracteres}
                 value={comentario}
                 onChange={(e) => setComentario(e.target.value)}
+                placeholder="Escribe tu comentario general aquí... Comparte tu experiencia en el establecimiento, servicio, ambiente o instalaciones."
+                rows={5}
+                disabled={enviado}
               />
-              {comentario === "" && (
-                <span className="opg-comment-hint">
-                  Escribe tu comentario general aquí...
-                  <br />
-                  <small>Comparte tu experiencia en el establecimiento, servicio general, ambiente o cualquier aspecto de la barbería.</small>
-                </span>
-              )}
               <span className="opg-char-counter">
                 {comentario.length}/{maxCaracteres}
               </span>
             </div>
 
-            {/* Botón para enviar comentario */}
-            <button className="opg-submit-btn">
-              Enviar comentario a la barbería
-            </button>
-          </div>
+            {/* Estado de envío */}
+            {enviado ? (
+              <div className="opg-success-msg">
+                ✓ ¡Gracias! Tu opinión ha sido enviada con éxito.
+              </div>
+            ) : (
+              <button 
+                type="submit" 
+                className="opg-submit-btn"
+                disabled={enviando}
+              >
+                {enviando ? "ENVIANDO..." : "ENVIAR COMENTARIO A LA BARBERÍA"}
+              </button>
+            )}
+          </form>
         </div>
 
-        {/* Botones de acción en el pie */}
+        {/* Acciones inferiores */}
         <div className="opg-footer-actions">
-          <button className="opg-btn-back">Regresar</button>
-          <button className="opg-btn-comment-barbero">
+          <button type="button" className="opg-btn-back">
+            Regresar
+          </button>
+          <button type="button" className="opg-btn-comment-barbero">
             Hacer comentario general al barbero
           </button>
         </div>
