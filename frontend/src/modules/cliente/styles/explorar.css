@@ -1,4 +1,4 @@
-/* ── COMPONENTE CONTENEDOR ── */
+/* Componente contenedor */
 .explorar-container {
   min-height: calc(100vh - 70px);
   background: #ffffff;
@@ -6,7 +6,7 @@
   box-sizing: border-box;
 }
 
-/* CONTENEDOR GENERAL EN GRID (Split Tarjetas / Mapa) */
+/*Contenedor general de Grid (Split Tarjetas / Mapa) */
 .explorar-main {
   display: grid;
   grid-template-columns: 1fr 450px;
@@ -19,7 +19,12 @@
   min-width: 0;
 }
 
-/* BANNER DE FILTROS EN NEGRO PREMIUM */
+/* Utilidad: elemento oculto */
+.explorar-oculto {
+  display: none;
+}
+
+/* Banner de filtros en negro */
 .explorar-section-header {
   background-color: #000000;
   border-radius: 16px;
@@ -80,28 +85,6 @@
   cursor: pointer;
 }
 
-.explorar-filter-btn {
-  padding: 8px 20px;
-  border: 1px solid #374151;
-  border-radius: 9999px;
-  background: #1f2937;
-  color: #E9C46A; /* Dorado premium */
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.explorar-filter-btn:hover {
-  background: #2d3748;
-}
-
-.explorar-filter-btn.active {
-  background: #E9C46A;
-  color: #000000;
-  border-color: #E9C46A;
-}
-
 /* Deslizador de Radio Interno */
 .explorar-radius-control {
   display: flex;
@@ -136,7 +119,7 @@
   cursor: pointer;
 }
 
-/* ── LISTADO Y TARJETAS DE BARBERÍAS ── */
+/*Listado de tarjetas y barberías */
 .explorar-barberias-list {
   display: flex;
   flex-direction: column;
@@ -289,7 +272,7 @@
   background: #f3f4f6;
 }
 
-.explorar-slot.unavailable {
+.explorar-slot.no-disponible {
   background: #dc2626 !important;
   border-color: #dc2626 !important;
   color: #ffffff !important;
@@ -316,7 +299,7 @@
   color: #6b7280;
 }
 
-/* ── CONTENEDOR MAPA ── */
+/* Contenedor mapa */
 .explorar-map-container {
   width: 100%;
   height: 550px;
@@ -333,7 +316,7 @@
   border: none;
 }
 
-/* ── ESTADOS ── */
+/* Estados*/
 .explorar-loading {
   display: flex;
   flex-direction: column;
@@ -364,7 +347,7 @@
   font-weight: 600;
 }
 
-/* ── RESPONSIVE ── */
+/* Responsivo */
 @media (max-width: 1150px) {
   .explorar-main {
     grid-template-columns: 1fr;
@@ -378,15 +361,43 @@
 }
 
 @media (max-width: 640px) {
+  .explorar-container {
+    padding: 20px;
+  }
+
   .explorar-section-header {
     flex-direction: column;
     align-items: stretch;
   }
+
+  .explorar-radius-control {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .explorar-filters {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .explorar-input-fecha,
+  .explorar-select-hora {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
   .explorar-barberia-card {
     grid-template-columns: 1fr;
   }
+
   .explorar-barberia-left-block {
     border-right: none;
     border-bottom: 1px solid #E5E7EB;
+  }
+}
+
+@media (max-width: 400px) {
+  .explorar-slots {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

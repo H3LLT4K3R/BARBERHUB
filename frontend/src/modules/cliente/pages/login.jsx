@@ -35,7 +35,7 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    
+
     try {
       // 1. Llamamos a nuestra función de prueba
       const response = authenticateUser(form.email, form.password);
@@ -44,7 +44,7 @@ export default function Login() {
       await new Promise(resolve => setTimeout(resolve, 800));
 
       if (response.success) {
-        // 2. Usamos tu misma función saveSession con los datos falsos
+        // Usamos tu misma función saveSession con los datos falsos
         saveSession({ token: response.data.token, user: response.data.user });
         
         // 👇 ESTA ES LA LÍNEA NUEVA QUE SOLUCIONA EL PROBLEMA 👇
@@ -68,21 +68,21 @@ export default function Login() {
   };
 
   return (
-    <div className="pagina-login">
+    <div className="login-pagina">
 
       {/* Columna izquierda: imagen + overlay */}
       <div className="login-columna-izquierda">
-        <div className="overlay-login" />
-        <div className="contenido-izquierdo">
+        <div className="login-overlay" />
+        <div className="login-contenido-izquierdo">
 
           {/* Logo de marca */}
-          <BrandLogo className="logo-login" imgClassName="logo-login-img" />
+          <BrandLogo className="login-logo-boton" imgClassName="login-logo" />
 
           {/* Texto hero */}
-          <div className="texto-hero-login">
+          <div className="login-texto-hero">
             <h2>
               Encuentra tu barbería ideal{" "}
-              <span className="acento-login">en segundos</span>
+              <span className="login-acento">en segundos</span>
             </h2>
             <p>
               Reserva citas, conviértete en cliente VIP y
@@ -91,7 +91,7 @@ export default function Login() {
           </div>
 
           {/* Footer izquierdo */}
-          <div className="footer-izquierdo">
+          <div className="login-footer-izquierdo">
             © 2026 Barber Hub · Todos los derechos reservados
           </div>
         </div>
@@ -99,21 +99,21 @@ export default function Login() {
 
       {/* Columna derecha: formulario */}
       <div className="login-columna-derecha">
-        <div className="formulario-login">
-          <h1 className="titulo-login">¡Bienvenido!</h1>
-          <p className="subtitulo-login">Inicia sesión para continuar</p>
+        <div className="login-formulario-contenedor">
+          <h1 className="login-titulo">¡Bienvenido!</h1>
+          <p className="login-subtitulo">Inicia sesión para continuar</p>
 
           {/* Mensaje de éxito si la cuenta fue verificada */}
           {mensajeExito && (
-            <p className="mensaje-exito-login" role="status">
+            <p className="login-mensaje-exito" role="status">
               {mensajeExito}
             </p>
           )}
 
           {/* Formulario */}
-          <form className="form-login" onSubmit={handleSubmit}>
+          <form className="login-formulario" onSubmit={handleSubmit}>
             <input
-              className="input-login"
+              className="login-input"
               type="email"
               name="email"
               placeholder="Correo electrónico"
@@ -123,7 +123,7 @@ export default function Login() {
             />
 
             <input
-              className="input-login"
+              className="login-input"
               type="password"
               name="password"
               placeholder="Contraseña"
@@ -133,13 +133,13 @@ export default function Login() {
             />
 
             {/* Mensaje de error */}
-            {error && <p className="error-login">{error}</p>}
+            {error && <p className="login-error">{error}</p>}
 
             {/* Link recuperar contraseña */}
-            <div className="recuperar-login">
+            <div className="login-recuperar">
               <button
                 type="button"
-                className="link-dorado-login"
+                className="login-enlace-dorado"
                 onClick={() => navigate("/recuperar-password")}
               >
                 ¿Olvidaste tu contraseña?
@@ -148,7 +148,7 @@ export default function Login() {
 
             {/* Botón enviar */}
             <button
-              className="btn-submit-login"
+              className="login-boton-enviar"
               type="submit"
               disabled={loading}
             >
@@ -157,11 +157,11 @@ export default function Login() {
           </form>
 
           {/* Link registro */}
-          <p className="registro-login">
+          <p className="login-registro">
             ¿No tienes cuenta?{" "}
             <button
               type="button"
-              className="link-dorado-login"
+              className="login-enlace-dorado"
               onClick={() => navigate("/registro")}
             >
               Regístrate

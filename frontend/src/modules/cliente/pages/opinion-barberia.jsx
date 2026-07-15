@@ -1,5 +1,4 @@
-import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo } from "react";
 import "../styles/opinion-barberia.css";
 
 const opinionesBarberia = [
@@ -9,6 +8,7 @@ const opinionesBarberia = [
     avatar: "https://randomuser.me/api/portraits/men/32.jpg",
     rating: 5,
     tiempo: "Hace 1 hora",
+    fechaTimestamp: 3,
     comentario: "Alexis siempre me deja el corte perfecto. ¡Muy recomendado el lugar!",
   },
   {
@@ -17,7 +17,8 @@ const opinionesBarberia = [
     avatar: "https://randomuser.me/api/portraits/men/45.jpg",
     rating: 4,
     tiempo: "Hace 2 días",
-    comentario: "Servicio excelente, siempre quedo muy satisfecho.",
+    fechaTimestamp: 2,
+    comentario: "Servicio excelente, siempre quedo muy satisfecho con las instalaciones.",
   },
   {
     id: 3,
@@ -25,7 +26,8 @@ const opinionesBarberia = [
     avatar: "https://randomuser.me/api/portraits/men/12.jpg",
     rating: 5,
     tiempo: "12 de mayo",
-    comentario: "El lugar es genial y los barberos profesionales.",
+    fechaTimestamp: 1,
+    comentario: "El lugar es genial y los barberos son sumamente profesionales.",
   },
 ];
 
@@ -36,21 +38,23 @@ const opinionesBarberos = [
     avatar: "https://randomuser.me/api/portraits/men/22.jpg", 
     rating: 5, 
     tiempo: "Hace 3 horas", 
-    comentario: "Carlos es un barbero increíble, siempre atento a lo que quiero." 
-  }, 
-];
-
-/* Opciones de orden disponibles para el menú desplegable */
-const OPCIONES_ORDEN = [
-  { valor: "recientes", etiqueta: "Más recientes" },
-  { valor: "antiguos", etiqueta: "Más antiguos" },
-  { valor: "mejor", etiqueta: "Mejor calificados" },
-  { valor: "peor", etiqueta: "Peor calificados" },
+    fechaTimestamp: 2,
+    comentario: "Carlos es un barbero increíble, siempre atento a los detalles que le pido." 
+  },
+  { 
+    id: 2, 
+    nombre: "Juan Santos", 
+    avatar: "https://randomuser.me/api/portraits/men/60.jpg", 
+    rating: 3, 
+    tiempo: "Hace 5 días", 
+    fechaTimestamp: 1,
+    comentario: "Buen corte aunque hubo algo de demora en el turno." 
+  },
 ];
 
 function Estrellas({ rating, size = "normal" }) {
   return (
-    <span className={`estrellas ${size}`}>
+    <span className={`estrellas ${size}`} aria-label={`${rating} de 5 estrellas`}>
       {Array.from({ length: 5 }, (_, i) => (
         <span key={i} className={i < rating ? "estrella llena" : "estrella"}>
           ★
@@ -61,63 +65,44 @@ function Estrellas({ rating, size = "normal" }) {
 }
 
 export default function OpinionBarberia() {
-  const navigate = useNavigate();
   const [tabActiva, setTabActiva] = useState("barberia");
   const [filtroEstrellas, setFiltroEstrellas] = useState("todas");
   const [orden, setOrden] = useState("recientes");
-  const [menuOrdenAbierto, setMenuOrdenAbierto] = useState(false);
-  const menuOrdenRef = useRef(null);
 
-  // Cierra el menú de orden si el usuario hace clic fuera de él
-  useEffect(() => {
-    function handleClickFuera(e) {
-      if (menuOrdenRef.current && !menuOrdenRef.current.contains(e.target)) {
-        setMenuOrdenAbierto(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickFuera);
-    return () => document.removeEventListener("mousedown", handleClickFuera);
-  }, []);
+  // Filtrado y ordenamiento en tiempo real
+  const opinionesFiltradas = useMemo(() => {
+    const listaBase = tabActiva === "barberia" ? opinionesBarberia : opinionesBarberos;
 
-  const etiquetaOrdenActual =
-    OPCIONES_ORDEN.find((op) => op.valor === orden)?.etiqueta ?? "Más recientes";
-
-  const listaBase = tabActiva === "barberia" ? opinionesBarberia : opinionesBarberos;
-
-  // 1. Filtra por estrellas seleccionadas
-  const opinionesFiltradas =
-    filtroEstrellas === "todas"
-      ? listaBase
-      : listaBase.filter((op) => op.rating === filtroEstrellas);
-
-  // 2. Ordena según la opción activa (sin mutar el arreglo original)
-  const opinionesOrdenadas = [...opinionesFiltradas].sort((a, b) => {
-    if (orden === "antiguos") return listaBase.indexOf(b) - listaBase.indexOf(a);
-    if (orden === "mejor") return b.rating - a.rating;
-    if (orden === "peor") return a.rating - b.rating;
-    // "recientes": mantiene el orden original del arreglo
-    return listaBase.indexOf(a) - listaBase.indexOf(b);
-  });
+    return listaBase
+      .filter((item) => {
+        if (filtroEstrellas === "todas") return true;
+        return item.rating === filtroEstrellas;
+      })
+      .sort((a, b) => {
+        if (orden === "recientes") {
+          return b.fechaTimestamp - a.fechaTimestamp;
+        }
+        return b.rating - a.rating; // Mejor valorados primero
+      });
+  }, [tabActiva, filtroEstrellas, orden]);
 
   return (
     <div className="pagina-opiniones">
-      {/* SECCIÓN 1: CONTENEDOR PRINCIPAL DERECHO */}
       <div className="contenedor-principal">
         
-        {/* Encabezado con logo */}
+        {/* Encabezado */}
         <header className="encabezado">
-          <button className="boton-logo" onClick={() => console.log("Logo clickeado")}>
-            <img src="/logo.png" alt="Barber Hub" className="logo-barberhub" />
+          <button className="boton-logo" type="button" aria-label="Volver al inicio">
+            <img src="/logo.png" alt="Barber Hub" className="opg-logo-barberhub" />
           </button>
         </header>
 
-        {/* Contenido en flujo vertical */}
         <div className="contenido">
           
-          {/* Nombre de la Barbería y Pestañas en la misma fila */}
+          {/* Nombre de la Barbería y Pestañas */}
           <div className="info-barberia">
             <div className="bloque-datos">
-              <h1 className="nombre-barberia">Urban Cuts</h1>
+              <h1 className="nombre-barberia">URBAN CUTS</h1>
               <div className="fila-rating">
                 <Estrellas rating={5} />
                 <span className="total-opiniones">(220 opiniones)</span>
@@ -130,20 +115,16 @@ export default function OpinionBarberia() {
 
             <div className="pestañas">
               <button
-                className={`pestaña ${tabActiva === "barberia" ? "activo" : "inactivo"}`}
-                onClick={() => {
-                  setTabActiva("barberia");
-                  setFiltroEstrellas("todas");
-                }}
+                type="button"
+                className={`pestaña ${tabActiva === "barberia" ? "activo" : ""}`}
+                onClick={() => setTabActiva("barberia")}
               >
                 Comentarios Barbería
               </button>
               <button
-                className={`pestaña ${tabActiva === "barberos" ? "activo" : "inactivo"}`}
-                onClick={() => {
-                  setTabActiva("barberos");
-                  setFiltroEstrellas("todas");
-                }}
+                type="button"
+                className={`pestaña ${tabActiva === "barberos" ? "activo" : ""}`}
+                onClick={() => setTabActiva("barberos")}
               >
                 Comentarios Barberos
               </button>
@@ -155,6 +136,7 @@ export default function OpinionBarberia() {
             <div className="grupo-filtros-izq">
               <span className="etiqueta-filtros">Filtrar por:</span>
               <button
+                type="button"
                 className={`filtro ${filtroEstrellas === "todas" ? "activo" : ""}`}
                 onClick={() => setFiltroEstrellas("todas")}
               >
@@ -164,73 +146,55 @@ export default function OpinionBarberia() {
               {[5, 4, 3, 2, 1].map((num) => (
                 <button
                   key={num}
+                  type="button"
                   className={`filtro-estrellas ${filtroEstrellas === num ? "activo" : ""}`}
                   onClick={() => setFiltroEstrellas(num)}
+                  aria-label={`Filtrar ${num} estrellas`}
                 >
                   <Estrellas rating={num} size="small" />
                 </button>
               ))}
             </div>
 
-            {/* Botón de orden con menú desplegable */}
-            <div className="contenedor-orden" ref={menuOrdenRef}>
-              <button
-                className="boton-ordenar"
-                onClick={() => setMenuOrdenAbierto((prev) => !prev)}
+            {/* Selector de ordenamiento */}
+            <div className="contenedor-ordenar">
+              <select
+                className="select-ordenar"
+                value={orden}
+                onChange={(e) => setOrden(e.target.value)}
               >
-                {etiquetaOrdenActual}{" "}
-                <span className={`icono-chevron ${menuOrdenAbierto ? "abierto" : ""}`}>
-                </span>
-              </button>
-
-              {menuOrdenAbierto && (
-                <ul className="menu-orden">
-                  {OPCIONES_ORDEN.map((op) => (
-                    <li key={op.valor}>
-                      <button
-                        className={`opcion-orden ${orden === op.valor ? "activo" : ""}`}
-                        onClick={() => {
-                          setOrden(op.valor);
-                          setMenuOrdenAbierto(false);
-                        }}
-                      >
-                        {op.etiqueta}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                <option value="recientes">Más recientes</option>
+                <option value="valorados">Mejor valorados</option>
+              </select>
             </div>
           </div>
 
-          {/* Lista de opiniones limpias */}
+          {/* Lista de opiniones */}
           <div className="lista-opiniones">
-            {opinionesOrdenadas.map((op) => (
-              <div key={op.id} className="tarjeta-opinion">
-                <img src={op.avatar} alt={op.nombre} className="avatar-cliente" />
-                <div className="cuerpo-opinion">
-                  <div className="encabezado-opinion">
-                    <span className="nombre-cliente">{op.nombre}</span>
-                    <Estrellas rating={op.rating} size="small" />
-                    <span className="tiempo-opinion">{op.tiempo}</span>
+            {opinionesFiltradas.length > 0 ? (
+              opinionesFiltradas.map((op) => (
+                <div key={op.id} className="tarjeta-opinion">
+                  <img src={op.avatar} alt={op.nombre} className="avatar-cliente" />
+                  <div className="cuerpo-opinion">
+                    <div className="encabezado-opinion">
+                      <span className="nombre-cliente">{op.nombre}</span>
+                      <Estrellas rating={op.rating} size="small" />
+                      <span className="tiempo-opinion">{op.tiempo}</span>
+                    </div>
+                    <p className="texto-opinion">{op.comentario}</p>
                   </div>
-                  <p className="texto-opinion">{op.comentario}</p>
                 </div>
+              ))
+            ) : (
+              <div className="estado-vacio">
+                No hay opiniones registradas con {filtroEstrellas} estrellas en esta sección.
               </div>
-            ))}
-            {opinionesOrdenadas.length === 0 && (
-              <p style={{ padding: "24px 16px", color: "#718096" }}>
-                No hay comentarios con esa calificación.
-              </p>
             )}
           </div>
 
-          {/* Botón regresar abajo a la derecha */}
+          {/* Botón regresar */}
           <div className="acciones">
-            <button
-              className="boton-regresar"
-              onClick={() => navigate("/barberia-perfil/urban-cuts")}
-            >
+            <button type="button" className="boton-regresar">
               Regresar
             </button>
           </div>

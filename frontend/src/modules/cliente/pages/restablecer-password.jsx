@@ -70,36 +70,36 @@ export default function RestablecerPassword() {
   };
 
   return (
-    <div className="rpw-wrapper">
-      <nav className="rpw-navbar">
-        <BrandLogo className="rpw-nav-logo" imgClassName="rpw-logo-img" />
+    <div className="rpw-pagina">
+      <nav className="rpw-encabezado">
+        <BrandLogo className="rpw-logo-boton" imgClassName="rpw-logo" />
       </nav>
 
-      <div className="rpw-content">
-        <div className="rpw-card">
-          <h1 className="rpw-title">Reestablecer contraseña</h1>
-          <p className="rpw-subtitle">
+      <div className="rpw-contenido">
+        <div className="rpw-tarjeta">
+          <h1 className="rpw-titulo">Reestablecer contraseña</h1>
+          <p className="rpw-subtitulo">
             Ingresa tu nueva contraseña para continuar
           </p>
 
           {validando ? (
-            <p className="rpw-loading">Validando enlace…</p>
+            <p className="rpw-cargando">Validando enlace…</p>
           ) : !tokenValido ? (
-            <div className="rpw-error-block">
+            <div className="rpw-bloque-error">
               <p className="rpw-error">{error}</p>
               <button
                 type="button"
-                className="rpw-btn-submit"
+                className="rpw-boton-enviar"
                 onClick={() => navigate("/recuperar-password")}
               >
                 Solicitar nuevo enlace
               </button>
             </div>
           ) : (
-            <form className="rpw-form" onSubmit={handleSubmit}>
-              <div className="rpw-field">
-                <div className="rpw-input-wrap">
-                  <div className="rpw-input-icon">
+            <form className="rpw-formulario" onSubmit={handleSubmit}>
+              <div className="rpw-campo">
+                <div className="rpw-input-contenedor">
+                  <div className="rpw-input-icono">
                     <IconLock size={20} color="#c9a227" />
                   </div>
                   <input
@@ -119,8 +119,8 @@ export default function RestablecerPassword() {
                 <PasswordStrength password={password} />
               </div>
 
-              <div className="rpw-input-wrap">
-                <div className="rpw-input-icon">
+              <div className="rpw-input-contenedor">
+                <div className="rpw-input-icono">
                   <IconLock size={20} color="#c9a227" />
                 </div>
                 <input
@@ -142,7 +142,7 @@ export default function RestablecerPassword() {
 
               <button
                 type="submit"
-                className="rpw-btn-submit"
+                className="rpw-boton-enviar"
                 disabled={loading}
               >
                 {loading ? "Actualizando..." : "Actualizar contraseña"}
