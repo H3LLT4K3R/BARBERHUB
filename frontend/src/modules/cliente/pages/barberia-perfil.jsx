@@ -14,7 +14,7 @@ import AppNavbar from "../components/app-navbar";
 import { getBarberiaById } from "../data/barberias.js";
 import "../styles/barberia-perfil.css";
 
-/* Diccionario de iconos de servicio */
+/* --- DICCIONARIO DE ICONOS DE SERVICIO --- */
 const ICONOS_SERVICIO = {
   moustache: IconMoustache,
   razor: IconRazor,
@@ -22,7 +22,7 @@ const ICONOS_SERVICIO = {
   scissors: IconScissors,
 };
 
-/* Componente de estrellas */
+/* --- COMPONENTE: ESTRELLAS --- */
 function Estrellas({ count = 5 }) {
   return (
     <span className="bp-estrellas" aria-hidden>
@@ -33,13 +33,17 @@ function Estrellas({ count = 5 }) {
   );
 }
 
-/* Componente principal: Perfil de Barbería */
+/* --- COMPONENTE PRINCIPAL: PERFIL DE BARBERÍA --- */
 export default function BarberiaPerfil() {
   const { id } = useParams();
   const navigate = useNavigate();
   const barberia = getBarberiaById(id);
 
-  // CONTROL DE ERRORES: Si la barbería no existe en la base de datos de prueba
+  // 1. VALIDACIÓN DE SESIÓN (Mock usando localStorage)
+  // Esto simula si el usuario ya inició sesión
+  const usuarioAutenticado = localStorage.getItem("token_sesion");
+
+  // 2. CONTROL DE ERRORES (Si no encuentra la barbería)
   if (!barberia) {
     return (
       <div className="bp-pagina">
@@ -52,36 +56,52 @@ export default function BarberiaPerfil() {
     );
   }
 
-  // Acción: abrir ubicación en Google Maps (CORREGIDO)
+  // --- ACCIONES DEL COMPONENTE ---
+
+  // Abrir Google Maps
   const abrirMapa = () => {
     const url = `https://www.google.com/maps?q=${barberia.lat},${barberia.lng}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  // Acción: navegar a agenda de citas
+  // Lógica de Agendar Cita (Protegida)
   const agendarCita = () => {
-    navigate("/login", { state: { barberiaId: barberia.id } });
+    if (usuarioAutenticado) {
+      // Si ya hay sesión, lo enviamos directo a la ruta de agenda en tu App.jsx
+      navigate("/agenda-local", { state: { barberiaId: barberia.id } });
+    } else {
+      // Si no hay sesión, le avisamos y lo mandamos al login 
+      // con la ruta exacta de regreso para que no haya pantalla negra
+      alert("Debes iniciar sesión en tu cuenta para agendar una cita.");
+      navigate("/login", { state: { redirigirA: `/barberia-perfil/${barberia.id}` } });
+    }
   };
 
-  // Acción: ver más servicios
+  // Ver más servicios
   const verMasServicios = () => {
+    // Esta ruta coincide con la que tienes en App.jsx: /barberia/:id/servicios
     navigate(`/barberia/${barberia.id}/servicios`);
   };
 
-  // Acción: ver más opiniones
+  // Ver más opiniones
   const verMasOpiniones = () => {
+    // Esta ruta coincide con la que tienes en App.jsx: /opinion-barberia
     navigate("/opinion-barberia");
   };
 
+
+  // --- RENDERIZADO DE LA INTERFAZ ---
   return (
     <div className="bp-pagina">
       <AppNavbar />
 
       <main className="bp-contenido">
-        {/* Tarjeta principal con datos de la barbería */}
+        
+        {/* SECCIÓN 1: Tarjeta principal (Hero) */}
         <section className="bp-hero" aria-label={`Perfil de ${barberia.nombre}`}>
           <div className="bp-hero-izquierda">
-            <img className="bp-logo" src={barberia.imagen} alt="" />
+            <img className="bp-logo" src={barberia.imagen} alt="Logo de barbería" />
+            
             <div className="bp-info">
               <h1 className="bp-titulo">{barberia.nombre}</h1>
               <div className="bp-rating">
@@ -104,7 +124,6 @@ export default function BarberiaPerfil() {
             </div>
           </div>
 
-          {/* Botones de acción principales */}
           <div className="bp-acciones-hero">
             <button type="button" className="bp-boton-mapa" onClick={abrirMapa}>
               <IconMapPin size={18} stroke={2} />
@@ -117,10 +136,10 @@ export default function BarberiaPerfil() {
           </div>
         </section>
 
-        {/* Tres columnas: Servicios, Barberos, Opiniones */}
+        {/* SECCIÓN 2: Grid de 3 columnas */}
         <div className="bp-grid">
 
-          {/* Panel de Servicios */}
+          {/* Columna: Servicios */}
           <section className="bp-panel">
             <header className="bp-panel-encabezado">
               <IconScissors size={22} stroke={1.8} className="bp-icono-panel dorado" />
@@ -145,7 +164,7 @@ export default function BarberiaPerfil() {
             </button>
           </section>
 
-          {/* Panel de Barberos */}
+          {/* Columna: Barberos */}
           <section className="bp-panel">
             <header className="bp-panel-encabezado">
               <IconUser size={22} stroke={1.8} className="bp-icono-panel" />
@@ -168,7 +187,7 @@ export default function BarberiaPerfil() {
             </ul>
           </section>
 
-          {/* Panel de Opiniones */}
+          {/* Columna: Opiniones */}
           <section className="bp-panel">
             <header className="bp-panel-encabezado">
               <IconStarFilled size={24} className="bp-icono-panel dorado" />
@@ -186,6 +205,7 @@ export default function BarberiaPerfil() {
               Ver más opiniones
             </button>
           </section>
+
         </div>
       </main>
     </div>

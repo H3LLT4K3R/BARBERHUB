@@ -10,7 +10,6 @@ export default function OwnerAgenda() {
       anticipo: 150,
       servicio: "Corte Clásico + Barba",
       barbero: "Carlos (Master)",
-      canal: "Instagram"
     },
     {
       id: 2,
@@ -19,7 +18,6 @@ export default function OwnerAgenda() {
       anticipo: 100,
       servicio: "Taper Fade",
       barbero: "Juan (Jr)",
-      canal: "WhatsApp"
     },
     {
       id: 3,
@@ -28,7 +26,6 @@ export default function OwnerAgenda() {
       anticipo: 200,
       servicio: "Servicio Premium",
       barbero: "Carlos (Master)",
-      canal: "Facebook"
     },
   ]);
 
@@ -39,7 +36,6 @@ export default function OwnerAgenda() {
       servicio: "Fade Premium",
       fecha: "Hoy - 17:30",
       barbero: "Juan (Jr)",
-      canal: "Recomendación",
       total: 300,
       saldo: 200
     }
@@ -53,7 +49,6 @@ export default function OwnerAgenda() {
       servicio: cita.servicio,
       fecha: "Hoy - Por definir",
       barbero: cita.barbero,
-      canal: cita.canal,
       total: cita.total,
       saldo: cita.total - cita.anticipo
     };
@@ -97,7 +92,6 @@ export default function OwnerAgenda() {
             <div className="card-details-box">
               <p><strong>Servicio solicitado:</strong> {cita.servicio}</p>
               <p><strong>Barbero solicitado:</strong> {cita.barbero}</p>
-              <p><strong>Canal de captación:</strong> {cita.canal}</p>
             </div>
 
             {/* Botones */}
@@ -123,7 +117,7 @@ export default function OwnerAgenda() {
               
               <div className="agendada-info">
                 <strong>{agendada.cliente} ({agendada.servicio})</strong>
-                <p>{agendada.fecha} • Asignado a: {agendada.barbero} • Captado por: {agendada.canal}</p>
+                <p>{agendada.fecha} • Asignado a: {agendada.barbero}</p>
               </div>
 
               <div className="agendada-finances">

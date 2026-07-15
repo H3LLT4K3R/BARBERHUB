@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IconCircleCheck } from "@tabler/icons-react";
 import { BARBERIA_DEMO } from "../data/barberia-demo";
-import { apiFetch } from "../../../utils/api.js";
+// import { apiFetch } from "../../../utils/api.js"; // Lo comentamos por ahora
 import { formatearHorarioCita, keyAFecha } from "../../../utils/fecha.js";
 import PageNavbar from "../components/page-navbar";
 import "../styles/datos-reserva.css";
@@ -42,7 +42,7 @@ export default function DatosReserva() {
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
 
-  // Acción: confirmar cita
+  // Acción: confirmar cita y pagar
   const confirmar = async (e) => {
     e.preventDefault();
     if (!nombre.trim() || !telefono.trim()) {
@@ -54,6 +54,11 @@ export default function DatosReserva() {
     setError("");
 
     try {
+      // 1. SIMULAMOS EL GUARDADO EN BASE DE DATOS (MOCK)
+      // Cuando tengas tu backend listo (Supabase/Node), descomentas apiFetch y borras esta promesa
+      await new Promise(resolve => setTimeout(resolve, 1000)); 
+      
+      /* CÓDIGO REAL COMENTADO TEMPORALMENTE
       await apiFetch("/citas", {
         method: "POST",
         body: JSON.stringify({
@@ -68,16 +73,17 @@ export default function DatosReserva() {
           telefono: telefono.trim(),
         }),
       });
+      */
 
-      navigate("/cita-confirmada", {
-        state: {
-          ...reserva,
-          nombre: nombre.trim(),
-          telefono: telefono.trim(),
-        },
-      });
+      // 2. REDIRECCIÓN A MERCADO PAGO
+      // Cambia esta URL por tu link de cobro real de Mercado Pago
+      const linkMercadoPago = "https://mpago.la/25hJZFC"; 
+      
+      // Esto saca al usuario de tu app y lo lleva a pagar
+      window.location.href = linkMercadoPago;
+
     } catch (err) {
-      setError(err.message);
+      setError("Ocurrió un error. Intenta de nuevo.");
       setEnviando(false);
     }
   };
@@ -96,7 +102,7 @@ export default function DatosReserva() {
           {/* Título y subtítulo */}
           <h1 className="dr-titulo">Datos de Reserva</h1>
           <p className="dr-subtitulo">
-            No necesitas cuenta. Completa los datos para agendar en el local.
+            Verifica tus datos para agendar en el local y proceder al pago.
           </p>
 
           {/* Formulario */}
@@ -139,7 +145,7 @@ export default function DatosReserva() {
                 <span className="dr-valor">{reserva.servicio}</span>
               </div>
               <div className="dr-fila-resumen destacado">
-                <span className="dr-etiqueta">TOTAL ESTIMADO</span>
+                <span className="dr-etiqueta">TOTAL A PAGAR</span>
                 <span className="dr-valor">
                   ${reserva.precio} {reserva.moneda}
                 </span>
@@ -163,7 +169,7 @@ export default function DatosReserva() {
                 className="dr-boton-confirmar"
                 disabled={enviando}
               >
-                {enviando ? "Confirmando..." : "Confirmar Cita"}
+                {enviando ? "Redirigiendo..." : "Confirmar y Pagar"}
               </button>
             </div>
           </form>

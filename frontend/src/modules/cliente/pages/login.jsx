@@ -10,6 +10,9 @@ export default function Login() {
   const navigate = useNavigate();
   const { state } = useLocation();
 
+  // 1. Capturamos la ruta pendiente a la que el usuario quería ir antes del login
+  const rutaDestino = state?.redirigirA;
+
   // Estado del formulario
   const [form, setForm] = useState({
     email: state?.email ?? "",
@@ -27,25 +30,32 @@ export default function Login() {
     setError("");
   };
 
-  // Manejo de envío de formulario (MODIFICADO PARA USAR EL MOCK)
+  // Manejo de envío de formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     
     try {
-      // 1. Llamamos a nuestra función de prueba en lugar de apiFetch
+      // 1. Llamamos a nuestra función de prueba
       const response = authenticateUser(form.email, form.password);
 
-      // Simulamos un pequeño retraso de red para que se vea real (opcional)
+      // Simulamos un pequeño retraso de red
       await new Promise(resolve => setTimeout(resolve, 800));
 
       if (response.success) {
         // 2. Usamos tu misma función saveSession con los datos falsos
         saveSession({ token: response.data.token, user: response.data.user });
         
-        // 3. Navegamos a la ruta específica según el rol
-        navigate(response.redirect);
+        // 👇 ESTA ES LA LÍNEA NUEVA QUE SOLUCIONA EL PROBLEMA 👇
+        // Guardamos el token con el mismo nombre que BarberiaPerfil está buscando
+        localStorage.setItem("token_sesion", response.data.token);
+        
+        // 3. Priorizamos la ruta pendiente sobre la del mock
+        const rutaFinal = rutaDestino || response.redirect;
+        
+        // Usamos replace: true para no dejar historial basura
+        navigate(rutaFinal, { replace: true });
       } else {
         // Mostramos el error si escriben mal la clave
         setError(response.error);
