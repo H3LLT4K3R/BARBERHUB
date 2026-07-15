@@ -1,32 +1,36 @@
-/*  Página principal  */
-.pagina-servicios {
+/*pagina principal*/
+.ms-pagina {
   min-height: 100vh;
   background: #f4f4f4;
   font-family: "Inter", system-ui, sans-serif;
 }
 
-/* Contenido principal */
-.contenido-servicios {
+.ms-contenido {
   max-width: 1140px;
   margin: 0 auto;
   padding: 28px 40px 56px;
 }
 
-/*  Sección hero con datos de barbería  */
-.hero-servicios {
+.ms-contenido--error {
+  text-align: center;
+  margin-top: 50px;
+}
+
+/*hero con datos de barberia*/
+.ms-hero {
   background: #000;
   border-radius: 22px;
   padding: 22px 26px;
   color: #fff;
 }
 
-.hero-izquierda {
+.ms-hero-izquierda {
   display: flex;
   align-items: center;
   gap: 18px;
 }
 
-.logo-barberia {
+.ms-logo {
   width: 96px;
   height: 96px;
   border-radius: 50%;
@@ -35,14 +39,14 @@
   padding: 3px;
 }
 
-.titulo-barberia {
+.ms-titulo {
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(28px, 3.5vw, 44px);
   line-height: 1.05;
   margin-bottom: 8px;
 }
 
-.rating-barberia {
+.ms-rating {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -51,14 +55,14 @@
   font-size: 14px;
 }
 
-.estrellas {
+.ms-estrellas {
   display: inline-flex;
   gap: 3px;
   color: #d9b85e;
 }
 
-.direccion-barberia,
-.estado-barberia {
+.ms-direccion,
+.ms-estado {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -66,44 +70,44 @@
   font-size: 15px;
 }
 
-.direccion-barberia {
+.ms-direccion {
   margin-bottom: 6px;
 }
 
-.estado-dot {
+.ms-estado-dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
   background: #666;
 }
 
-.estado-dot--abierto {
+.ms-estado-dot.abierto {
   background: #22c55e;
 }
 
-/*Sección de servicios */
-.lista-servicios {
+/*sección de servicios*/
+.ms-lista-servicios {
   padding: 22px 2px 0;
 }
 
-.lista-servicios h2 {
+.ms-lista-servicios h2 {
   font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(36px, 4vw, 52px);
   color: #111;
   margin-bottom: 22px;
 }
 
-.grid-servicios {
+.ms-grid-servicios {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 38px;
 }
 
-.columna-servicios {
+.ms-columna-servicios {
   list-style: none;
 }
 
-.item-servicio {
+.ms-item-servicio {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -113,26 +117,26 @@
   color: #111;
 }
 
-.servicio-izquierda {
+.ms-servicio-izquierda {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.precio-servicio {
+.ms-precio-servicio {
   color: #d0a948;
   font-weight: 600;
 }
 
-/* Acciones (botón regresar) */
-.acciones-servicios {
+/*Acciones botón regresar*/
+.ms-acciones {
   margin-top: 22px;
   display: flex;
   justify-content: flex-start;
   gap: 12px;
 }
 
-.boton-regresar {
+.ms-boton-regresar {
   border-radius: 14px;
   padding: 12px 28px;
   font-size: 14px;
@@ -147,23 +151,48 @@
   color: #d0a948;
 }
 
-/* Responsive */
+/*Responsivo*/
 @media (max-width: 900px) {
-  .contenido-servicios {
+  .ms-contenido {
     padding: 20px 16px 38px;
   }
 
-  .grid-servicios {
+  .ms-grid-servicios {
     grid-template-columns: 1fr;
     gap: 12px;
   }
 
-  .acciones-servicios {
+  .ms-acciones {
     flex-direction: column;
   }
 
-  .boton-regresar {
+  .ms-boton-regresar {
     width: 100%;
     justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .ms-hero {
+    padding: 18px 18px;
+    border-radius: 16px;
+  }
+
+  .ms-hero-izquierda {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ms-logo {
+    width: 72px;
+    height: 72px;
+  }
+
+  .ms-lista-servicios h2 {
+    font-size: 28px;
+  }
+
+  .ms-item-servicio {
+    font-size: 14px;
   }
 }

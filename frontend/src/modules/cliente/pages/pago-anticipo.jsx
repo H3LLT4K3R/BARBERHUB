@@ -1,22 +1,32 @@
 import { useState } from "react";
 import "../styles/pago-anticipo.css";
 
-export default function PagoAnticipo() {
+export default function PagoAnticipo({ datosReserva }) {
   const [enviando, setEnviando] = useState(false);
+
+  // Valores dinámicos opcionales con fallback por defecto
+  const resumen = datosReserva || {
+    establecimiento: "URBAN CUTS",
+    horario: "Jueves a las 9:00 hrs",
+    servicio: "Corte y barba",
+    total: "$350 MXN",
+    anticipo: "$100 MXN",
+  };
 
   const handleConfirmar = (e) => {
     e.preventDefault();
     setEnviando(true);
-    console.log("Redirigiendo a la pasarela externa de Mercado Pago...");
     
-    // Aquí puedes meter tu lógica de redirección con el SDK o link de Mercado Pago
+    // Simulación de llamado a Backend para crear preferencia Mercado Pago
     setTimeout(() => {
       setEnviando(false);
-    }, 2000);
+      // Ejemplo: window.location.href = initPointMercadoPago;
+      console.log("Redirigiendo a pasarela Mercado Pago...");
+    }, 1800);
   };
 
   const handleCancelar = () => {
-    console.log("Reserva cancelada, redirigiendo...");
+    console.log("Reserva cancelada, regresando a la selección...");
   };
 
   return (
@@ -29,56 +39,55 @@ export default function PagoAnticipo() {
         </div>
       </header>
 
-      {/* Zona Central sin Sidebars */}
+      {/* Zona Central */}
       <main className="pa-content-layout">
         <div className="pa-reserva-card">
           
-          {/* Icono de Check de Éxito superior */}
+          {/* Badge de Verificación */}
           <div className="pa-icon-badge">
             <span className="pa-check-mark">✓</span>
           </div>
 
           <h1 className="pa-title">Pago de Anticipo</h1>
           <p className="pa-subtitle">
-            Completa el pago del anticipo utilizando **Mercado Pago** para asegurar tu cita. El resto se liquidará en el local.
+            Completa el pago del anticipo utilizando <strong>Mercado Pago</strong> para asegurar tu cita. El resto se liquidará directamente en el local.
           </p>
 
-          {/* Formulario que conecta con Mercado Pago */}
           <form onSubmit={handleConfirmar} className="pa-form">
             
-            {/* Aviso informativo de Mercado Pago */}
+            {/* Aviso Informativo Pasarela */}
             <div className="pa-mp-notice-box">
               <span className="pa-mp-icon">💳</span>
               <p className="pa-mp-text">
-                Al hacer clic en continuar, abrirás de forma segura la pasarela de <strong>Mercado Pago</strong> para realizar el abono correspondiente.
+                Al hacer clic en continuar, se abrirá la pasarela segura de <strong>Mercado Pago</strong> para completar la transacción.
               </p>
             </div>
 
-            {/* Caja de Detalles del Establecimiento y Costos (Exactamente la tuya) */}
+            {/* Cuadro Resumen de Reserva */}
             <div className="pa-summary-box">
               <div className="pa-summary-item">
                 <span className="pa-label">ESTABLECIMIENTO</span>
-                <span className="pa-value font-bold">Urban Cuts</span>
+                <span className="pa-value font-bold">{resumen.establecimiento}</span>
               </div>
               <div className="pa-summary-item">
                 <span className="pa-label">HORARIO</span>
-                <span className="pa-value font-bold">Jueves a las 9:00 hrs</span>
+                <span className="pa-value font-bold">{resumen.horario}</span>
               </div>
               <div className="pa-summary-item">
                 <span className="pa-label">SERVICIO</span>
-                <span className="pa-value">Corte y barba</span>
+                <span className="pa-value">{resumen.servicio}</span>
               </div>
               <div className="pa-summary-item">
                 <span className="pa-label">TOTAL ESTIMADO</span>
-                <span className="pa-value font-bold">$350 MXN</span>
+                <span className="pa-value font-bold">{resumen.total}</span>
               </div>
               <div className="pa-summary-item pa-highlight-row">
                 <span className="pa-label">ANTICIPO A PAGAR</span>
-                <span className="pa-value font-bold">$100 MXN</span>
+                <span className="pa-value font-bold">{resumen.anticipo}</span>
               </div>
             </div>
 
-            {/* Botones de Acción */}
+            {/* Acciones */}
             <div className="pa-action-buttons">
               <button 
                 type="button" 
@@ -94,7 +103,7 @@ export default function PagoAnticipo() {
                 className="pa-btn pa-btn-confirm"
                 disabled={enviando}
               >
-                {enviando ? "Abriendo Mercado Pago..." : "Pagar con Mercado Pago"}
+                {enviando ? "Conectando..." : "Pagar con Mercado Pago"}
               </button>
             </div>
 

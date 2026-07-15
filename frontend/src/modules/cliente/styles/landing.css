@@ -1,7 +1,7 @@
-/* ── RESET ── */
+/* reset */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── VARIABLES ── */
+/* variables */
 :root {
   --black  : #111111;
   --white  : #ffffff;
@@ -17,7 +17,7 @@
   --font   : 'Inter', sans-serif;
 }
 
-/* ── NAVBAR ── */
+/* navbar */
 .lp-navbar {
   position: sticky;
   top: 0;
@@ -89,7 +89,7 @@
 }
 .lp-btn-gold:hover { background: var(--gold2); transform: translateY(-1px); }
 
-/* ── HERO ── */
+/*hero */
 .lp-hero {
   background:
     radial-gradient(circle at 20% 10%, rgba(201, 162, 39, 0.09), transparent 42%),
@@ -108,7 +108,6 @@
   border-radius: 22px;
   background: rgba(184, 114, 82, 0.14);
   border: 1px solid rgba(184, 114, 82, 0.35);
-  color: #fff;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 1.5px;
@@ -136,7 +135,7 @@
   margin-bottom: 34px;
 }
 
-/* ── SEARCH BOX ── */
+/* search box */
 .lp-search-wrap {
   width: 100%;
   max-width: 660px;
@@ -221,7 +220,7 @@
   transform: translateY(-1px);
 }
 
-/* ── CHIPS ── */
+/* chips */
 .lp-chips-row {
   display: flex;
   align-items: center;
@@ -249,7 +248,7 @@
   background: #fff;
 }
 
-/* ── DOS EXPERIENCIAS ── */
+/* dos experiencias */
 .lp-two-exp {
   background: linear-gradient(180deg, #f4ecde 0%, #f0e6d6 100%);
   padding: 86px 48px;
@@ -346,7 +345,7 @@
   flex-shrink: 0;
 }
 
-/* ── TESTIMONIOS ── */
+/* Opiniones*/
 .lp-testi {
   background: var(--white);
   padding: 88px 48px;
@@ -417,23 +416,24 @@
 .lp-testi-name { font-size: 14px; font-weight: 600; color: var(--black); }
 .lp-testi-role { font-size: 12px; color: var(--lgray); margin-top: 2px; }
 
-/* ── FOOTER ── */
+/* Footer*/
 .lp-footer {
   background: var(--cream);
   border-top: 1px solid var(--border);
   padding: 22px 40px;
   text-align: center;
   font-size: 13px;
-  color: var(--lgray);
+  color: var(--gray);
+  font-weight: 500;
 }
 
-/* ── RESPONSIVE ── */
-@media (max-width: 700px) {
+/* Responsivo */
+@media (max-width: 768px) {
   .lp-navbar { padding: 0 20px; }
   .lp-hero { padding: 68px 20px 60px; }
   .lp-two-exp, .lp-testi { padding: 60px 20px; }
   .lp-exp-grid, .lp-testi-grid { grid-template-columns: 1fr; }
-  .lp-search-wrap { flex-wrap: wrap; border-radius: 14px; padding: 12px 16px; gap: 8px; }
+  .lp-search-wrap { flex-wrap: wrap; border-radius: 16px; padding: 12px 16px; gap: 10px; }
   .lp-search-sep { display: none; }
-  .lp-btn-search { width: 100%; border-radius: 8px; padding: 11px; }
+  .lp-btn-search { width: 100%; border-radius: 30px; padding: 12px; }
 }

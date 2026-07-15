@@ -1,159 +1,42 @@
 :root {
-  --fav-bg-sidebar: #121212;
-  --fav-bg-main: #ffffff;
-  --fav-gold-primary: #e5be6b;
-  --fav-gold-border: #edd193;
-  --fav-text-white: #ffffff;
-  --fav-text-main: #000000;
-  --fav-text-muted: #555555;
-  --fav-focus-blue: #2196f3;
-  
+  --fav-bg-principal: #ffffff;
+  --fav-dorado: #e5be6b;
+  --fav-dorado-borde: #edd193;
+  --fav-blanco: #ffffff;
+  --fav-texto-principal: #000000;
+  --fav-texto-muted: #555555;
+  --fav-azul-foco: #2196f3;
+
   /* Estados */
   --fav-color-abierto: #10b981;
   --fav-color-cerrado: #b91c1c;
 }
 
-/* Panel general */
-.panel-favoritos {
+/*Contenedor principal*/
+.fav-dashboard {
   display: flex;
-  min-height: 100vh;
-  background-color: var(--fav-bg-main);
+  min-height: 100%;
+  background-color: var(--fav-bg-principal);
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  width: 100%;
 }
 
-/* Sidebar izquierdo */
-.sidebar-favoritos {
-  width: 250px;
-  background-color: var(--fav-bg-sidebar);
-  display: flex;
-  flex-direction: column;
-  padding: 25px 0;
-  box-sizing: border-box;
-}
-
-.marca-favoritos {
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  margin-bottom: 40px;
-}
-
-.logo-favoritos {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  margin-right: 12px;
-}
-
-.marca-favoritos h2 {
-  font-size: 1.2rem;
-  letter-spacing: 1px;
-  color: var(--fav-text-white);
-  margin: 0;
-}
-
-/* Menú de navegación */
-.menu-favoritos {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 0 15px;
-  flex: 1;
-}
-
-.btn-menu-favoritos {
-  background: none;
-  border: none;
-  color: #aaaaaa;
-  text-align: left;
-  padding: 14px 22px;
-  font-size: 1.05rem;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-  font-weight: 500;
-}
-
-.btn-menu-favoritos:hover {
-  color: var(--fav-text-white);
-  background-color: #222222;
-}
-
-.btn-menu-favoritos.activo {
-  background-color: var(--fav-gold-primary);
-  color: #000000;
-  font-weight: 700;
-}
-
-/* Perfil de usuario */
-.perfil-favoritos {
-  display: flex;
-  align-items: center;
-  padding: 20px;
-  border-top: 1px solid #222222;
-  margin-top: auto;
-}
-
-.avatar-favoritos {
-  width: 48px;
-  height: 48px;
-  background-color: #f3d89d;
-  color: #000000;
-  font-weight: 700;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  margin-right: 12px;
-}
-
-.info-usuario-favoritos {
-  display: flex;
-  flex-direction: column;
-}
-
-.nombre-usuario-favoritos {
-  color: var(--fav-text-white);
-  font-weight: 600;
-  font-size: 1.05rem;
-}
-
-.rol-usuario-favoritos {
-  color: #888888;
-  font-size: 0.85rem;
-  margin-top: 2px;
-}
-
-/* Contenedor principal */
-.contenido-favoritos {
+.fav-main-wrapper {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: var(--fav-bg-main);
+  background-color: var(--fav-bg-principal);
 }
 
-.encabezado-favoritos {
-  background-color: #000000;
-  padding: 25px 40px;
-}
-
-.encabezado-favoritos h1 {
-  font-size: 1.6rem;
-  font-weight: 600;
-  margin: 0;
-  color: var(--fav-text-white);
-}
-
-.layout-favoritos {
+.fav-content-layout {
   flex: 1;
   padding: 40px;
-  background-color: var(--fav-bg-main);
+  background-color: var(--fav-bg-principal);
   display: flex;
   justify-content: center;
 }
 
-.tarjetas-favoritos {
+.fav-cards-container {
   display: flex;
   flex-direction: column;
   gap: 25px;
@@ -161,12 +44,17 @@
   max-width: 1200px;
 }
 
-/*  Tarjeta de barbería */
-.tarjeta-favorito {
+/* Utilidad: elemento oculto */
+.fav-oculto {
+  display: none;
+}
+
+/*Tarjeta de barberia*/
+.fav-tarjeta {
   display: flex;
   align-items: center;
-  background-color: var(--fav-bg-main);
-  border: 1.5px solid var(--fav-gold-border);
+  background-color: var(--fav-bg-principal);
+  border: 1.5px solid var(--fav-dorado-borde);
   border-radius: 18px;
   padding: 24px 30px;
   gap: 30px;
@@ -175,84 +63,86 @@
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
 }
 
-.tarjeta-favorito.seleccionada {
-  border: 2.5px solid var(--fav-focus-blue);
+.fav-tarjeta.seleccionada {
+  border: 2.5px solid var(--fav-azul-foco);
   box-shadow: 0 6px 20px rgba(33, 150, 243, 0.12);
 }
 
-.imagen-favorito {
+.fav-imagen {
   width: 130px;
   height: 90px;
   object-fit: cover;
   border-radius: 10px;
+  flex-shrink: 0;
 }
 
-.info-favorito {
+.fav-info {
   flex: 1;
+  min-width: 0;
 }
 
-.info-favorito h3 {
+.fav-info h3 {
   font-size: 1.3rem;
   font-weight: 700;
   margin: 0 0 8px 0;
-  color: var(--fav-text-main);
+  color: var(--fav-texto-principal);
 }
 
-.direccion-favorito {
+.fav-direccion {
   font-size: 1rem;
-  color: var(--fav-text-muted);
+  color: var(--fav-texto-muted);
   margin: 0 0 10px 0;
 }
 
 /* Estado abierto/cerrado */
-.estado-favorito {
+.fav-estado {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.punto-estado {
+.fav-punto-estado {
   width: 14px;
   height: 14px;
   border-radius: 50%;
 }
 
-.punto-estado.abierto {
+.fav-punto-estado.abierto {
   background-color: var(--fav-color-abierto);
 }
 
-.punto-estado.cerrado {
+.fav-punto-estado.cerrado {
   background-color: var(--fav-color-cerrado);
 }
 
-.texto-estado {
+.fav-texto-estado {
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--fav-text-main);
+  color: var(--fav-texto-principal);
 }
 
-/* Acciones a la derecha */
-.acciones-favorito {
+/*Acciones a la derecha*/
+.fav-acciones {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 20px;
+  flex-shrink: 0;
 }
 
-.calificacion-favorito {
+.fav-calificacion {
   font-size: 1.8rem;
   font-weight: 700;
   color: #c9a054;
   line-height: 1;
 }
 
-.grupo-botones-favorito {
+.fav-grupo-botones {
   display: flex;
   gap: 15px;
 }
 
-/* Botones de acción */
-.btn-favorito {
+.fav-boton {
   border: none;
   padding: 10px 24px;
   border-radius: 20px;
@@ -262,20 +152,70 @@
   transition: background 0.2s;
 }
 
-.btn-dorado {
-  background-color: var(--fav-gold-primary);
+.fav-boton.dorado {
+  background-color: var(--fav-dorado);
   color: #000000;
 }
 
-.btn-dorado:hover {
+.fav-boton.dorado:hover {
   background-color: #edd193;
 }
 
-.btn-gris {
+.fav-boton.gris {
   background-color: #e8e8ed;
-  color: var(--fav-text-main);
+  color: var(--fav-texto-principal);
 }
 
-.btn-gris:hover {
+.fav-boton.gris:hover {
   background-color: #dcdce1;
+}
+
+/*Responsivo*/
+@media (max-width: 768px) {
+  .fav-content-layout {
+    padding: 20px;
+  }
+
+  .fav-tarjeta {
+    flex-wrap: wrap;
+    padding: 18px 20px;
+    gap: 16px;
+  }
+
+  .fav-imagen {
+    width: 100px;
+    height: 76px;
+  }
+
+  .fav-acciones {
+    align-items: flex-start;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .fav-grupo-botones {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .fav-info h3 {
+    font-size: 1.1rem;
+  }
+
+  .fav-boton {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .fav-grupo-botones {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .fav-acciones {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }

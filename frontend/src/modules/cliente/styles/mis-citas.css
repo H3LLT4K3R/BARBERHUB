@@ -1,60 +1,83 @@
 :root {
   --color-sidebar: #000000;
   --color-principal: #ffffff;
-  --color-dorado: #e5be6b;
+  --color-dorado: #c9a227;
+  --color-dorado-hover: #b8911e;
   --color-dorado-borde: #edd193;
   --texto-blanco: #ffffff;
-  --texto-principal: #000000;
+  --texto-principal: #111111;
   --texto-muted: #7e7e82;
   --step-gris: #b0b0b5;
-  --step-verde: #24cc63;
+  --step-verde: #22c55e;
+  --fuente: 'Inter', system-ui, sans-serif;
 }
 
-/* Contenedor de la página (ya sin sidebar propio, ese lo pone SidebarLayout) */
+/* Contenedor general */
 .contenido-citas {
-  padding: 40px;
+  padding: 40px 24px;
   display: flex;
-  justify-content: flex-start;
-  font-family: 'Inter', system-ui, sans-serif;
+  justify-content: center;
+  font-family: var(--fuente);
+  background-color: #fcfcfc;
+  min-height: 100vh;
 }
 
 .contenedor-citas {
   width: 100%;
-  max-width: 1300px;
+  max-width: 1050px;
 }
 
 .titulo-seccion {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 25px;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--texto-principal);
+  margin-bottom: 28px;
+}
+
+.citas-vacias {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: var(--color-principal);
+  border: 1.5px dashed var(--color-dorado-borde);
+  border-radius: 20px;
+  color: var(--texto-muted);
+  gap: 12px;
 }
 
 .lista-citas {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 24px;
 }
 
-/* TARJETA RECTANGULAR HORIZONTAL FIJA */
+/* Tarjeta principal */
 .tarjeta-cita {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  align-items: stretch; /* Mantiene la misma altura en ambos bloques internos */
+  align-items: stretch;
   width: 100%;
   box-sizing: border-box;
   border: 1.5px solid var(--color-dorado-borde);
   border-radius: 20px;
-  padding: 30px 40px;
+  padding: 28px 32px;
   background-color: var(--color-principal);
-  overflow: hidden; /* Evita desbordes visuales */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  transition: box-shadow 0.2s ease;
+}
+
+.tarjeta-cita:hover {
+  box-shadow: 0 6px 20px rgba(201, 162, 39, 0.08);
 }
 
 /* Bloque Izquierdo */
 .bloque-izquierdo {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   flex: 1;
 }
 
@@ -72,17 +95,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  color: var(--color-dorado);
+  background: #fffdf6;
+  flex-shrink: 0;
 }
 
 .detalles-texto h3 {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 700;
+  color: var(--texto-principal);
   margin: 0 0 4px 0;
 }
 
+.nombre-barbero {
+  color: #333;
+  font-weight: 600;
+}
+
 .detalles-texto p {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   color: var(--texto-muted);
   margin: 0;
 }
@@ -93,7 +124,7 @@
   gap: 6px;
   padding: 6px 14px;
   border-radius: 20px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
   width: max-content;
 }
@@ -110,18 +141,20 @@
   background-color: #f4fdf7;
 }
 
-/* Stepper */
+/* Stepper estructurado */
 .stepper-progreso {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   margin-top: 10px;
+  padding-top: 6px;
 }
 
 .nodo-step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
+  gap: 8px;
+  width: 80px;
 }
 
 .punto-step {
@@ -129,23 +162,20 @@
   height: 12px;
   border-radius: 50%;
   background-color: var(--step-gris);
-  z-index: 2;
 }
 
 .label-step {
-  position: absolute;
-  top: 20px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--step-gris);
-  white-space: nowrap;
+  text-align: center;
 }
 
 .linea-step {
   height: 3px;
-  width: 100px;
+  flex: 1;
   background-color: var(--step-gris);
-  z-index: 1;
+  margin-top: 4px;
 }
 
 .linea-step.activa {
@@ -155,6 +185,7 @@
 .nodo-step.completado .punto-step {
   background-color: var(--step-verde);
 }
+
 .nodo-step.completado .label-step {
   color: var(--step-verde);
 }
@@ -162,31 +193,32 @@
 .nodo-step.actual .punto-step {
   background-color: var(--color-dorado);
 }
+
 .nodo-step.actual .label-step {
   color: var(--color-dorado);
   font-weight: 700;
 }
 
-/* BLOQUE DERECHO COMPLETAMENTE ENCAPSULADO DENTRO DEL CONTENEDOR */
+/* Bloque Derecho */
 .bloque-derecho {
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* Mandar precio arriba y el grupo de botones abajo */
+  justify-content: space-between;
   align-items: flex-end;
-  min-width: 220px;
-  margin-left: 30px;
+  min-width: 200px;
+  margin-left: 32px;
 }
 
 .contenedor-precio {
   width: 100%;
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .precio-cita {
   font-size: 1.8rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--color-dorado);
   line-height: 1;
 }
@@ -201,13 +233,14 @@
 .boton-accion {
   width: 100%;
   padding: 10px 16px;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
+  font-family: var(--fuente);
   font-weight: 600;
   background-color: var(--color-principal);
   border: 1.5px solid var(--color-dorado-borde);
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   text-align: center;
   box-sizing: border-box;
 }
@@ -218,32 +251,137 @@
 
 .boton-detalles:hover {
   background-color: #fffdf5;
+  border-color: var(--color-dorado);
 }
 
 .boton-cancelar {
   color: #d9534f;
-  border-color: #d9534f;
+  border-color: #f5c6c6;
 }
 
 .boton-cancelar:hover {
-  background-color: #fff5f5;
+  background-color: #fdf2f2;
+  border-color: #d9534f;
 }
 
 .boton-comentario-gris {
-  background-color: #e2e2e2;
-  border-color: #d5d5d5;
+  background-color: #f2f2f2;
+  border-color: #e0e0e0;
   color: #555555;
 }
 
 .boton-comentario-gris:hover {
-  background-color: #d5d5d5;
-  color: #333333;
+  background-color: #e5e5e5;
+  color: #222222;
 }
 
-/*Responsivo*/
+/* Modales */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modal-contenido {
+  background: var(--color-principal);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 460px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modal-header h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.btn-cerrar-modal {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--texto-muted);
+}
+
+.modal-body p {
+  margin: 8px 0;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.subtexto-modal {
+  margin-bottom: 12px !important;
+}
+
+.textarea-comentario {
+  width: 100%;
+  padding: 12px;
+  border: 1.5px solid var(--color-dorado-borde);
+  border-radius: 10px;
+  font-family: var(--fuente);
+  font-size: 0.9rem;
+  outline: none;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.textarea-comentario:focus {
+  border-color: var(--color-dorado);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-cerrar {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-confirmar-cancelar {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  background: #d9534f;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-guardar {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  background: var(--color-dorado);
+  color: #000;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
   .contenido-citas {
-    padding: 20px;
+    padding: 20px 16px;
   }
 
   .tarjeta-cita {
@@ -253,10 +391,9 @@
   }
 
   .bloque-derecho {
-    align-items: stretch;
-    min-width: 0;
     margin-left: 0;
-    width: 100%;
+    min-width: 100%;
+    align-items: stretch;
   }
 
   .contenedor-precio {
@@ -264,28 +401,7 @@
   }
 
   .stepper-progreso {
-    flex-wrap: wrap;
-    row-gap: 12px;
-  }
-
-  .linea-step {
-     flex: 1;
-     height: 3px;
-     background-color: var(--step-gris);
-     z-index: 1;
-  }
-}
-
-@media (max-width: 480px) {
-  .info-header {
-    flex-wrap: wrap;
-  }
-
-  .linea-step {
-    width: 24px;
-  }
-
-  .label-step {
-    font-size: 0.75rem;
+    overflow-x: auto;
+    padding-bottom: 8px;
   }
 }
