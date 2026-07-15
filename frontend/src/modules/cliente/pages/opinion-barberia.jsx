@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/opinion-barberia.css";
 
 const opinionesBarberia = [
@@ -32,31 +33,31 @@ const opinionesBarberia = [
 ];
 
 const opinionesBarberos = [
-  { 
-    id: 1, 
-    nombre: "Carlos Reyes", 
-    avatar: "https://randomuser.me/api/portraits/men/22.jpg", 
-    rating: 5, 
-    tiempo: "Hace 3 horas", 
+  {
+    id: 1,
+    nombre: "Carlos Reyes",
+    avatar: "https://randomuser.me/api/portraits/men/22.jpg",
+    rating: 5,
+    tiempo: "Hace 3 horas",
     fechaTimestamp: 2,
-    comentario: "Carlos es un barbero increíble, siempre atento a los detalles que le pido." 
+    comentario: "Carlos es un barbero increíble, siempre atento a los detalles que le pido."
   },
-  { 
-    id: 2, 
-    nombre: "Juan Santos", 
-    avatar: "https://randomuser.me/api/portraits/men/60.jpg", 
-    rating: 3, 
-    tiempo: "Hace 5 días", 
+  {
+    id: 2,
+    nombre: "Juan Santos",
+    avatar: "https://randomuser.me/api/portraits/men/60.jpg",
+    rating: 3,
+    tiempo: "Hace 5 días",
     fechaTimestamp: 1,
-    comentario: "Buen corte aunque hubo algo de demora en el turno." 
+    comentario: "Buen corte aunque hubo algo de demora en el turno."
   },
 ];
 
 function Estrellas({ rating, size = "normal" }) {
   return (
-    <span className={`estrellas ${size}`} aria-label={`${rating} de 5 estrellas`}>
+    <span className={`obp-estrellas ${size}`} aria-label={`${rating} de 5 estrellas`}>
       {Array.from({ length: 5 }, (_, i) => (
-        <span key={i} className={i < rating ? "estrella llena" : "estrella"}>
+        <span key={i} className={i < rating ? "obp-estrella llena" : "obp-estrella"}>
           ★
         </span>
       ))}
@@ -65,6 +66,7 @@ function Estrellas({ rating, size = "normal" }) {
 }
 
 export default function OpinionBarberia() {
+  const navigate = useNavigate();
   const [tabActiva, setTabActiva] = useState("barberia");
   const [filtroEstrellas, setFiltroEstrellas] = useState("todas");
   const [orden, setOrden] = useState("recientes");
@@ -87,43 +89,43 @@ export default function OpinionBarberia() {
   }, [tabActiva, filtroEstrellas, orden]);
 
   return (
-    <div className="pagina-opiniones">
-      <div className="contenedor-principal">
-        
+    <div className="obp-page">
+      <div className="obp-main">
+
         {/* Encabezado */}
-        <header className="encabezado">
-          <button className="boton-logo" type="button" aria-label="Volver al inicio">
-            <img src="/logo.png" alt="Barber Hub" className="opg-logo-barberhub" />
+        <header className="obp-header">
+          <button className="obp-logo-btn" type="button" aria-label="Volver al inicio">
+            <img src="/logo.png" alt="Barber Hub" className="obp-logo-barberhub" />
           </button>
         </header>
 
-        <div className="contenido">
-          
+        <div className="obp-content">
+
           {/* Nombre de la Barbería y Pestañas */}
-          <div className="info-barberia">
-            <div className="bloque-datos">
-              <h1 className="nombre-barberia">URBAN CUTS</h1>
-              <div className="fila-rating">
+          <div className="obp-barberia-info">
+            <div className="obp-datos-block">
+              <h1 className="obp-barberia-name">URBAN CUTS</h1>
+              <div className="obp-rating-row">
                 <Estrellas rating={5} />
-                <span className="total-opiniones">(220 opiniones)</span>
+                <span className="obp-total-opiniones">(220 opiniones)</span>
               </div>
-              <div className="direccion-barberia">
-                <span className="icono-check">✔</span>
+              <div className="obp-barberia-address">
+                <span className="obp-check-icon">✔</span>
                 Blvd. 10 de mayo, Puebla
               </div>
             </div>
 
-            <div className="pestañas">
+            <div className="obp-tabs">
               <button
                 type="button"
-                className={`pestaña ${tabActiva === "barberia" ? "activo" : ""}`}
+                className={`obp-tab ${tabActiva === "barberia" ? "activo" : ""}`}
                 onClick={() => setTabActiva("barberia")}
               >
                 Comentarios Barbería
               </button>
               <button
                 type="button"
-                className={`pestaña ${tabActiva === "barberos" ? "activo" : ""}`}
+                className={`obp-tab ${tabActiva === "barberos" ? "activo" : ""}`}
                 onClick={() => setTabActiva("barberos")}
               >
                 Comentarios Barberos
@@ -132,12 +134,12 @@ export default function OpinionBarberia() {
           </div>
 
           {/* Filtros de opiniones */}
-          <div className="filtros-opiniones">
-            <div className="grupo-filtros-izq">
-              <span className="etiqueta-filtros">Filtrar por:</span>
+          <div className="obp-filters">
+            <div className="obp-filters-left">
+              <span className="obp-filters-label">Filtrar por:</span>
               <button
                 type="button"
-                className={`filtro ${filtroEstrellas === "todas" ? "activo" : ""}`}
+                className={`obp-filter ${filtroEstrellas === "todas" ? "activo" : ""}`}
                 onClick={() => setFiltroEstrellas("todas")}
               >
                 Todas
@@ -147,7 +149,7 @@ export default function OpinionBarberia() {
                 <button
                   key={num}
                   type="button"
-                  className={`filtro-estrellas ${filtroEstrellas === num ? "activo" : ""}`}
+                  className={`obp-filter-stars ${filtroEstrellas === num ? "activo" : ""}`}
                   onClick={() => setFiltroEstrellas(num)}
                   aria-label={`Filtrar ${num} estrellas`}
                 >
@@ -157,9 +159,9 @@ export default function OpinionBarberia() {
             </div>
 
             {/* Selector de ordenamiento */}
-            <div className="contenedor-ordenar">
+            <div className="obp-sort-container">
               <select
-                className="select-ordenar"
+                className="obp-sort-select"
                 value={orden}
                 onChange={(e) => setOrden(e.target.value)}
               >
@@ -170,31 +172,35 @@ export default function OpinionBarberia() {
           </div>
 
           {/* Lista de opiniones */}
-          <div className="lista-opiniones">
+          <div className="obp-list">
             {opinionesFiltradas.length > 0 ? (
               opinionesFiltradas.map((op) => (
-                <div key={op.id} className="tarjeta-opinion">
-                  <img src={op.avatar} alt={op.nombre} className="avatar-cliente" />
-                  <div className="cuerpo-opinion">
-                    <div className="encabezado-opinion">
-                      <span className="nombre-cliente">{op.nombre}</span>
+                <div key={op.id} className="obp-review-card">
+                  <img src={op.avatar} alt={op.nombre} className="obp-avatar" />
+                  <div className="obp-review-body">
+                    <div className="obp-review-header">
+                      <span className="obp-client-name">{op.nombre}</span>
                       <Estrellas rating={op.rating} size="small" />
-                      <span className="tiempo-opinion">{op.tiempo}</span>
+                      <span className="obp-review-time">{op.tiempo}</span>
                     </div>
-                    <p className="texto-opinion">{op.comentario}</p>
+                    <p className="obp-review-text">{op.comentario}</p>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="estado-vacio">
+              <div className="obp-empty-state">
                 No hay opiniones registradas con {filtroEstrellas} estrellas en esta sección.
               </div>
             )}
           </div>
 
           {/* Botón regresar */}
-          <div className="acciones">
-            <button type="button" className="boton-regresar">
+          <div className="obp-actions">
+            <button
+              type="button"
+              className="obp-btn-back"
+              onClick={() => navigate("/barberia/1/servicios")}
+            >
               Regresar
             </button>
           </div>

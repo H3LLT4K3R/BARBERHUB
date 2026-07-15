@@ -140,9 +140,15 @@ export default function AgendaLocal() {
             </div>
           </div>
 
-          <button className="al-boton-continuar" onClick={handleContinuar}>
-            Continuar
-          </button>
+          {/* Acciones finales: Regresar + Continuar */}
+          <div className="al-acciones-final">
+            <button className="al-boton-regresar" onClick={() => navigate("/explorar")}>
+              Regresar
+            </button>
+            <button className="al-boton-continuar" onClick={handleContinuar}>
+              Continuar
+            </button>
+          </div>
         </section>
 
       </main>
