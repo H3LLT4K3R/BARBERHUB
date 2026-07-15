@@ -20,13 +20,13 @@ export default function Explorar() {
   const user = getStoredUser();
   const [ubicacion, setUbicacion] = useState(null);
   const [radio, setRadio] = useState(15); // Estado que controla ambos textos en tiempo real
-  const [filtroServicio, setFiltroServicio] = useState(''); 
+  const [filtroServicio, setFiltroServicio] = useState('');
 
   // Nuevos estados para el filtro de disponibilidad solicitados por el encargado
   const [fechaFiltro, setFechaFiltro] = useState('');
   const [horaFiltro, setHoraFiltro] = useState('');
 
-  // ── 1. GEOLOCALIZACIÓN ─────────────────────────────────────────────────────
+  // geolocalización 
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -55,7 +55,7 @@ export default function Explorar() {
     }
   }, []);
 
-  // ── 2. FILTRADO DINÁMICO (RADIO Y SERVICIOS) ───────────────────────────────
+  //  FILTRADO DE BARBERÍAS BASADO EN UBICACIÓN, RADIO Y SERVICIOFILTRADO
   const barberiasFiltradas = useMemo(() => {
     if (!ubicacion) return [];
     const [lat, lon] = ubicacion;
@@ -77,11 +77,11 @@ export default function Explorar() {
       .sort((a, b) => a.dist - b.dist);
   }, [ubicacion, radio, filtroServicio]);
 
-  // ── 3. MAPEO DINÁMICO DE ZOOM SEGÚN EL RADIO SELECCIONADO ──────────────────
+  // MAPEO DINÁMICO DE ZOOM SEGÚN EL RADIO SELECCIONADO 
   const mapaUrl = useMemo(() => {
     if (!ubicacion) return '';
     const [lat, lon] = ubicacion;
-    
+
     let zoom;
     if (radio <= 2) zoom = 15;
     else if (radio <= 5) zoom = 14;
@@ -92,7 +92,7 @@ export default function Explorar() {
     return `https://maps.google.com/maps?q=${lat},${lon}&z=${zoom}&output=embed`;
   }, [ubicacion, radio]);
 
-  // ── PANTALLA DE CARGA ──────────────────────────────────────────────────────
+  //PANTALLA DE CARGA
   if (!ubicacion) {
     return (
       <div className="explorar-loading">
@@ -105,24 +105,24 @@ export default function Explorar() {
   return (
     <div className="explorar-container">
       <div className="explorar-main">
-        
-        {/* CONTENIDO PRINCIPAL IZQUIERDO */}
+
+        {/* Contenido principal izquierdo */}
         <div className="explorar-content">
-          
-          {/* BANNER DE FILTROS INTEGRADOS */}
+
+          {/* Banner filtros integrados */}
           <div className="explorar-section-header">
             <div className="explorar-header-left">
-              
+
               {/* Título de la sección */}
               <h2 className="explorar-title">Buscar por Disponibilidad</h2>
-              
+
               {/* Contenedor de filtros adaptado para Inputs de fecha y hora */}
               <div className="explorar-filters">
-                
+
                 {/* Filtro Fecha */}
                 <div className="explorar-filter-group">
                   <label className="explorar-filter-label">FECHA</label>
-                  <input 
+                  <input
                     type="date"
                     value={fechaFiltro}
                     onChange={(e) => setFechaFiltro(e.target.value)}
@@ -153,23 +153,23 @@ export default function Explorar() {
               </div>
             </div>
 
-            {/* CONTROL DEL RADIO DE BÚSQUEDA - TOTALMENTE COORDINADO Y DINÁMICO */}
+            {/* Control de radio de busqueda - coordinado y dinamico */}
             <div className="explorar-radius-control">
               <label className="explorar-radius-label">
                 Radio de búsqueda: <span>{radio} km</span>
               </label>
-              <input 
-                type="range" 
-                min="1" 
-                max="50" 
-                value={radio} 
+              <input
+                type="range"
+                min="1"
+                max="50"
+                value={radio}
                 onChange={(e) => setRadio(Number(e.target.value))} // Modifica el estado global inmediatamente al arrastrar
                 className="explorar-radius-slider"
               />
             </div>
           </div>
 
-          {/* LISTADO DE TARJETAS */}
+          {/* Listado de barberias */}
           <div className="explorar-barberias-list">
             {barberiasFiltradas.length === 0 && (
               <div className="explorar-empty">
@@ -180,22 +180,22 @@ export default function Explorar() {
 
             {barberiasFiltradas.map((b) => {
               const slots = generarSlots(b).slice(0, 6);
-              const unavailableSlots = ['10:00', '11:30', '16:00']; 
+              const horariosNoDisponibles = ['10:00', '11:30', '16:00'];
 
               return (
                 <div key={b.id} className="explorar-barberia-card">
-                  
-                  {/* MITAD IZQUIERDA: INFO GENERAL */}
+
+                  {/* Mitad izquierda: info general */}
                   <div className="explorar-barberia-left-block">
                     <div className="explorar-barberia-icon">💈</div>
                     <div className="explorar-barberia-info">
                       <h3 className="explorar-barberia-name">{b.nombre}</h3>
-                      
+
                       <div className="explorar-barberia-rating">
                         <div className="explorar-stars">
                           {[...Array(5)].map((_, i) => (
-                            <Star 
-                              key={i} 
+                            <Star
+                              key={i}
                               className="explorar-star"
                               style={{ fill: i < Math.floor(b.rating) ? '#E9C46A' : 'none', stroke: '#E9C46A' }}
                             />
@@ -219,13 +219,13 @@ export default function Explorar() {
                     </div>
                   </div>
 
-                  {/* MITAD DERECHA: HORARIOS Y ENLACE */}
+                  {/* Mitad derecha: horarios y enlace */}
                   <div className="explorar-barberia-right-block">
                     <div className="explorar-slots-section">
                       <p className="explorar-slots-title">Horarios disponibles hoy:</p>
                       <div className="explorar-slots">
                         {slots.map((hora) => {
-                          const estaOcupado = unavailableSlots.includes(hora);
+                          const estaOcupado = horariosNoDisponibles.includes(hora);
                           return (
                             <button
                               key={hora}
@@ -236,7 +236,7 @@ export default function Explorar() {
                                   navigate('/login', { state: { from: `/barberia/${b.id}?hora=${hora}` } });
                                 }
                               }}
-                              className={`explorar-slot ${estaOcupado ? 'unavailable' : ''}`}
+                              className={`explorar-slot ${estaOcupado ? 'no-disponible' : ''}`}
                               disabled={estaOcupado}
                             >
                               {hora}
@@ -246,11 +246,11 @@ export default function Explorar() {
                       </div>
                     </div>
 
-                    <button 
-                      onClick={() => navigate(`/barberia-perfil/${b.id}`)}
+                    <button
+                      onClick={() => navigate(`/barberia/${b.id}`)}
                       className="explorar-profile-link"
                     >
-                      Ver perfil de barbería 
+                      Ver perfil de barbería
                     </button>
                   </div>
 
@@ -273,9 +273,9 @@ export default function Explorar() {
         </div>
 
       </div>
-      
+
       {/* Elemento oculto para evitar advertencias de variables sin usar en ESLint */}
-      <span style={{ display: 'none' }} onClick={() => setFiltroServicio('')}>{filtroServicio}</span>
+      <span className="explorar-oculto" onClick={() => setFiltroServicio('')}>{filtroServicio}</span>
     </div>
   );
 }

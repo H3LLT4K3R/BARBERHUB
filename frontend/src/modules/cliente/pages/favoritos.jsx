@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // 1. Importamos el hook de navegación
+import { useNavigate } from "react-router-dom";
 import "../styles/favoritos.css";
 
 // Mock de datos de barberías favoritas con IDs de ruta añadidos
 const favoritosData = [
   {
     id: 1,
-    barberiaId: "urban-cuts", // ID para la URL
+    barberiaId: "urban-cuts",
     nombre: "Barbería La Reforma",
     direccion: "Av. Sor Juana 142  0.8km",
     estado: "Abierto",
@@ -15,7 +15,7 @@ const favoritosData = [
   },
   {
     id: 2,
-    barberiaId: "la-navaja-clasica", // ID para la URL
+    barberiaId: "la-navaja-clasica",
     nombre: "Barbería La Navaja clásica",
     direccion: "Av. Sor Juana 142  0.8km",
     estado: "Abierto",
@@ -24,7 +24,7 @@ const favoritosData = [
   },
   {
     id: 3,
-    barberiaId: "black-edge", // ID para la URL
+    barberiaId: "black-edge",
     nombre: "Carlos Reyes",
     direccion: "Barbería Black Edge",
     estado: "Cerrado",
@@ -34,60 +34,57 @@ const favoritosData = [
 ];
 
 export default function Favoritos() {
-  const navigate = useNavigate(); //Inicializamos el hook useNavigate
+  const navigate = useNavigate();
   const [menuActivo, setMenuActivo] = useState("Favoritos");
   const [tarjetaSeleccionada, setTarjetaSeleccionada] = useState(2);
 
-  // Funciones para controlar la navegación al hacer clic
   const manejarAgendar = (e, barberiaId) => {
-    e.stopPropagation(); // Evita que se seleccione la tarjeta al pulsar el botón
+    e.stopPropagation();
     navigate("/agenda-local", { state: { barberiaId: barberiaId } });
   };
 
   const manejarVerBarberia = (e, barberiaId) => {
-    e.stopPropagation(); // Evita que se seleccione la tarjeta al pulsar el botón
-    navigate(`/barberia-perfil//${barberiaId}`);
+    e.stopPropagation();
+    navigate(`/barberia-perfil/${barberiaId}`);
   };
 
   return (
     <div className="fav-dashboard">
-      {/* Contenedor Principal (Entorno Blanco) */}
-      <div className="fav-main-wrapper" style={{ paddingTop: "0px" }}>
-        
+      <div className="fav-main-wrapper">
+
         <main className="fav-content-layout">
           <div className="fav-cards-container">
             {favoritosData.map((barberia) => (
               <div
                 key={barberia.id}
-                className={`tarjeta-favorito ${tarjetaSeleccionada === barberia.id ? "seleccionada" : ""}`}
+                className={`fav-tarjeta ${tarjetaSeleccionada === barberia.id ? "seleccionada" : ""}`}
                 onClick={() => setTarjetaSeleccionada(barberia.id)}
               >
                 {/* Imagen miniatura */}
-                <img src={barberia.imagen} alt={barberia.nombre} className="imagen-favorito" />
+                <img src={barberia.imagen} alt={barberia.nombre} className="fav-imagen" />
 
                 {/* Información central */}
-                <div className="info-favorito">
+                <div className="fav-info">
                   <h3>{barberia.nombre}</h3>
-                  <p className="direccion-favorito">{barberia.direccion}</p>
-                  <div className="estado-favorito">
-                    <span className={`punto-estado ${barberia.estado.toLowerCase()}`}></span>
-                    <span className="texto-estado">{barberia.estado}</span>
+                  <p className="fav-direccion">{barberia.direccion}</p>
+                  <div className="fav-estado">
+                    <span className={`fav-punto-estado ${barberia.estado.toLowerCase()}`}></span>
+                    <span className="fav-texto-estado">{barberia.estado}</span>
                   </div>
                 </div>
 
                 {/* Acciones a la derecha */}
-                <div className="acciones-favorito">
-                  <span className="calificacion-favorito">{barberia.calificacion}</span>
-                  <div className="grupo-botones-favorito">
-                    {/*  Evento onClick a los botones */}
-                    <button 
-                      className="btn-favorito btn-dorado"
+                <div className="fav-acciones">
+                  <span className="fav-calificacion">{barberia.calificacion}</span>
+                  <div className="fav-grupo-botones">
+                    <button
+                      className="fav-boton dorado"
                       onClick={(e) => manejarAgendar(e, barberia.barberiaId)}
                     >
                       Agendar
                     </button>
-                    <button 
-                      className="btn-favorito btn-gris"
+                    <button
+                      className="fav-boton gris"
                       onClick={(e) => manejarVerBarberia(e, barberia.barberiaId)}
                     >
                       Ver barbería
@@ -100,8 +97,8 @@ export default function Favoritos() {
         </main>
       </div>
 
-      {/*  menuActivo para evitar alertas/errores */}
-      <span style={{ display: "none" }} onClick={() => setMenuActivo("Favoritos")}>
+      {/* menuActivo para evitar alertas/errores */}
+      <span className="fav-oculto" onClick={() => setMenuActivo("Favoritos")}>
         {menuActivo}
       </span>
     </div>

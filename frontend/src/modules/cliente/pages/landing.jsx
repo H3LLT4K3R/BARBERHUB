@@ -18,7 +18,7 @@ import {
 import BrandLogo from "../components/brand-logo";
 import "../styles/landing.css";
 
-// ─── DATOS ────────────────────────────────────────────────────────────────────
+// datos
 const CHIPS = ["Corte clásico", "Degradado / Fade", "Ritual de barba", "Perfilado"];
 
 const EXP_CARDS = [
@@ -69,7 +69,7 @@ const TESTIMONIOS = [
   },
 ];
 
-// ─── STARS ────────────────────────────────────────────────────────────────────
+// estrellas 
 function Stars({ count = 5 }) {
   return (
     <div className="lp-stars">
@@ -80,7 +80,7 @@ function Stars({ count = 5 }) {
   );
 }
 
-// ─── LANDING ──────────────────────────────────────────────────────────────────
+// Landing
 export default function Landing() {
   const [query, setQuery] = useState("");
   const [coords, setCoords] = useState(null);
@@ -109,13 +109,13 @@ export default function Landing() {
         enableHighAccuracy: true,
         timeout: 10000,
         maximumAge: 0,
-      },
+      }
     );
   };
 
-  const buscarBarberias = () => {
+  const buscarBarberias = (termino = query) => {
     const params = new URLSearchParams();
-    if (query.trim()) params.set("q", query.trim());
+    if (termino.trim()) params.set("q", termino.trim());
     if (coords) {
       params.set("lat", String(coords.lat));
       params.set("lng", String(coords.lng));
@@ -124,9 +124,20 @@ export default function Landing() {
     navigate(qs ? `/explorar?${qs}` : "/explorar");
   };
 
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      buscarBarberias();
+    }
+  };
+
+  const handleChipClick = (chipText) => {
+    setQuery(chipText);
+    buscarBarberias(chipText);
+  };
+
   return (
     <>
-      {/* ── NAVBAR ── */}
+      {/* Navbar */}
       <nav className="lp-navbar">
         <BrandLogo className="lp-nav-logo" imgClassName="lp-nav-logo-img" />
 
@@ -140,7 +151,7 @@ export default function Landing() {
         </div>
       </nav>
 
-      {/* ── HERO ── */}
+      {/* Hero */}
       <section className="lp-hero">
         <div className="lp-hero-badge">Encuentra tu estilo en tu zona</div>
 
@@ -151,7 +162,7 @@ export default function Landing() {
 
         <p className="lp-hero-sub">
           Reserva servicios de corte y afeitado. Compara opiniones,
-          Ve distancias reales y Agenda en segundos.
+          ve distancias reales y agenda en segundos.
         </p>
 
         {/* Buscador */}
@@ -163,6 +174,7 @@ export default function Landing() {
             placeholder="¿Qué servicio buscas?"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
           />
           <div className="lp-search-sep" />
           <button
@@ -174,14 +186,14 @@ export default function Landing() {
           >
             <IconMapPin size={15} color="#b87252" />
             {geoStatus === "loading"
-              ? "Obteniendo ubicación..."
+              ? "Obteniendo..."
               : geoStatus === "granted"
                 ? "Ubicación activada"
                 : "Mi ubicación actual"}
           </button>
           <button
             className="lp-btn-search"
-            onClick={buscarBarberias}
+            onClick={() => buscarBarberias()}
           >
             Buscar Barberías
           </button>
@@ -189,16 +201,16 @@ export default function Landing() {
 
         {/* Chips */}
         <div className="lp-chips-row">
-          <span className="lp-chips-label">Búsquedas frecuentes</span>
+          <span className="lp-chips-label">Búsquedas frecuentes:</span>
           {CHIPS.map((c) => (
-            <button key={c} className="lp-chip" onClick={() => setQuery(c)}>
+            <button key={c} className="lp-chip" onClick={() => handleChipClick(c)}>
               {c}
             </button>
           ))}
         </div>
       </section>
 
-      {/* ── DOS EXPERIENCIAS ── */}
+      {/* dos experiencias */}
       <section className="lp-two-exp">
         <div className="lp-sec-head">
           <h2>Una plataforma, dos experiencias</h2>
@@ -208,7 +220,6 @@ export default function Landing() {
         <div className="lp-exp-grid">
           {EXP_CARDS.map((card) => (
             <div className="lp-exp-card" key={card.title}>
-
               {/* Íconos con fondo crema */}
               <div className="lp-exp-icons">
                 {card.icons.map((ico) => {
@@ -237,7 +248,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── TESTIMONIOS ── */}
+      {/* Opiniones*/}
       <section className="lp-testi">
         <div className="lp-testi-badge">Testimonios</div>
         <h2>Lo que dice nuestra comunidad</h2>
@@ -259,9 +270,9 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── FOOTER ── */}
+      {/* Footer */}
       <footer className="lp-footer">
-        ©2026 BARBER HUB. Todos los derechos reservados.
+        © 2026 URBAN CUTS. Todos los derechos reservados.
       </footer>
     </>
   );
