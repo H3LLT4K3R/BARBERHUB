@@ -1,6 +1,4 @@
-/* ==========================================================================
-   PÁGINA BASE
-   ========================================================================== */
+/*Página base*/
 .al-pagina {
   min-height: 100vh;
   background-color: #ffffff;
@@ -9,9 +7,7 @@
   font-family: "Inter", system-ui, sans-serif;
 }
 
-/* ==========================================================================
-   ENCABEZADO SUPERIOR
-   ========================================================================== */
+/*Encabezado superior*/
 .al-encabezado {
   background-color: #121212;
   padding: 22px 60px;
@@ -56,9 +52,7 @@
   margin: 0;
 }
 
-/* ==========================================================================
-   LAYOUT PRINCIPAL
-   ========================================================================== */
+/*Layout principal*/
 .al-contenido {
   flex: 1;
   display: grid;
@@ -87,9 +81,7 @@
   letter-spacing: 0.5px;
 }
 
-/* ==========================================================================
-   CALENDARIO
-   ========================================================================== */
+/*Calendario*/
 .al-grid-calendario {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -135,9 +127,7 @@
   cursor: default;
 }
 
-/* ==========================================================================
-   HORARIOS
-   ========================================================================== */
+/*Horarios*/
 .al-grid-horarios {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -181,9 +171,7 @@
   cursor: not-allowed;
 }
 
-/* ==========================================================================
-   LEYENDA
-   ========================================================================== */
+/*Leyenda*/
 .al-leyenda {
   display: flex;
   gap: 30px;
@@ -210,11 +198,16 @@
 .al-leyenda-punto.disponible { background-color: #a3e8bb; }
 .al-leyenda-punto.ocupado { background-color: #ffb3b3; }
 
-/* ==========================================================================
-   BOTÓN CONTINUAR
-   ========================================================================== */
-.al-boton-continuar {
+/* Acciones finales: contenedor de Regresar + Continuar */
+.al-acciones-final {
+  display: flex;
+  gap: 16px;
   width: 100%;
+}
+
+/*Botón continuar*/
+.al-boton-continuar {
+  flex: 1;
   padding: 22px;
   background-color: #121212;
   border: none;
@@ -231,9 +224,26 @@
   transform: translateY(-2px);
 }
 
-/* ==========================================================================
-   RESPONSIVE
-   ========================================================================== */
+/*Botón regresar*/
+.al-boton-regresar {
+  flex: 1;
+  padding: 22px;
+  background-color: #121212;
+  border: 2px solid #121212;
+  border-radius: 16px;
+  color: #e5be6b;
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.al-boton-regresar:hover {
+  background-color:  #fffdf9;
+  transform: translateY(-2px);
+}
+
+/* Responsivo*/
 @media (max-width: 1150px) {
   .al-contenido {
     grid-template-columns: 1fr;
@@ -285,9 +295,14 @@
     font-size: 0.95rem;
   }
 
-  .al-boton-continuar {
+  .al-boton-continuar,
+  .al-boton-regresar {
     padding: 16px;
     font-size: 1.1rem;
+  }
+
+  .al-acciones-final {
+    gap: 10px;
   }
 }
 

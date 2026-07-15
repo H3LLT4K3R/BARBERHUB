@@ -348,7 +348,7 @@
 }
 
 /* Responsivo */
-@media (max-width: 1150px) {
+@media (max-width: 1400px) {
   .explorar-main {
     grid-template-columns: 1fr;
   }
@@ -360,7 +360,7 @@
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 1000px) {
   .explorar-container {
     padding: 20px;
   }
@@ -387,7 +387,8 @@
   }
 
   .explorar-barberia-card {
-    grid-template-columns: 1fr;
+  grid-template-columns: 1fr;
+  
   }
 
   .explorar-barberia-left-block {
