@@ -5,10 +5,10 @@ import {
   Calendar as CalendarIcon, ChevronLeft, ChevronRight, CalendarDays
 } from 'lucide-react';
 
-// Importamos solo el CSS necesario
 import "../../styles/Barberias/perfilbarberia.css";
 
 export default function PerfilBarberia() {
+  // === ESTADOS ===
   const [activeTab, setActiveTab] = useState('Acerca');
   const [nombreBarberia, setNombreBarberia] = useState('Mathew McCoy - Barberia profesional');
   const [avatarImage, setAvatarImage] = useState(null);
@@ -26,22 +26,6 @@ export default function PerfilBarberia() {
   ]);
   const [nuevoServicioNombre, setNuevoServicioNombre] = useState('');
   const [nuevoServicioPrecio, setNuevoServicioPrecio] = useState('');
-
-  const agregarNuevoServicio = () => {
-    if (!nuevoServicioNombre || !nuevoServicioPrecio) return;
-    const nuevo = {
-      id: Date.now(),
-      nombre: nuevoServicioNombre,
-      precio: nuevoServicioPrecio.startsWith('$') ? nuevoServicioPrecio : `$${nuevoServicioPrecio}`
-    };
-    setServiciosList([...serviciosList, nuevo]);
-    setNuevoServicioNombre('');
-    setNuevoServicioPrecio('');
-  };
-
-  const eliminarServicio = (id) => {
-    setServiciosList(serviciosList.filter(s => s.id !== id));
-  };
 
   const [skillsImages, setSkillsImages] = useState({
     0: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=300&q=80',
@@ -66,59 +50,104 @@ export default function PerfilBarberia() {
   const [inputHoraFin, setInputHoraFin] = useState('3:00 Pm');
   const [inputFechaEspecialTexto, setInputFechaEspecialTexto] = useState('');
 
+  const fileInputRefs = useRef([]);
+  const avatarInputRef = useRef(null);
+
+  // === FUNCIONES UTILITARIAS ===
+
+  // 1. Procesador centralizado de imágenes
+  const procesarArchivoImagen = (file, callback) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => callback(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const handleAvatarChange = (e) => {
+    procesarArchivoImagen(e.target.files[0], setAvatarImage);
+  };
+
+  const handleSkillImageChange = (index, e) => {
+    procesarArchivoImagen(e.target.files[0], (imgBase64) => {
+      setSkillsImages(prev => ({ ...prev, [index]: imgBase64 }));
+    });
+  };
+
+  // 2. Manejo de Servicios Optimizado
+  const agregarNuevoServicio = () => {
+    if (!nuevoServicioNombre.trim() || !nuevoServicioPrecio.trim()) return;
+    
+    const nuevo = {
+      id: Date.now(),
+      nombre: nuevoServicioNombre.trim(),
+      precio: nuevoServicioPrecio.startsWith('$') ? nuevoServicioPrecio : `$${nuevoServicioPrecio}`
+    };
+    
+    setServiciosList(prev => [...prev, nuevo]);
+    setNuevoServicioNombre('');
+    setNuevoServicioPrecio('');
+  };
+
+  const actualizarServicio = (id, campo, valor) => {
+    setServiciosList(prev => prev.map(servicio => 
+      servicio.id === id ? { ...servicio, [campo]: valor } : servicio
+    ));
+  };
+
+  const eliminarServicio = (id) => {
+    setServiciosList(prev => prev.filter(s => s.id !== id));
+  };
+
+  // 3. Lógica de Calendario y Fechas
+  const cambiarMes = (incremento) => {
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + incremento, 1));
+  };
+
   const guardarConfiguracionDia = () => {
     if (!selectedDay) {
       alert("Por favor selecciona un día del calendario primero.");
       return;
     }
+    
     if (subTabCalendario === 'Horarios') {
-      setHorariosBarberos({
-        ...horariosBarberos,
+      if (!inputHoraInicio.trim() || !inputHoraFin.trim()) return;
+      setHorariosBarberos(prev => ({
+        ...prev,
         [selectedDay]: `${inputHoraInicio} - ${inputHoraFin}`
-      });
+      }));
     } else {
-      if (!inputFechaEspecialTexto) return;
-      setFechasImportantes({
-        ...fechasImportantes,
+      if (!inputFechaEspecialTexto.trim()) return;
+      setFechasImportantes(prev => ({
+        ...prev,
         [selectedDay]: inputFechaEspecialTexto
-      });
+      }));
       setInputFechaEspecialTexto('');
     }
   };
 
   const eliminarConfiguracionDia = (fecha, tipo) => {
     if (tipo === 'horario') {
-      const copia = { ...horariosBarberos };
-      delete copia[fecha];
-      setHorariosBarberos(copia);
+      setHorariosBarberos(prev => {
+        const copia = { ...prev };
+        delete copia[fecha];
+        return copia;
+      });
     } else {
-      const copia = { ...fechasImportantes };
-      delete copia[fecha];
-      setFechasImportantes(copia);
+      setFechasImportantes(prev => {
+        const copia = { ...prev };
+        delete copia[fecha];
+        return copia;
+      });
     }
   };
 
-  const fileInputRefs = useRef([]);
-  const avatarInputRef = useRef(null);
-
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setAvatarImage(reader.result);
-      reader.readAsDataURL(file);
-    }
+  const obtenerCiudadBreve = (direccionLarga) => {
+    if (!direccionLarga) return 'Sin localización';
+    const partes = direccionLarga.split(',');
+    return partes.length >= 2 ? partes[1].trim() : direccionLarga;
   };
 
-  const handleSkillImageChange = (index, e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setSkillsImages(prev => ({ ...prev, [index]: reader.result }));
-      reader.readAsDataURL(file);
-    }
-  };
-
+  // 4. Renderizado de la malla del calendario
   const renderCalendarDays = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -126,14 +155,16 @@ export default function PerfilBarberia() {
     const totalDays = new Date(year, month + 1, 0).getDate();
     const dayElements = [];
     
+    // Celdas vacías del inicio del mes
     for (let i = 0; i < firstDayIndex; i++) {
       dayElements.push(<div key={`empty-${i}`} className="calendar-day-cell empty"></div>);
     }
     
+    // Celdas con días
     for (let day = 1; day <= totalDays; day++) {
       const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-      const hasHorario = horariosBarberos[dateString];
-      const hasImportant = fechasImportantes[dateString];
+      const hasHorario = !!horariosBarberos[dateString];
+      const hasImportant = !!fechasImportantes[dateString];
       const isSelected = selectedDay === dateString;
       
       dayElements.push(
@@ -142,13 +173,21 @@ export default function PerfilBarberia() {
           className={`calendar-day-cell ${isSelected ? 'selected' : ''} ${hasImportant ? 'day-important' : ''} ${hasHorario && !hasImportant ? 'day-has-hours' : ''}`}
           onClick={() => {
             setSelectedDay(dateString);
+            
+            // Cargar datos en los inputs al hacer clic
             if (horariosBarberos[dateString]) {
               const [inicio, fin] = horariosBarberos[dateString].split(' - ');
               setInputHoraInicio(inicio || '12:00 Pm');
               setInputHoraFin(fin || '3:00 Pm');
+            } else {
+              setInputHoraInicio('');
+              setInputHoraFin('');
             }
+            
             if (fechasImportantes[dateString]) {
               setInputFechaEspecialTexto(fechasImportantes[dateString]);
+            } else {
+              setInputFechaEspecialTexto('');
             }
           }}
         >
@@ -161,15 +200,6 @@ export default function PerfilBarberia() {
       );
     }
     return dayElements;
-  };
-
-  const obtenerCiudadBreve = (direccionLarga) => {
-    if (!direccionLarga) return 'Sin localización';
-    const partes = direccionLarga.split(',');
-    if (partes.length >= 2) {
-      return `${partes[1].trim()}`;
-    }
-    return direccionLarga;
   };
 
   return (
@@ -306,9 +336,9 @@ export default function PerfilBarberia() {
                       <div key={s.id} className="service-premium-row-card">
                         <div className="service-inputs-group-block">
                           <Scissors className="w-3.5 h-3.5 icon-gold" />
-                          <input type="text" value={s.nombre} onChange={(e) => setServiciosList(serviciosList.map(item => item.id === s.id ? {...item, nombre: e.target.value} : item))} className="premium-service-name-input" />
+                          <input type="text" value={s.nombre} onChange={(e) => actualizarServicio(s.id, 'nombre', e.target.value)} className="premium-service-name-input" />
                           <span className="price-tag-prefix">$</span>
-                          <input type="text" value={s.precio.replace('$', '')} onChange={(e) => setServiciosList(serviciosList.map(item => item.id === s.id ? {...item, precio: '$' + e.target.value} : item))} className="premium-service-price-input" />
+                          <input type="text" value={s.precio.replace('$', '')} onChange={(e) => actualizarServicio(s.id, 'precio', e.target.value)} className="premium-service-price-input" />
                         </div>
                         <button onClick={() => eliminarServicio(s.id)} className="delete-service-row-btn"><Trash2 className="w-3.5 h-3.5" /></button>
                       </div>
@@ -361,9 +391,9 @@ export default function PerfilBarberia() {
             </div>
 
             <div className="calendar-month-selector">
-              <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))} className="calendar-arrow-btn"><ChevronLeft className="w-4 h-4" /></button>
+              <button onClick={() => cambiarMes(-1)} className="calendar-arrow-btn"><ChevronLeft className="w-4 h-4" /></button>
               <span className="calendar-month-title">{currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase()}</span>
-              <button onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))} className="calendar-arrow-btn"><ChevronRight className="w-4 h-4" /></button>
+              <button onClick={() => cambiarMes(1)} className="calendar-arrow-btn"><ChevronRight className="w-4 h-4" /></button>
             </div>
 
             <div className="calendar-weekdays-grid">

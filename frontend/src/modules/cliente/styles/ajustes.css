@@ -8,9 +8,10 @@
   --ajt-switch-off: #e4e4e7;
 }
 
-/*Contenedor principal*/
+/* Contenedor principal */
 .ajt-contenido {
-  padding: 40px;
+  /* Padding dinámico: 20px en móvil, hasta 40px en pantallas grandes */
+  padding: clamp(20px, 5vw, 40px);
   display: flex;
   justify-content: center;
   background-color: var(--ajt-bg-main);
@@ -19,16 +20,19 @@
 
 .ajt-grid {
   display: flex;
+  flex-wrap: wrap; /* Permite que las columnas se apilen automáticamente */
   width: 100%;
   max-width: 1200px;
-  gap: 50px;
+  /* Gap dinámico entre columnas */
+  gap: clamp(30px, 4vw, 50px);
   align-items: flex-start;
 }
 
-/*columna izquierda: perfil e estadísticas*/
+/* Columna Izquierda: Perfil y estadísticas */
 .ajt-columna-izquierda {
-  width: 350px;
-  flex-shrink: 0;
+  /* Crece, se encoge, pero intenta tener 320px base. Si no cabe, salta de línea */
+  flex: 1 1 320px; 
+  max-width: 350px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -37,7 +41,7 @@
 .ajt-tarjeta-perfil {
   border: 1.5px solid var(--ajt-borde-gris);
   border-radius: 16px;
-  padding: 30px 20px;
+  padding: clamp(20px, 3vw, 30px) 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -45,17 +49,34 @@
 }
 
 .ajt-avatar {
-  width: 75px;
-  height: 75px;
+  /* Tamaño de avatar fluido */
+  width: clamp(65px, 8vw, 75px);
+  height: clamp(65px, 8vw, 75px);
   background-color: #ebd193;
   color: #000000;
-  font-size: 1.8rem;
+  font-size: clamp(1.4rem, 2vw, 1.8rem);
   font-weight: 700;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 15px;
+}
+
+.ajt-tarjeta-perfil h3 {
+  font-size: clamp(1.2rem, 2.5vw, 1.4rem);
+  font-weight: 700;
+  color: #000000; /* Negro puro y oscuro */
+  margin: 0 0 5px 0;
+  opacity: 1; /* Forzamos a que no tenga transparencia */
+}
+
+.ajt-tarjeta-perfil p {
+  font-size: clamp(0.9rem, 2vw, 1rem);
+  color: #000000; /* Negro puro y oscuro */
+  font-weight: 500;
+  margin: 0;
+  opacity: 1; /* Forzamos a que no tenga transparencia */
 }
 
 .ajt-boton-cambiar-foto {
@@ -67,10 +88,11 @@
   border-radius: 14px;
   padding: 18px 20px;
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: clamp(1rem, 2vw, 1.1rem);
   font-weight: 700;
   color: var(--ajt-texto-principal);
   transition: background 0.2s;
+  width: 100%; /* Asegura que tome el ancho disponible */
 }
 
 .ajt-boton-cambiar-foto:hover {
@@ -105,7 +127,7 @@
 }
 
 .ajt-boton-estadistica strong {
-  font-size: 1.3rem;
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
   font-weight: 700;
   color: var(--ajt-texto-principal);
 }
@@ -116,17 +138,19 @@
   font-weight: 600;
   margin-top: 2px;
 }
-/*columna derecha: sección de configuración*/
+
+/* Columna Derecha: Sección de configuración */
 .ajt-columna-derecha {
-  flex: 1;
+  /* Toma el resto del espacio disponible, mínimo 400px antes de apilarse */
+  flex: 2 1 400px;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: clamp(20px, 3vw, 30px);
 }
 
 .ajt-seccion h2 {
-  font-size: 1.25rem;
+  font-size: clamp(1.1rem, 2vw, 1.25rem);
   font-weight: 700;
   color: var(--ajt-texto-muted);
   margin: 0 0 15px 0;
@@ -137,6 +161,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap; /* Permite que los elementos bajen si la pantalla es muy estrecha */
+  gap: 12px;
   padding: 12px 0;
   border-bottom: 1px solid #eeeeee;
 }
@@ -145,12 +171,12 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  font-size: 1.1rem;
+  font-size: clamp(1rem, 2vw, 1.1rem);
   font-weight: 600;
   color: var(--ajt-texto-principal);
 }
 
-/*Seguridad*/
+/* Seguridad */
 .ajt-acciones-password {
   display: flex;
   align-items: center;
@@ -178,22 +204,25 @@
 }
 
 .ajt-valor-info {
-  font-size: 1.05rem;
+  font-size: clamp(0.95rem, 2vw, 1.05rem);
   color: var(--ajt-texto-muted);
   font-weight: 500;
+  text-align: right;
 }
 
-/*eliminar cuenta*/
+/* Eliminar cuenta */
 .ajt-zona-eliminar {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
   margin-top: auto;
   padding-top: 20px;
 }
 
 .ajt-texto-eliminar {
-  font-size: 1.05rem;
+  font-size: clamp(0.95rem, 2vw, 1.05rem);
   color: var(--ajt-texto-muted);
   font-weight: 600;
 }
@@ -202,19 +231,24 @@
   background-color: #b90043;
   color: #ffffff;
   border: none;
-  padding: 10px 30px;
+  padding: 12px 30px;
   border-radius: 14px;
   font-size: 1.05rem;
   font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, transform 0.1s;
+  white-space: nowrap;
 }
 
 .ajt-boton-eliminar:hover {
   opacity: 0.9;
 }
 
-/*SWITCH (TOGGLE CHECKBOX NATIVO)*/
+.ajt-boton-eliminar:active {
+  transform: scale(0.98);
+}
+
+/* SWITCH (TOGGLE CHECKBOX NATIVO) */
 .ajt-switch {
   position: relative;
   display: inline-block;
@@ -260,40 +294,31 @@
   transform: translateX(24px);
 }
 
-/*Responsivo*/
-@media (max-width: 900px) {
-  .ajt-grid {
-    flex-direction: column;
-  }
+/* =========================================
+   MEDIA QUERIES (Drásticamente reducidos)
+   ========================================= */
 
+/* Solo necesitamos intervenir cuando la pantalla es un móvil pequeño, 
+   el resto de la responsividad la maneja el flex-wrap de .ajt-grid */
+@media (max-width: 600px) {
   .ajt-columna-izquierda {
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .ajt-contenido {
-    padding: 20px;
-  }
-
-  .ajt-grid {
-    gap: 30px;
-  }
-
-  .ajt-etiqueta {
-    font-size: 1rem;
+    /* Libera el límite de ancho en móviles para que ocupe el 100% */
+    max-width: 100%; 
   }
 
   .ajt-fila-ajuste,
   .ajt-fila-info {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .ajt-zona-eliminar {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+  }
+
+  .ajt-valor-info {
+    text-align: left;
+  }
+
+  .ajt-acciones-password {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .ajt-boton-eliminar {
