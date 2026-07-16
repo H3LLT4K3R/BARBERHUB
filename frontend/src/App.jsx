@@ -48,6 +48,7 @@ import OwnerUsuarios from "./modules/cliente/pages/owner/owner-usuarios";
 
 // IMPORTS DEL BARBERO //
 import SeguimientoServicio from "./modules/cliente/pages/barbero/seguimiento-servicio";
+import BarberoLayout from "./modules/cliente/pages/barbero/barbero-layout";
 
 function AuthLayout({ children }) {
   return <SidebarLayout>{children}</SidebarLayout>;
@@ -135,6 +136,17 @@ export default function App() {
         />
 
         {/* ── RUTAS DEL BARBERO (Con menú lateral negro de usuario) ── */}
+        <Route 
+          path="/barbero/inicio" 
+          element={
+            <BarberoLayout titulo="Inicio">
+               <div style={{ padding: '20px' }}>
+                 <h2>Bienvenido al Panel de Barbero</h2>
+                 <p>Aquí irá tu vista principal de inicio.</p>
+               </div>
+            </BarberoLayout>
+          } 
+        />
         <Route path="/seguimiento-servicio/:citaId?" element={<SeguimientoServicio />} />        
 
         {/* ── RUTAS DEL CLIENTE (Con menú lateral negro de usuario) ── */}

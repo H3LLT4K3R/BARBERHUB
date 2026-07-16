@@ -15,7 +15,15 @@ export const authenticateUser = (email, password) => {
       password: "123",
       role: "owner",
       nombre: "Dueño Barbería",
-      redirectPath: "/owner-finanzas" // O la ruta que maneje el owner en tu App.jsx
+      redirectPath: "/owner-finanzas" 
+    },
+    // NUEVO: Cuenta de Barbero
+    {
+      email: "barbero@test.com",
+      password: "123",
+      role: "barbero",
+      nombre: "Barbero Principal",
+      redirectPath: "/barbero/inicio" // Coincide con tu BarberoLayout
     }
   ];
 
@@ -39,6 +47,7 @@ export const authenticateUser = (email, password) => {
 
   return { 
     success: false, 
-    error: "Credenciales incorrectas. Usa cliente@test.com o owner@test.com con clave 123" 
+    // Actualizamos también el mensaje de error para incluir al barbero
+    error: "Credenciales incorrectas. Usa cliente@test.com, owner@test.com o barbero@test.com con clave 123" 
   };
 };

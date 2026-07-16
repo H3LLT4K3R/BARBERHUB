@@ -230,6 +230,8 @@
   flex: 1;
   overflow-y: auto;
   background: var(--bl-bg);
+  /* 👇 ESTA ES LA LÍNEA AGREGADA PARA ARREGLAR EL TEXTO INVISIBLE 👇 */
+  color: var(--bl-black); 
 }
 
 /* ── RESPONSIVE MÓVIL ── */

@@ -11,7 +11,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import "../styles/barbero/barbero-layout.css";
+import "../../styles/barbero/barbero-layout.css";
 
 const NAV_ITEMS = [
   { href: "/barbero/inicio",      label: "Inicio",                icon: LayoutDashboard },
