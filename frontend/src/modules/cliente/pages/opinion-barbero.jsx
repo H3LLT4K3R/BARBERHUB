@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/opinion-barbero.css";
 
 const barberos = [
@@ -11,6 +12,7 @@ const barberos = [
 ];
 
 export default function OpinionBarbero() {
+  const navigate = useNavigate();
   const [barberoSeleccionado, setBarberoSeleccionado] = useState(barberos[0]);
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
@@ -149,7 +151,11 @@ export default function OpinionBarbero() {
 
         {/* Botón Regresar */}
         <div className="bloque-regresar-footer">
-          <button type="button" className="btn-regresar-enlace">
+          <button
+            type="button"
+            className="btn-regresar-enlace"
+            onClick={() => navigate("/opinion-barberia-general")}
+          >
             Regresar
           </button>
         </div>

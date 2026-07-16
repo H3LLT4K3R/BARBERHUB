@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   IconScissors,
   IconMoustache,
@@ -49,6 +50,7 @@ const citasDataIniciales = [
 ];
 
 export default function MisCitas() {
+  const navigate = useNavigate();
   const [citas, setCitas] = useState(citasDataIniciales);
   
   // Estados para modales de interacción
@@ -90,7 +92,7 @@ export default function MisCitas() {
             {citas.map((cita) => (
               <div key={cita.id} className="tarjeta-cita">
                 
-                {/* BLOQUE IZQUIERDO: Detalles, Badge y Stepper */}
+                {/* Bloque izquierdo: Detalles, Badge y Stepper */}
                 <div className="bloque-izquierdo">
                   <div className="info-header">
                     <div className="icono-servicio">
@@ -170,7 +172,7 @@ export default function MisCitas() {
                     <button
                       type="button"
                       className="boton-accion boton-comentario-gris"
-                      onClick={() => setCitaComentario(cita)}
+                      onClick={() => navigate("/opinion-barberia-general")}
                     >
                       Hacer comentario
                     </button>
@@ -183,7 +185,7 @@ export default function MisCitas() {
         )}
       </div>
 
-      {/* --- MODAL DETALLES --- */}
+      {/* -Modal detalles */}
       {citaDetalle && (
         <div className="modal-overlay" onClick={() => setCitaDetalle(null)}>
           <div className="modal-contenido" onClick={(e) => e.stopPropagation()}>
@@ -210,7 +212,7 @@ export default function MisCitas() {
         </div>
       )}
 
-      {/* --- MODAL CANCELAR --- */}
+      {/* -Modal cancelar */}
       {citaCancelar && (
         <div className="modal-overlay" onClick={() => setCitaCancelar(null)}>
           <div className="modal-contenido" onClick={(e) => e.stopPropagation()}>
@@ -238,7 +240,7 @@ export default function MisCitas() {
         </div>
       )}
 
-      {/* --- MODAL COMENTARIO --- */}
+      {/* Modal comentario */}
       {citaComentario && (
         <div className="modal-overlay" onClick={() => setCitaComentario(null)}>
           <div className="modal-contenido" onClick={(e) => e.stopPropagation()}>

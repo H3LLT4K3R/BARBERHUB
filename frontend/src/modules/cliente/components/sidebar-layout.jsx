@@ -7,7 +7,7 @@ import "../styles/sidebar-layout.css"; // Lo mantenemos por si tienes tipografí
 const NAV_ITEMS = [
   { href: "/explorar", label: "Explorar", icon: Map },
   { href: "/mis-citas", label: "Mis citas", icon: CalendarDays },
-  { href: "/historial-citas", label: "Historia", icon: History },
+  { href: "/historial-citas", label: "Historial", icon: History },
   { href: "/favoritos", label: "Favoritos", icon: Heart },
   { href: "/notificaciones", label: "Notificaciones", icon: Bell },
   { href: "/ajustes", label: "Ajustes", icon: Settings },

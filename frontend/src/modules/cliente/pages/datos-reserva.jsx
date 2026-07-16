@@ -80,7 +80,14 @@ export default function DatosReserva() {
       const linkMercadoPago = "https://mpago.la/25hJZFC"; 
       
       // Esto saca al usuario de tu app y lo lleva a pagar
-      window.location.href = linkMercadoPago;
+      navigate("/pago-anticipo", {
+        state: {
+          ...reserva,
+          horario: horarioTexto,
+          nombre: nombre.trim(),
+          telefono: telefono.trim(),
+        },
+      });
 
     } catch (err) {
       setError("Ocurrió un error. Intenta de nuevo.");
@@ -169,7 +176,7 @@ export default function DatosReserva() {
                 className="dr-boton-confirmar"
                 disabled={enviando}
               >
-                {enviando ? "Redirigiendo..." : "Confirmar y Pagar"}
+                {enviando ? "Continuando..." : "Continuar"}
               </button>
             </div>
           </form>

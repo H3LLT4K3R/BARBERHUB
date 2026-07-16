@@ -1,5 +1,5 @@
 import React from "react"; 
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   IconMapPin,
   IconCalendar,
@@ -14,7 +14,7 @@ import AppNavbar from "../components/app-navbar";
 import { getBarberiaById } from "../data/barberias.js";
 import "../styles/barberia-perfil.css";
 
-/* --- DICCIONARIO DE ICONOS DE SERVICIO --- */
+/* Diccionario de iconos de servicio */
 const ICONOS_SERVICIO = {
   moustache: IconMoustache,
   razor: IconRazor,
@@ -22,7 +22,7 @@ const ICONOS_SERVICIO = {
   scissors: IconScissors,
 };
 
-/* --- COMPONENTE: ESTRELLAS --- */
+/* compinente de estrellas*/
 function Estrellas({ count = 5 }) {
   return (
     <span className="bp-estrellas" aria-hidden>
@@ -33,17 +33,19 @@ function Estrellas({ count = 5 }) {
   );
 }
 
-/* --- COMPONENTE PRINCIPAL: PERFIL DE BARBERÍA --- */
+/* componente principal: perfil de barbería */
 export default function BarberiaPerfil() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const barberia = getBarberiaById(id);
+  const volverA = location.state?.volverA ?? "/explorar";
 
-  // 1. VALIDACIÓN DE SESIÓN (Mock usando localStorage)
+  // VALIDACIÓN DE SESIÓN (Mock usando localStorage)
   // Esto simula si el usuario ya inició sesión
   const usuarioAutenticado = localStorage.getItem("token_sesion");
 
-  // 2. CONTROL DE ERRORES (Si no encuentra la barbería)
+  // control de errores (si no encuentra la barbería)
   if (!barberia) {
     return (
       <div className="bp-pagina">
@@ -56,7 +58,6 @@ export default function BarberiaPerfil() {
     );
   }
 
-  // --- ACCIONES DEL COMPONENTE ---
 
   // Abrir Google Maps
   const abrirMapa = () => {
@@ -67,8 +68,14 @@ export default function BarberiaPerfil() {
   // Lógica de Agendar Cita (Protegida)
   const agendarCita = () => {
     if (usuarioAutenticado) {
-      // Si ya hay sesión, lo enviamos directo a la ruta de agenda en tu App.jsx
-      navigate("/agenda-local", { state: { barberiaId: barberia.id } });
+      // Si ya hay sesión, lo enviamosa la ruta de agenda App.jsx
+      navigate("/agenda-local", {
+        state: {
+          barberiaId: barberia.id,
+          volverA: `/barberia-perfil/${barberia.id}`,
+          volverAtras: volverA,
+        },
+      });
     } else {
       // Si no hay sesión, le avisamos y lo mandamos al login 
       // con la ruta exacta de regreso para que no haya pantalla negra
@@ -79,18 +86,20 @@ export default function BarberiaPerfil() {
 
   // Ver más servicios
   const verMasServicios = () => {
-    // Esta ruta coincide con la que tienes en App.jsx: /barberia/:id/servicios
     navigate(`/barberia/${barberia.id}/servicios`);
   };
 
   // Ver más opiniones
   const verMasOpiniones = () => {
-    // Esta ruta coincide con la que tienes en App.jsx: /opinion-barberia
     navigate("/opinion-barberia");
   };
 
+const regresar = () => {
+  navigate(volverA);
+};
 
-  // --- RENDERIZADO DE LA INTERFAZ ---
+
+  // Renderizado de la interfaz
   return (
     <div className="bp-pagina">
       <AppNavbar />
@@ -206,6 +215,12 @@ export default function BarberiaPerfil() {
             </button>
           </section>
 
+        </div>
+
+        <div className="bp-accion-regresar">
+          <button type="button" className="bp-boton-ver-mas" onClick={regresar}>
+            Regresar
+          </button>
         </div>
       </main>
     </div>

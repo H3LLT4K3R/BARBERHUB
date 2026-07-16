@@ -79,13 +79,20 @@ export default function HistorialCitas() {
 
   const manejarVolverAAgendar = () => {
     if (citaSeleccionada) {
-      navigate("/agenda-local", { state: { barberiaId: citaSeleccionada.barberiaId } });
+      navigate("/agenda-local", {
+        state: {
+          barberiaId: citaSeleccionada.barberiaId,
+          volverA: "/historial-citas",
+        },
+      });
     }
   };
 
   const manejarVerBarberia = () => {
     if (citaSeleccionada) {
-      navigate(`/barberia-perfil/${citaSeleccionada.barberiaId}`);
+      navigate(`/barberia-perfil/${citaSeleccionada.barberiaId}`, {
+        state: { volverA: "/historial-citas" },
+      });
     }
   };
 

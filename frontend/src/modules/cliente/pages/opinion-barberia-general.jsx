@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/opinion-barberia-general.css";
 
 export default function OpinionBarberiaGeneral() {
+  const navigate = useNavigate();
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
   const [comentario, setComentario] = useState("");
@@ -113,10 +115,18 @@ export default function OpinionBarberiaGeneral() {
 
         {/* Acciones inferiores */}
         <div className="opg-footer-actions">
-          <button type="button" className="opg-btn-back">
+          <button
+            type="button"
+            className="opg-btn-back"
+            onClick={() => navigate("/mis-citas")}
+          >
             Regresar
           </button>
-          <button type="button" className="opg-btn-comment-barbero">
+          <button
+            type="button"
+            className="opg-btn-comment-barbero"
+            onClick={() => navigate("/opinion-barbero")}
+          >
             Hacer comentario general al barbero
           </button>
         </div>
