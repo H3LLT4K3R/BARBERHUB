@@ -1,0 +1,259 @@
+/* ── VARIABLES ── */
+:root {
+  --bl-black    : #000000;
+  --bl-white    : #ffffff;
+  --bl-gold     : #E9C46A;
+  --bl-gold2    : #D4AF37;
+  --bl-muted    : #9ca3af;
+  --bl-border   : #1f2937;
+  --bl-bg       : #f9fafb;
+  --bl-sidebar  : 250px;
+  --bl-navbar-h : 70px;
+  --bl-font     : -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ── WRAPPER PRINCIPAL ── */
+.bl-wrapper {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bl-bg);
+  font-family: var(--bl-font);
+}
+
+/* ── OVERLAY MÓVIL ── */
+.bl-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 40;
+}
+
+/* ── SIDEBAR ── */
+.bl-sidebar {
+  width: var(--bl-sidebar);
+  height: 100vh;
+  background: var(--bl-black);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-right: 1px solid var(--bl-border);
+  overflow-y: auto;
+  position: static;
+  z-index: 50;
+  transition: left 0.3s ease;
+}
+
+/* Header del sidebar */
+.bl-sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 16px;
+  border-bottom: 1px solid var(--bl-border);
+}
+
+.bl-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.bl-brand {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--bl-white);
+  letter-spacing: 1px;
+  flex: 1;
+}
+
+.bl-close-btn {
+  background: none;
+  border: none;
+  color: var(--bl-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+/* Label "Panel Barbero" */
+.bl-sidebar-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bl-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  padding: 16px 20px 8px;
+}
+
+/* Nav items */
+.bl-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+}
+
+.bl-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--bl-muted);
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  font-family: var(--bl-font);
+  transition: all 0.2s ease;
+}
+
+.bl-nav-item:hover {
+  color: var(--bl-white);
+}
+
+.bl-nav-item.active {
+  background: var(--bl-gold);
+  color: var(--bl-black);
+  font-weight: 700;
+}
+
+.bl-nav-icon {
+  flex-shrink: 0;
+}
+
+/* Footer del sidebar */
+.bl-sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid var(--bl-border);
+}
+
+.bl-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 16px;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--bl-muted);
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--bl-font);
+  transition: color 0.2s;
+}
+
+.bl-logout-btn:hover {
+  color: #ef4444;
+}
+
+/* ── CONTENIDO DERECHO ── */
+.bl-main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ── NAVBAR SUPERIOR ── */
+.bl-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--bl-navbar-h);
+  background: var(--bl-black);
+  padding: 0 28px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--bl-border);
+}
+
+.bl-menu-btn {
+  background: none;
+  border: none;
+  color: var(--bl-white);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  margin-right: 12px;
+}
+
+.bl-navbar-left {
+  flex: 1;
+}
+
+.bl-page-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--bl-white);
+  margin: 0;
+}
+
+.bl-navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bl-navbar-role {
+  font-size: 13px;
+  color: var(--bl-muted);
+}
+
+.bl-navbar-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bl-gold);
+  color: var(--bl-black);
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── CONTENIDO PRINCIPAL ── */
+.bl-content {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bl-bg);
+}
+
+/* ── RESPONSIVE MÓVIL ── */
+@media (max-width: 768px) {
+  .bl-sidebar {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    z-index: 50;
+  }
+
+  .bl-sidebar.open {
+    left: 0;
+  }
+
+  .bl-sidebar.closed {
+    left: -250px;
+  }
+
+  .bl-navbar {
+    padding: 0 16px;
+  }
+
+  .bl-content {
+    padding: 16px;
+  }
+}
