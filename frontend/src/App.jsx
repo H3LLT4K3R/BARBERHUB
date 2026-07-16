@@ -44,7 +44,10 @@ import OwnerAgenda from "./modules/cliente/pages/owner/owner-agenda";
 import OwnerEstadisticas from "./modules/cliente/pages/owner/owner-estadisticas";
 import OwnerSeguridad from "./modules/cliente/pages/owner/owner-seguridad";
 import OwnerControlNegocio from "./modules/cliente/pages/owner/owner-control-negocio";
-import OwnerUsuarios from "./modules/cliente/pages/owner/owner-usuarios"; //
+import OwnerUsuarios from "./modules/cliente/pages/owner/owner-usuarios"; 
+
+// IMPORTS DEL BARBERO //
+import SeguimientoServicio from "./modules/cliente/pages/barbero/seguimiento-servicio";
 
 function AuthLayout({ children }) {
   return <SidebarLayout>{children}</SidebarLayout>;
@@ -131,6 +134,8 @@ export default function App() {
           } 
         />
 
+        {/* ── RUTAS DEL BARBERO (Con menú lateral negro de usuario) ── */}
+        <Route path="/seguimiento-servicio/:citaId?" element={<SeguimientoServicio />} />        
 
         {/* ── RUTAS DEL CLIENTE (Con menú lateral negro de usuario) ── */}
         <Route path="/explorar" element={<AuthLayout><Explorar /></AuthLayout>} />
