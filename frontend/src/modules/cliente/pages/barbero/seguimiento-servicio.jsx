@@ -1,225 +1,73 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
-  CalendarCheck,
-  Clock,
-  Scissors,
-  CheckCircle2,
-  Phone,
-  Star,
-  MessageCircle,
-  X,
+  CalendarCheck, CheckCircle2, Clock, MapPin, MessageCircle,
+  Phone, Scissors, Star, UserRound, X,
 } from "lucide-react";
 import "../../styles/barbero/seguimiento-servicio.css";
-import BrandLogo from "../../components/brand-logo";
-function BarberoNavbar() {
-  return (
-    <nav className="ss-navbar">
-      <BrandLogo className="ss-navbar-logo-btn" imgClassName="ss-navbar-logo-img" />
-    </nav>
-  );
-}
+import BarberoModal from "./barbero-modal";
 
-<img src="/barberhublogo.jpg" alt="BarberHub" />
-
-// Datos de demostración para el prototipo.
-// En producción esto vendría de la API (la cita real asignada a este barbero).
 const citaDemo = {
-  servicio: "Corte + Barba — Master Piece",
-  fecha: "Domingo, 15 de febrero",
-  hora: "08:00 AM",
-  cliente: {
-    nombre: "Luis Méndez",
-    telefono: "+52 55 1234 5678",
-    avatar:
-      "https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=200&auto=format&fit=crop",
-    esFrecuente: true,
-    visitasPrevias: 6,
-  },
+  servicio: "Corte + barba · Master Piece",
+  fecha: "Domingo, 15 de febrero", hora: "08:00 AM", anticipo: "$100",
+  cliente: { nombre: "Luis Méndez", telefono: "+52 55 1234 5678", avatar: "https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=200&auto=format&fit=crop", esFrecuente: true, visitasPrevias: 6 },
+  barbero: { nombre: "Master Barber", experiencia: "5 años", citas: "342 atendidas", calificacion: "5.0" },
   serviciosSeleccionados: [
     { nombre: "Corte básico", detalle: "Corte básico + vitamina" },
-    { nombre: "Masaje capilar", detalle: "Masaje extra" },
+    { nombre: "Masaje capilar", detalle: "Extra masaje" },
   ],
 };
 
 const pasos = [
-  { id: "reserva", label: "Reserva", icon: CalendarCheck },
-  { id: "confirmacion", label: "Confirmado", icon: Clock },
-  { id: "servicio", label: "En servicio", icon: Scissors },
-  { id: "finalizado", label: "Finalizado", icon: CheckCircle2 },
+  { id: "reserva", label: "Reserva", icono: CalendarCheck },
+  { id: "confirmado", label: "Confirmado", icono: Clock },
+  { id: "servicio", label: "En servicio", icono: Scissors },
+  { id: "finalizado", label: "Finalizado", icono: CheckCircle2 },
 ];
-
-// Texto/acción del botón según el paso en el que se encuentra el servicio
-const accionesPorPaso = [
-  { textoBoton: "Confirmar llegada del cliente" },
-  { textoBoton: "Iniciar servicio" },
-  { textoBoton: "Finalizar servicio" },
-  null, // ya no hay siguiente paso
-];
+const acciones = ["Confirmar llegada", "Iniciar servicio", "Finalizar servicio", null];
 
 export default function SeguimientoServicio() {
-  const navigate = useNavigate();
-  const [pasoActual, setPasoActual] = useState(1); // índice del paso activo
+  const [pasoActual, setPasoActual] = useState(1);
+  const [cancelada, setCancelada] = useState(false);
+  const [chatAbierto, setChatAbierto] = useState(false);
+  const [confirmarCancelacion, setConfirmarCancelacion] = useState(false);
+  const [confirmarAvance, setConfirmarAvance] = useState(false);
   const cita = citaDemo;
-
-  const accion = accionesPorPaso[pasoActual];
-
-  const avanzarPaso = () => {
-    setPasoActual((prev) => Math.min(prev + 1, pasos.length - 1));
-  };
+  const avanzar = () => { setPasoActual((paso) => Math.min(paso + 1, pasos.length - 1)); setConfirmarAvance(false); };
 
   return (
-    <div className="ss-page">
-      <BarberoNavbar />
+    <section className="ss-page">
+      <header className="ss-heading">
+        <div><p className="ss-eyebrow">Panel barbero</p><h2>Seguimiento del servicio</h2><p>Gestiona el avance de la cita y consulta sus detalles.</p></div>
+        <span className={cancelada ? "ss-status cancelled" : "ss-status"}>{cancelada ? "Cita cancelada" : pasos[pasoActual].label}</span>
+      </header>
 
-      <div className="ss-body">
-        <h1 className="ss-titulo">Seguimiento del servicio</h1>
-
-        {/* ── STEPPER ── */}
-        <div className="ss-stepper">
-          {pasos.map((paso, index) => {
-            const Icono = paso.icon;
-            const completado = index < pasoActual;
-            const activo = index === pasoActual;
-            return (
-              <div className="ss-step" key={paso.id}>
-                <div className="ss-step-track">
-                  <div
-                    className={`ss-step-icon ${
-                      completado ? "ss-step-icon--completado" : ""
-                    } ${activo ? "ss-step-icon--activo" : ""}`}
-                  >
-                    <Icono size={20} />
-                  </div>
-                  {index < pasos.length - 1 && (
-                    <div
-                      className={`ss-step-line ${
-                        completado ? "ss-step-line--completado" : ""
-                      }`}
-                    />
-                  )}
-                </div>
-                <span
-                  className={`ss-step-label ${
-                    activo ? "ss-step-label--activo" : ""
-                  }`}
-                >
-                  {paso.label}
-                </span>
-                <span className="ss-step-anticipo">Anticipo $100</span>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* ── TARJETA DE ESTADO ACTUAL ── */}
-        <div className="ss-estado-card">
-          <img
-            className="ss-estado-imagen"
-            src={cita.cliente.avatar}
-            alt={cita.cliente.nombre}
-          />
-          <div className="ss-estado-info">
-            <h2 className="ss-estado-titulo">{cita.servicio}</h2>
-            <p className="ss-estado-direccion">{cita.cliente.nombre}</p>
-            {cita.cliente.esFrecuente && (
-              <p className="ss-estado-rating">
-                <Star size={14} fill="#e5be6b" color="#e5be6b" />
-                Cliente frecuente · {cita.cliente.visitasPrevias} visitas
-              </p>
-            )}
-            <div className="ss-estado-acciones">
-              <a className="ss-accion-icono" href={`tel:${cita.cliente.telefono}`}>
-                <Phone size={16} />
-                Llamar
-              </a>
-              <button className="ss-accion-icono" type="button">
-                <MessageCircle size={16} />
-                Chat
-              </button>
-            </div>
-          </div>
-
-          <div className="ss-estado-controles">
-            {accion && (
-              <button
-                className="ss-btn-avanzar"
-                type="button"
-                onClick={avanzarPaso}
-              >
-                {accion.textoBoton}
-              </button>
-            )}
-            <button
-              className="ss-btn-cancelar"
-              type="button"
-              onClick={() => navigate("/barbero-agenda")}
-            >
-              <X size={14} />
-              Cancelar cita
-            </button>
-          </div>
-        </div>
-
-        {/* ── INFORMACIÓN DETALLADA ── */}
-        <div className="ss-detalle-grid">
-          <div className="ss-detalle-card">
-            <h3 className="ss-detalle-titulo">Cliente</h3>
-            <div className="ss-barbero">
-              <img
-                className="ss-barbero-avatar"
-                src={cita.cliente.avatar}
-                alt={cita.cliente.nombre}
-              />
-              <div>
-                <p className="ss-barbero-nombre">{cita.cliente.nombre}</p>
-                <p className="ss-barbero-rating">
-                  <Phone size={13} />
-                  {cita.cliente.telefono}
-                </p>
-              </div>
-            </div>
-            <div className="ss-barbero-stats">
-              <div>
-                <span className="ss-stat-label">Tipo</span>
-                <span className="ss-stat-valor">
-                  {cita.cliente.esFrecuente ? "Frecuente" : "Nuevo"}
-                </span>
-              </div>
-              <div>
-                <span className="ss-stat-label">Visitas previas</span>
-                <span className="ss-stat-valor">
-                  {cita.cliente.visitasPrevias}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="ss-detalle-card">
-            <h3 className="ss-detalle-titulo">Fecha y hora</h3>
-            <p className="ss-fecha">{cita.fecha}</p>
-            <p className="ss-hora">
-              <Clock size={16} />
-              {cita.hora}
-            </p>
-          </div>
-
-          <div className="ss-detalle-card">
-            <h3 className="ss-detalle-titulo">Servicio a realizar</h3>
-            <ul className="ss-servicios-lista">
-              {cita.serviciosSeleccionados.map((s) => (
-                <li key={s.nombre} className="ss-servicio-item">
-                  <Scissors size={15} />
-                  <div>
-                    <p className="ss-servicio-nombre">{s.nombre}</p>
-                    <p className="ss-servicio-detalle">{s.detalle}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+      <div className="ss-stepper" aria-label="Estado de la cita">
+        {pasos.map((paso, indice) => {
+          const Icono = paso.icono;
+          const completado = indice < pasoActual;
+          const activo = indice === pasoActual;
+          return <div className="ss-step" key={paso.id}>
+            <div className="ss-step-track"><div className={`ss-step-icon ${completado ? "completed" : ""} ${activo ? "active" : ""}`}><Icono size={19} /></div>{indice < pasos.length - 1 && <div className={`ss-step-line ${completado ? "completed" : ""}`} />}</div>
+            <strong className={activo ? "active" : ""}>{paso.label}</strong><span>Anticipo {cita.anticipo}</span>
+          </div>;
+        })}
       </div>
-    </div>
+
+      <article className="ss-service-card">
+        <img className="ss-service-image" src={cita.cliente.avatar} alt={cita.cliente.nombre} />
+        <div className="ss-service-info"><p className="ss-card-kicker">Servicio actual</p><h3>{cita.servicio}</h3><p><MapPin size={15} /> Barber Hub · Puebla, México</p><p><Star size={15} fill="currentColor" /> {cita.barbero.calificacion} · Cliente frecuente</p><div className="ss-contact-actions"><a href={`tel:${cita.cliente.telefono}`}><Phone size={15} /> Llamar</a><button type="button" onClick={() => setChatAbierto(true)}><MessageCircle size={15} /> Chat</button></div></div>
+        <div className="ss-service-controls">{acciones[pasoActual] && !cancelada && <button type="button" className="ss-advance" onClick={() => setConfirmarAvance(true)}>{acciones[pasoActual]}</button>}<button type="button" className="ss-cancel" disabled={cancelada} onClick={() => setConfirmarCancelacion(true)}><X size={15} /> {cancelada ? "Cancelada" : "Cancelar cita"}</button></div>
+      </article>
+
+      <section className="ss-details-grid">
+        <article className="ss-detail-card ss-person-card"><p className="ss-card-kicker">Más información</p><h3>Cliente</h3><div className="ss-person"><img src={cita.cliente.avatar} alt={cita.cliente.nombre} /><div><strong>{cita.cliente.nombre}</strong><span><Phone size={13} /> {cita.cliente.telefono}</span></div></div><div className="ss-stats"><div><span>Tipo</span><strong>{cita.cliente.esFrecuente ? "Frecuente" : "Nuevo"}</strong></div><div><span>Visitas previas</span><strong>{cita.cliente.visitasPrevias}</strong></div></div></article>
+        <article className="ss-detail-card"><p className="ss-card-kicker">Cita</p><h3>Fecha y hora</h3><p className="ss-date"><CalendarCheck size={17} /> {cita.fecha}</p><p className="ss-time"><Clock size={17} /> {cita.hora}</p></article>
+        <article className="ss-detail-card"><p className="ss-card-kicker">Servicios</p><h3>Servicio seleccionado</h3><ul className="ss-service-list">{cita.serviciosSeleccionados.map((servicio) => <li key={servicio.nombre}><Scissors size={16} /><div><strong>{servicio.nombre}</strong><span>{servicio.detalle}</span></div></li>)}</ul></article>
+        <article className="ss-detail-card"><p className="ss-card-kicker">Profesional</p><h3>Barbero asignado</h3><div className="ss-barber"><UserRound size={26} /><div><strong>{cita.barbero.nombre}</strong><span>Experiencia · {cita.barbero.experiencia}</span></div></div><div className="ss-stats"><div><span>Citas atendidas</span><strong>{cita.barbero.citas}</strong></div><div><span>Calificación</span><strong className="ss-star"><Star size={13} fill="currentColor" /> {cita.barbero.calificacion}</strong></div></div></article>
+      </section>
+      <BarberoModal open={chatAbierto} title={`Chat con ${cita.cliente.nombre}`} onClose={() => setChatAbierto(false)} footer={<button className="bm-primary" onClick={() => setChatAbierto(false)}>Enviar mensaje</button>}><div className="ss-chat"><p><strong>{cita.cliente.nombre}</strong><br />Hola, confirmo mi llegada para la cita.</p><textarea placeholder="Escribe un mensaje..." aria-label="Mensaje" /></div></BarberoModal>
+      <BarberoModal open={confirmarAvance} title="Actualizar servicio" onClose={() => setConfirmarAvance(false)} footer={<><button className="bm-secondary" onClick={() => setConfirmarAvance(false)}>Volver</button><button className="bm-primary" onClick={avanzar}>Confirmar</button></>}><p>¿Deseas marcar la cita como <strong>{pasos[Math.min(pasoActual + 1, pasos.length - 1)].label}</strong>?</p></BarberoModal>
+      <BarberoModal open={confirmarCancelacion} title="Cancelar cita" onClose={() => setConfirmarCancelacion(false)} footer={<><button className="bm-secondary" onClick={() => setConfirmarCancelacion(false)}>No cancelar</button><button className="bm-primary" onClick={() => { setCancelada(true); setConfirmarCancelacion(false); }}>Sí, cancelar</button></>}><p>Esta acción cambiará el estado visual de la cita a cancelada durante esta sesión.</p></BarberoModal>
+    </section>
   );
 }
