@@ -49,6 +49,14 @@ import OwnerUsuarios from "./modules/cliente/pages/owner/owner-usuarios";
 // IMPORTS DEL BARBERO //
 import SeguimientoServicio from "./modules/cliente/pages/barbero/seguimiento-servicio";
 import BarberoLayout from "./modules/cliente/pages/barbero/barbero-layout";
+<<<<<<< Updated upstream
+=======
+import DashboardBarbero from "./modules/cliente/pages/barbero/dashboard-barbero";
+import CuponesBarbero from "./modules/cliente/pages/barbero/cupones-barbero";
+import PerfilBarberiaBarbero from "./modules/cliente/pages/barbero/perfil-barberia-barbero";
+import OpinionesBarbero from "./modules/cliente/pages/barbero/opiniones-barbero";
+import CitasBarbero from "./modules/cliente/pages/barbero/citas-barbero";
+>>>>>>> Stashed changes
 
 function AuthLayout({ children }) {
   return <SidebarLayout>{children}</SidebarLayout>;
@@ -136,6 +144,7 @@ export default function App() {
         />
 
         {/* ── RUTAS DEL BARBERO (Con menú lateral negro de usuario) ── */}
+<<<<<<< Updated upstream
         <Route 
           path="/barbero/inicio" 
           element={
@@ -148,6 +157,36 @@ export default function App() {
           } 
         />
         <Route path="/seguimiento-servicio/:citaId?" element={<SeguimientoServicio />} />        
+=======
+        <Route
+          path="/barbero/inicio"
+          element={<BarberoLayout titulo="Panel del barbero"><DashboardBarbero /></BarberoLayout>}
+        />
+        <Route
+          path="/barbero/citas"
+          element={<BarberoLayout titulo="Gestión de citas"><CitasBarbero /></BarberoLayout>}
+        />
+        <Route
+          path="/barbero/cupones"
+          element={<BarberoLayout titulo="Cupones"><CuponesBarbero /></BarberoLayout>}
+        />
+        <Route
+          path="/barbero/perfil"
+          element={<BarberoLayout titulo="Perfil barbería"><PerfilBarberiaBarbero /></BarberoLayout>}
+        />
+        <Route
+          path="/barbero/opiniones"
+          element={<BarberoLayout titulo="Opiniones"><OpinionesBarbero /></BarberoLayout>}
+        />
+        <Route
+          path="/barbero/seguimiento"
+          element={<BarberoLayout titulo="Seguimiento"><SeguimientoServicio /></BarberoLayout>}
+        />
+        <Route
+          path="/seguimiento-servicio/:citaId?"
+          element={<BarberoLayout titulo="Seguimiento"><SeguimientoServicio /></BarberoLayout>}
+        />
+>>>>>>> Stashed changes
 
         {/* ── RUTAS DEL CLIENTE (Con menú lateral negro de usuario) ── */}
         <Route path="/explorar" element={<AuthLayout><Explorar /></AuthLayout>} />

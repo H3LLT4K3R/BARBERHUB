@@ -54,7 +54,7 @@ export default function BarberoLayout({ children, titulo = "" }) {
 
         {/* Logo */}
         <div className="bl-sidebar-header">
-          <img src="/barberhublogo.jpg" alt="Barber Hub" className="bl-logo" />
+          <img src="/logo.png" alt="Barber Hub" className="bl-logo" />
           <span className="bl-brand">BARBER HUB</span>
           {isMobile && (
             <button className="bl-close-btn" onClick={() => setOpen(false)}>
