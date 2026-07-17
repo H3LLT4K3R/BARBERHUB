@@ -1,9 +1,16 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/agenda-local.css";
 
 export default function AgendaLocal() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const volverA = location.state?.volverA ?? "/explorar";
+
+  const regresar = () => {
+    const volverAtras = location.state?.volverAtras;
+    navigate(volverA, volverAtras ? { state: { volverA: volverAtras } } : undefined);
+  };
 
   // Estado para el día seleccionado 
   const [diaSeleccionado, setDiaSeleccionado] = useState(21);
@@ -142,7 +149,7 @@ export default function AgendaLocal() {
 
           {/* Acciones finales: Regresar + Continuar */}
           <div className="al-acciones-final">
-            <button className="al-boton-regresar" onClick={() => navigate("/explorar")}>
+            <button className="al-boton-regresar" onClick={regresar}>
               Regresar
             </button>
             <button className="al-boton-continuar" onClick={handleContinuar}>

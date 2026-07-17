@@ -40,12 +40,16 @@ export default function Favoritos() {
 
   const manejarAgendar = (e, barberiaId) => {
     e.stopPropagation();
-    navigate("/agenda-local", { state: { barberiaId: barberiaId } });
+    navigate("/agenda-local", {
+      state: { barberiaId, volverA: "/favoritos" },
+    });
   };
 
   const manejarVerBarberia = (e, barberiaId) => {
     e.stopPropagation();
-    navigate(`/barberia-perfil/${barberiaId}`);
+    navigate(`/barberia-perfil/${barberiaId}`, {
+      state: { volverA: "/favoritos" },
+    });
   };
 
   return (

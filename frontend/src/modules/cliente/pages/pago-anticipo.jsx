@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/pago-anticipo.css";
 
 export default function PagoAnticipo({ datosReserva }) {
+  const navigate = useNavigate();
   const [enviando, setEnviando] = useState(false);
 
   // Valores dinámicos opcionales con fallback por defecto
@@ -26,7 +28,7 @@ export default function PagoAnticipo({ datosReserva }) {
   };
 
   const handleCancelar = () => {
-    console.log("Reserva cancelada, regresando a la selección...");
+    navigate("/datos-reserva");
   };
 
   return (

@@ -199,7 +199,7 @@ export default function OpinionBarberia() {
             <button
               type="button"
               className="obp-btn-back"
-              onClick={() => navigate("/barberia/1/servicios")}
+              onClick={() => navigate("/barberia-perfil/urban-cuts")}
             >
               Regresar
             </button>

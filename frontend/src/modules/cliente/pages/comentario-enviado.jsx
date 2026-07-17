@@ -1,8 +1,11 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "../styles/comentario-enviado.css";
 
 /* Componente principal: Comentario Enviado */
 export default function ComentarioEnviado() {
+  const navigate = useNavigate();
+
   return (
     <div className="ce-pagina">
       {/* Tarjeta central */}
@@ -22,7 +25,13 @@ export default function ComentarioEnviado() {
         </p>
 
         {/* Botón de acción */}
-        <button className="ce-boton-aceptar">Aceptar</button>
+        <button
+          type="button"
+          className="ce-boton-aceptar"
+          onClick={() => navigate("/mis-citas")}
+        >
+          Aceptar
+        </button>
       </div>
     </div>
   );

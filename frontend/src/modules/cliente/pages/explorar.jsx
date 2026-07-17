@@ -22,7 +22,7 @@ export default function Explorar() {
   const [radio, setRadio] = useState(15); 
   const [filtroServicio, setFiltroServicio] = useState('');
 
-  // Nuevos estados para el filtro de disponibilidad solicitados por el encargado
+  // Nuevos estados para el filtro de disponibilidad 
   const [fechaFiltro, setFechaFiltro] = useState('');
   const [horaFiltro, setHoraFiltro] = useState('');
 
@@ -209,7 +209,9 @@ export default function Explorar() {
                               onClick={() => {
                                 if (user) {
                                   // CORRECCIÓN AQUÍ 👇
-                                  navigate(`/barberia-perfil/${b.id}?hora=${hora}`);
+                                  navigate(`/barberia-perfil/${b.id}?hora=${hora}`, {
+                                    state: { volverA: "/explorar" },
+                                  });
                                 } else {
                                   // CORRECCIÓN AQUÍ 👇
                                   navigate('/login', { state: { from: `/barberia-perfil/${b.id}?hora=${hora}` } });
@@ -227,7 +229,11 @@ export default function Explorar() {
 
                     <button
                       // CORRECCIÓN AQUÍ 👇
-                      onClick={() => navigate(`/barberia-perfil/${b.id}`)}
+                      onClick={() =>
+                        navigate(`/barberia-perfil/${b.id}`, {
+                          state: { volverA: "/explorar" },
+                        })
+                      }
                       className="explorar-profile-link"
                     >
                       Ver perfil de barbería
