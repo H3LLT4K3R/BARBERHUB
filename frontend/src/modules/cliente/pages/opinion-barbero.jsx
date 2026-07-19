@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { IconArrowLeft } from "@tabler/icons-react";
 import "../styles/opinion-barbero.css";
 
 const barberos = [
@@ -155,8 +156,9 @@ export default function OpinionBarbero() {
             type="button"
             className="btn-regresar-enlace"
             onClick={() => navigate("/opinion-barberia-general")}
-          >
-            Regresar
+            >
+              <IconArrowLeft size={17} aria-hidden="true" />
+              Regresar
           </button>
         </div>
       </main>

@@ -130,6 +130,79 @@
   box-shadow: 0 4px 12px rgba(229, 190, 107, 0.25);
 }
 
+.hc-filtros-periodo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--hc-texto-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.hc-boton-periodo {
+  border: 1px solid var(--hc-borde-gris);
+  border-radius: 18px;
+  padding: 7px 12px;
+  background: #ffffff;
+  color: var(--hc-texto-muted);
+  cursor: pointer;
+  font: inherit;
+}
+
+.hc-boton-periodo.activo {
+  border-color: #c9a054;
+  background: #fff8e7;
+  color: #855e16;
+}
+
+.hc-rango-fechas {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.hc-fecha-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--hc-borde-gris);
+  border-radius: 8px;
+  padding: 3px 5px 3px 8px;
+  background: #ffffff;
+}
+
+.hc-fecha-control input {
+  min-width: 0;
+  border: 0;
+  padding: 3px 0;
+  color: var(--hc-texto-principal);
+  font: inherit;
+}
+
+.hc-fecha-control input::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+.hc-fecha-accion {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #855e16;
+  cursor: pointer;
+}
+
+.hc-fecha-accion:hover,
+.hc-fecha-accion:focus-visible {
+  background: #fff1cf;
+  outline: none;
+}
+
 /* Listas de citas */
 .hc-lista-citas {
   display: flex;
@@ -258,6 +331,11 @@
 .hc-estado-completada {
   background-color: rgba(16, 185, 129, 0.12);
   color: var(--hc-status-exito);
+}
+
+.hc-estado-cancelada {
+  background-color: rgba(245, 158, 11, 0.12);
+  color: var(--hc-status-pendiente);
 }
 
 .hc-estado-rechazada {
@@ -393,6 +471,39 @@
   font-size: 0.9rem;
   font-weight: 700;
   color: #c9a054;
+}
+
+.hc-motivo-cancelacion {
+  border-left-color: var(--hc-status-peligro);
+  background-color: #fff8f8;
+}
+
+.hc-motivo-cancelacion h5 {
+  color: var(--hc-status-peligro);
+}
+
+.hc-motivo-rechazo {
+  border-left-color: var(--hc-status-pendiente);
+  background-color: #fffaf1;
+}
+
+.hc-motivo-rechazo h5 {
+  color: var(--hc-status-pendiente);
+}
+
+.hc-estrellas-resena {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  color: #d7a43c;
+  margin: 10px 0;
+}
+
+.hc-estrellas-resena span {
+  margin-left: 5px;
+  color: var(--hc-texto-principal);
+  font-size: 0.85rem;
+  font-weight: 700;
 }
 
 .hc-resena-detalle p {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Heart } from "lucide-react";
 import "../styles/favoritos.css";
 
 // Mock de datos de barberías favoritas con IDs de ruta añadidos
@@ -37,6 +38,7 @@ export default function Favoritos() {
   const navigate = useNavigate();
   const [menuActivo, setMenuActivo] = useState("Favoritos");
   const [tarjetaSeleccionada, setTarjetaSeleccionada] = useState(2);
+  const [favoritos, setFavoritos] = useState(favoritosData);
 
   const manejarAgendar = (e, barberiaId) => {
     e.stopPropagation();
@@ -52,13 +54,19 @@ export default function Favoritos() {
     });
   };
 
+  const quitarDeFavoritos = (e, id) => {
+    e.stopPropagation();
+    setFavoritos((actuales) => actuales.filter((barberia) => barberia.id !== id));
+    if (tarjetaSeleccionada === id) setTarjetaSeleccionada(null);
+  };
+
   return (
     <div className="fav-dashboard">
       <div className="fav-main-wrapper">
 
         <main className="fav-content-layout">
           <div className="fav-cards-container">
-            {favoritosData.map((barberia) => (
+            {favoritos.map((barberia) => (
               <div
                 key={barberia.id}
                 className={`fav-tarjeta ${tarjetaSeleccionada === barberia.id ? "seleccionada" : ""}`}
@@ -79,7 +87,18 @@ export default function Favoritos() {
 
                 {/* Acciones a la derecha */}
                 <div className="fav-acciones">
-                  <span className="fav-calificacion">{barberia.calificacion}</span>
+                  <div className="fav-cabecera-acciones">
+                    <button
+                      type="button"
+                      className="fav-boton-quitar"
+                      onClick={(e) => quitarDeFavoritos(e, barberia.id)}
+                      aria-label={`Quitar ${barberia.nombre} de favoritos`}
+                      title="Quitar de favoritos"
+                    >
+                      <Heart size={20} fill="currentColor" aria-hidden="true" />
+                    </button>
+                    <span className="fav-calificacion">{barberia.calificacion}</span>
+                  </div>
                   <div className="fav-grupo-botones">
                     <button
                       className="fav-boton dorado"
@@ -97,6 +116,9 @@ export default function Favoritos() {
                 </div>
               </div>
             ))}
+            {favoritos.length === 0 && (
+              <p className="fav-vacio">Aún no tienes barberías favoritas.</p>
+            )}
           </div>
         </main>
       </div>

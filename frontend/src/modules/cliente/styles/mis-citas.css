@@ -135,7 +135,7 @@
   background-color: #fffdf6;
 }
 
-.badge-estado.confirmada {
+.badge-estado.aceptada {
   border: 1.5px solid var(--step-verde);
   color: var(--step-verde);
   background-color: #f4fdf7;
@@ -366,6 +366,11 @@
   color: #fff;
   cursor: pointer;
   font-weight: 600;
+}
+
+.btn-confirmar-cancelar:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .btn-guardar {

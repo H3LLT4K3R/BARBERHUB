@@ -1,19 +1,28 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/pago-anticipo.css";
 
 export default function PagoAnticipo({ datosReserva }) {
   const navigate = useNavigate();
+  const { state } = useLocation();
   const [enviando, setEnviando] = useState(false);
 
   // Valores dinámicos opcionales con fallback por defecto
-  const resumen = datosReserva || {
-    establecimiento: "URBAN CUTS",
-    horario: "Jueves a las 9:00 hrs",
-    servicio: "Corte y barba",
-    total: "$350 MXN",
-    anticipo: "$100 MXN",
-  };
+  const reservaRecibida = datosReserva || state;
+  const resumen = reservaRecibida
+    ? {
+        ...reservaRecibida,
+        total: reservaRecibida.total ?? `$${reservaRecibida.precio} ${reservaRecibida.moneda}`,
+        anticipo: reservaRecibida.anticipo ?? "$100 MXN",
+      }
+    : {
+        establecimiento: "URBAN CUTS",
+        horario: "Jueves a las 9:00 hrs",
+        servicio: "Corte y barba",
+        barbero: "Por asignar",
+        total: "$350 MXN",
+        anticipo: "$100 MXN",
+      };
 
   const handleConfirmar = (e) => {
     e.preventDefault();
@@ -78,6 +87,10 @@ export default function PagoAnticipo({ datosReserva }) {
               <div className="pa-summary-item">
                 <span className="pa-label">SERVICIO</span>
                 <span className="pa-value">{resumen.servicio}</span>
+              </div>
+              <div className="pa-summary-item">
+                <span className="pa-label">BARBERO</span>
+                <span className="pa-value">{resumen.barbero ?? "Por asignar"}</span>
               </div>
               <div className="pa-summary-item">
                 <span className="pa-label">TOTAL ESTIMADO</span>

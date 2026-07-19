@@ -1,4 +1,4 @@
-import React from "react"; 
+import React, { useState } from "react"; 
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   IconMapPin,
@@ -9,6 +9,7 @@ import {
   IconMoustache,
   IconRazor,
   IconChevronRight,
+  IconHeart,
 } from "@tabler/icons-react";
 import AppNavbar from "../components/app-navbar";
 import { getBarberiaById } from "../data/barberias.js";
@@ -44,6 +45,8 @@ export default function BarberiaPerfil() {
   // VALIDACIÓN DE SESIÓN (Mock usando localStorage)
   // Esto simula si el usuario ya inició sesión
   const usuarioAutenticado = localStorage.getItem("token_sesion");
+  const [barberiasFavoritas, setBarberiasFavoritas] = useState(() => new Set(JSON.parse(localStorage.getItem("barberhub_favoritos_barberias") || "[]")));
+  const [barberosFavoritos, setBarberosFavoritos] = useState(() => new Set(JSON.parse(localStorage.getItem("barberhub_favoritos_barberos") || "[]")));
 
   // control de errores (si no encuentra la barbería)
   if (!barberia) {
@@ -98,6 +101,18 @@ const regresar = () => {
   navigate(volverA);
 };
 
+  const alternarFavorito = (tipo, favoritoId) => {
+    const actualizar = tipo === "barberia" ? setBarberiasFavoritas : setBarberosFavoritos;
+    const clave = tipo === "barberia" ? "barberhub_favoritos_barberias" : "barberhub_favoritos_barberos";
+    actualizar((actuales) => {
+      const nuevos = new Set(actuales);
+      if (nuevos.has(favoritoId)) nuevos.delete(favoritoId);
+      else nuevos.add(favoritoId);
+      localStorage.setItem(clave, JSON.stringify([...nuevos]));
+      return nuevos;
+    });
+  };
+
 
   // Renderizado de la interfaz
   return (
@@ -112,7 +127,18 @@ const regresar = () => {
             <img className="bp-logo" src={barberia.imagen} alt="Logo de barbería" />
             
             <div className="bp-info">
-              <h1 className="bp-titulo">{barberia.nombre}</h1>
+              <div className="bp-titulo-fila">
+                <h1 className="bp-titulo">{barberia.nombre}</h1>
+                <button
+                  type="button"
+                  className={`bp-boton-favorito ${barberiasFavoritas.has(barberia.id) ? "activo" : ""}`}
+                  onClick={() => alternarFavorito("barberia", barberia.id)}
+                  aria-label={`${barberiasFavoritas.has(barberia.id) ? "Quitar" : "Añadir"} ${barberia.nombre} de favoritos`}
+                  title={barberiasFavoritas.has(barberia.id) ? "Quitar de favoritos" : "Añadir a favoritos"}
+                >
+                  <IconHeart size={22} fill={barberiasFavoritas.has(barberia.id) ? "currentColor" : "none"} />
+                </button>
+              </div>
               <div className="bp-rating">
                 <Estrellas />
                 <span>
@@ -191,6 +217,15 @@ const regresar = () => {
                       <span className="bp-opiniones-barbero">({b.opiniones})</span>
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    className={`bp-boton-favorito bp-boton-favorito--barbero ${barberosFavoritos.has(`${barberia.id}:${b.id}`) ? "activo" : ""}`}
+                    onClick={() => alternarFavorito("barbero", `${barberia.id}:${b.id}`)}
+                    aria-label={`${barberosFavoritos.has(`${barberia.id}:${b.id}`) ? "Quitar" : "Añadir"} a ${b.nombre} de favoritos`}
+                    title={barberosFavoritos.has(`${barberia.id}:${b.id}`) ? "Quitar de favoritos" : "Añadir a favoritos"}
+                  >
+                    <IconHeart size={18} fill={barberosFavoritos.has(`${barberia.id}:${b.id}`) ? "currentColor" : "none"} />
+                  </button>
                 </li>
               ))}
             </ul>

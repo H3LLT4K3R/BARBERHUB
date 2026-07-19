@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { IconUser, IconUserCheck } from "@tabler/icons-react";
+import { getBarberiaById } from "../data/barberias.js";
 import "../styles/agenda-local.css";
 
 export default function AgendaLocal() {
   const navigate = useNavigate();
   const location = useLocation();
   const volverA = location.state?.volverA ?? "/explorar";
+  const barberia = getBarberiaById(location.state?.barberiaId ?? "urban-cuts");
 
   const regresar = () => {
     const volverAtras = location.state?.volverAtras;
@@ -16,6 +19,10 @@ export default function AgendaLocal() {
   const [diaSeleccionado, setDiaSeleccionado] = useState(21);
   // Estado para la hora seleccionada 
   const [horaSeleccionada, setHoraSeleccionada] = useState("9:00");
+  const [servicioSeleccionado, setServicioSeleccionado] = useState(location.state?.servicioId ?? barberia.servicios[0]?.id ?? "");
+  const [barberoSeleccionado, setBarberoSeleccionado] = useState(location.state?.barberoId ?? "");
+  const servicio = barberia.servicios.find((item) => item.id === servicioSeleccionado) ?? barberia.servicios[0];
+  const barbero = barberia.barberos.find((item) => item.id === barberoSeleccionado);
 
   // Simulación de los días de Mayo 2026 
   const diasMayo = [
@@ -46,14 +53,19 @@ export default function AgendaLocal() {
   ];
 
   const handleContinuar = () => {
-    if (!diaSeleccionado || !horaSeleccionada) return;
+    if (!diaSeleccionado || !horaSeleccionada || !servicio || !barberoSeleccionado) return;
 
     navigate("/datos-reserva", {
       state: {
         fecha: `2026-05-${diaSeleccionado.toString().padStart(2, "0")}`,
         hora: horaSeleccionada,
-        barberiaId: "urban-cuts",
-        establecimiento: "URBAN CUTS"
+        barberiaId: barberia.id,
+        establecimiento: barberia.nombre,
+        servicio: servicio.nombre,
+        precio: servicio.precio,
+        moneda: barberia.moneda,
+        barberoId: barbero?.id ?? null,
+        barbero: barbero?.nombre ?? "Sin preferencia (por asignar)",
       }
     });
   };
@@ -65,7 +77,7 @@ export default function AgendaLocal() {
         <div className="al-info-marca">
           <img src="/barberhublogo.jpg" alt="Logo" className="al-logo" />
           <div className="al-texto-marca">
-            <h2>URBAN CUTS</h2>
+            <h2>{barberia.nombre}</h2>
             <span>Barbería</span>
           </div>
         </div>
@@ -74,6 +86,47 @@ export default function AgendaLocal() {
 
       {/* Contenido Principal */}
       <main className="al-contenido">
+        <section className="al-seleccion-reserva" aria-label="Selecciona servicio y barbero">
+          <div className="al-grupo-seleccion">
+            <h3>1. Elige un servicio</h3>
+            <div className="al-opciones-servicio">
+              {barberia.servicios.map((item) => (
+                <button
+                  type="button"
+                  key={item.id}
+                  className={`al-opcion-servicio ${servicioSeleccionado === item.id ? "activo" : ""}`}
+                  onClick={() => setServicioSeleccionado(item.id)}
+                >
+                  <span>{item.nombre}</span><strong>${item.precio}</strong>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="al-grupo-seleccion">
+            <h3>2. Elige un barbero</h3>
+            <div className="al-opciones-barbero">
+              <button
+                type="button"
+                className={`al-opcion-barbero ${barberoSeleccionado === "sin-preferencia" ? "activo" : ""}`}
+                onClick={() => setBarberoSeleccionado("sin-preferencia")}
+              >
+                <IconUserCheck size={20} />
+                <span><strong>Sin preferencia</strong><small>Asignar el primer barbero disponible</small></span>
+              </button>
+              {barberia.barberos.map((item) => (
+                <button
+                  type="button"
+                  key={item.id}
+                  className={`al-opcion-barbero ${barberoSeleccionado === item.id ? "activo" : ""}`}
+                  onClick={() => setBarberoSeleccionado(item.id)}
+                >
+                  <img src={item.foto} alt="" />
+                  <span><strong>{item.nombre}</strong><small>★ {item.rating.toFixed(1)} · {item.opiniones} opiniones</small></span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* Columna Izquierda: Calendario */}
         <section className="al-seccion-calendario">
@@ -105,6 +158,7 @@ export default function AgendaLocal() {
         {/* Columna Derecha: Horarios Disponibles */}
         <section className="al-seccion-horarios">
           <h3 className="al-titulo-horarios">HORARIOS DISPONIBLES</h3>
+          {!barberoSeleccionado && <p className="al-aviso-seleccion"><IconUser size={18} /> Elige un barbero o “Sin preferencia” para continuar.</p>}
 
           <div className="al-grid-horarios">
             {horariosBase.map((item) => {

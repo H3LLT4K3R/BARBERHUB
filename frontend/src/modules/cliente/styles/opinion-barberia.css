@@ -282,20 +282,26 @@
 }
 
 .obp-btn-back {
-  background: transparent;
-  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
+  background: #ffffff;
+  border: 1px solid #d8d3c9;
+  border-radius: 10px;
+  font: inherit;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  color: #1a1a1a;
-  border-bottom: 2px solid #1a1a1a;
-  padding-bottom: 2px;
-  transition: all 0.2s ease;
+  color: #403d37;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
 .obp-btn-back:hover {
-  color: var(--obp-dorado-oscuro);
-  border-color: var(--obp-dorado-oscuro);
+  background: #f6f3ed;
+  border-color: #b9ad98;
+  transform: translateY(-1px);
 }
 
 /*Responsivo*/
