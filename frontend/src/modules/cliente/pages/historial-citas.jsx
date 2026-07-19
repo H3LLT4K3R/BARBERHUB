@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { X } from "lucide-react";
+import { CalendarDays, Star, X } from "lucide-react";
 import "../styles/historial-citas.css";
 
 const citasData = [
@@ -15,11 +15,13 @@ const citasData = [
     tiempo: "hace 2 días",
     fecha: "26 de mayo 2026",
     hora: "11:00 am",
+    fechaISO: "2026-05-26",
     precio: 130,
     estado: "Pendiente",
     duracion: "1 Hora",
     puntosGanados: "+10 pts",
-    miCalificacion: "Excelente servicio, buen corte... Carlos siempre deja todo impecable y el lugar está muy limpio"
+    resenaBarberia: null,
+    resenaBarbero: null
   },
   {
     id: 2,
@@ -32,11 +34,19 @@ const citasData = [
     tiempo: "hace 1 mes",
     fecha: "25 de abril 2026",
     hora: "04:30 pm",
+    fechaISO: "2026-04-25",
     precio: 100,
     estado: "Completada",
     duracion: "45 Min",
     puntosGanados: "+10 pts",
-    miCalificacion: "Muy buen corte tradicional."
+    resenaBarberia: {
+      puntuacion: 5,
+      comentario: "Muy buen corte tradicional.",
+    },
+    resenaBarbero: {
+      puntuacion: 5,
+      comentario: "Carlos fue muy atento y el corte quedó justo como lo pedí.",
+    }
   },
   {
     id: 3,
@@ -49,29 +59,72 @@ const citasData = [
     tiempo: "hace 1 mes",
     fecha: "24 de abril 2026",
     hora: "10:00 am",
+    fechaISO: "2026-04-24",
     precio: 120,
     estado: "Rechazada",
     duracion: "40 Min",
     puntosGanados: "0 pts",
-    miCalificacion: ""
+    motivoRechazo: "No tengo disponibilidad para atender este servicio en el horario solicitado.",
+    resenaBarberia: null,
+    resenaBarbero: null
+  },
+  {
+    id: 4,
+    barberiaId: "urban-cuts",
+    servicio: "Perfilado de barba",
+    barbero: "Carlos Reyes",
+    barberia: "Barbería La Reforma",
+    direccion: "Av. Sor Juana 142 0.8km",
+    imagen: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=200&auto=format&fit=crop",
+    tiempo: "hace 3 semanas",
+    fecha: "05 de mayo 2026",
+    hora: "02:00 pm",
+    fechaISO: "2026-05-05",
+    precio: 90,
+    estado: "Cancelada",
+    duracion: "30 Min",
+    puntosGanados: "0 pts",
+    motivoCancelacion: "Tuve un imprevisto y no podré asistir a la cita.",
+    resenaBarberia: null,
+    resenaBarbero: null
   }
 ];
 
 export default function HistorialCitas() {
   const navigate = useNavigate();
   const [filtroEstado, setFiltroEstado] = useState("Todas");
-  const [citaSeleccionada, setCitaSeleccionada] = useState(citasData[0]);
+  const [filtroPeriodo, setFiltroPeriodo] = useState("Todo");
+  const [fechaDesde, setFechaDesde] = useState("");
+  const [fechaHasta, setFechaHasta] = useState("");
+  const [citaSeleccionada, setCitaSeleccionada] = useState(null);
+  const fechaDesdeRef = useRef(null);
+  const fechaHastaRef = useRef(null);
+
+  const abrirCalendario = (input) => {
+    if (!input) return;
+    if (typeof input.showPicker === "function") input.showPicker();
+    else input.focus();
+  };
 
   const citasFiltradas = citasData.filter((cita) => {
-    if (filtroEstado === "Todas") return true;
-    if (filtroEstado === "Canceladas") return cita.estado === "Rechazada";
-    return cita.estado === filtroEstado;
+    const coincideEstado = filtroEstado === "Todas"
+      || (filtroEstado === "Canceladas" ? cita.estado === "Cancelada" : filtroEstado === "Rechazadas" ? cita.estado === "Rechazada" : cita.estado === filtroEstado);
+    if (!coincideEstado) return false;
+    if (filtroPeriodo === "Rango personalizado") {
+      return (!fechaDesde || cita.fechaISO >= fechaDesde) && (!fechaHasta || cita.fechaISO <= fechaHasta);
+    }
+    if (filtroPeriodo === "Todo") return true;
+    const fechaReferencia = new Date(`${citasData[0].fechaISO}T12:00:00`);
+    const dias = filtroPeriodo === "Esta semana" ? 7 : filtroPeriodo === "Este mes" ? 30 : 90;
+    fechaReferencia.setDate(fechaReferencia.getDate() - dias);
+    return new Date(`${cita.fechaISO}T12:00:00`) >= fechaReferencia;
   });
 
   const getBadgeClass = (estado) => {
     switch (estado) {
       case "Pendiente": return "hc-estado-pendiente";
       case "Completada": return "hc-estado-completada";
+      case "Cancelada": return "hc-estado-cancelada";
       case "Rechazada": return "hc-estado-rechazada";
       default: return "";
     }
@@ -118,7 +171,7 @@ export default function HistorialCitas() {
           </div>
 
           <div className="hc-filtros">
-            {["Todas", "Completadas", "Canceladas", "Pendientes"].map((status) => (
+            {["Todas", "Completadas", "Canceladas", "Rechazadas", "Pendientes"].map((status) => (
               <button
                 key={status}
                 className={`hc-boton-filtro ${filtroEstado === status ? "activo" : ""}`}
@@ -127,6 +180,37 @@ export default function HistorialCitas() {
                 {status}
               </button>
             ))}
+          </div>
+
+          <div className="hc-filtros-periodo" aria-label="Filtrar historial por periodo">
+            <span>Periodo:</span>
+            {["Todo", "Esta semana", "Este mes", "Últimos 3 meses", "Rango personalizado"].map((periodo) => (
+              <button
+                key={periodo}
+                className={`hc-boton-periodo ${filtroPeriodo === periodo ? "activo" : ""}`}
+                onClick={() => setFiltroPeriodo(periodo)}
+              >
+                {periodo}
+              </button>
+            ))}
+            {filtroPeriodo === "Rango personalizado" && (
+              <div className="hc-rango-fechas">
+                <label className="hc-fecha-control">
+                  <span>Desde</span>
+                  <input ref={fechaDesdeRef} type="date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} aria-label="Fecha inicial" />
+                  <button type="button" className="hc-fecha-accion" onClick={() => abrirCalendario(fechaDesdeRef.current)} aria-label="Abrir calendario de fecha inicial">
+                    <CalendarDays size={16} aria-hidden="true" />
+                  </button>
+                </label>
+                <label className="hc-fecha-control">
+                  <span>Hasta</span>
+                  <input ref={fechaHastaRef} type="date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} aria-label="Fecha final" />
+                  <button type="button" className="hc-fecha-accion" onClick={() => abrirCalendario(fechaHastaRef.current)} aria-label="Abrir calendario de fecha final">
+                    <CalendarDays size={16} aria-hidden="true" />
+                  </button>
+                </label>
+              </div>
+            )}
           </div>
 
           <div className="hc-lista-citas">
@@ -191,23 +275,70 @@ export default function HistorialCitas() {
                 </div>
                 <div className="hc-fila-detalle">
                   <span>Duración</span>
-                  <strong>{citaSeleccionada.duracion}</strong>
+                  <strong>{citaSeleccionada.estado === "Completada" ? citaSeleccionada.duracion : "0 Min"}</strong>
                 </div>
                 <hr className="hc-separador-detalle" />
                 <div className="hc-fila-detalle">
                   <span>Total Pagado</span>
-                  <strong className="dorado">${citaSeleccionada.precio}</strong>
+                  <strong className="dorado">${citaSeleccionada.estado === "Completada" ? citaSeleccionada.precio : 0}</strong>
                 </div>
                 <div className="hc-fila-detalle">
                   <span>Puntos Ganados</span>
-                  <strong className="dorado">{citaSeleccionada.puntosGanados}</strong>
+                  <strong className="dorado">{citaSeleccionada.estado === "Completada" ? citaSeleccionada.puntosGanados : "0 pts"}</strong>
                 </div>
               </div>
 
-              {citaSeleccionada.miCalificacion && (
+              {citaSeleccionada.motivoCancelacion && (
+                <div className="hc-resena-detalle hc-motivo-cancelacion">
+                  <h5>Motivo de cancelación</h5>
+                  <p>“{citaSeleccionada.motivoCancelacion}”</p>
+                </div>
+              )}
+
+              {citaSeleccionada.motivoRechazo && (
+                <div className="hc-resena-detalle hc-motivo-rechazo">
+                  <h5>Motivo de {citaSeleccionada.barbero}</h5>
+                  <p>“{citaSeleccionada.motivoRechazo}”</p>
+                </div>
+              )}
+
+              {citaSeleccionada.resenaBarberia && (
                 <div className="hc-resena-detalle">
-                  <h5>Mi calificación</h5>
-                  <p>"{citaSeleccionada.miCalificacion}"</p>
+                  <h5>Tu reseña de la barbería</h5>
+                  <div
+                    className="hc-estrellas-resena"
+                    aria-label={`${citaSeleccionada.resenaBarberia.puntuacion} de 5 estrellas`}
+                  >
+                    {Array.from({ length: 5 }, (_, indice) => (
+                      <Star
+                        key={indice}
+                        size={17}
+                        fill={indice < citaSeleccionada.resenaBarberia.puntuacion ? "currentColor" : "none"}
+                      />
+                    ))}
+                    <span>{citaSeleccionada.resenaBarberia.puntuacion}/5</span>
+                  </div>
+                  <p>“{citaSeleccionada.resenaBarberia.comentario}”</p>
+                </div>
+              )}
+
+              {citaSeleccionada.resenaBarbero && (
+                <div className="hc-resena-detalle">
+                  <h5>Tu reseña de {citaSeleccionada.barbero}</h5>
+                  <div
+                    className="hc-estrellas-resena"
+                    aria-label={`${citaSeleccionada.resenaBarbero.puntuacion} de 5 estrellas`}
+                  >
+                    {Array.from({ length: 5 }, (_, indice) => (
+                      <Star
+                        key={indice}
+                        size={17}
+                        fill={indice < citaSeleccionada.resenaBarbero.puntuacion ? "currentColor" : "none"}
+                      />
+                    ))}
+                    <span>{citaSeleccionada.resenaBarbero.puntuacion}/5</span>
+                  </div>
+                  <p>“{citaSeleccionada.resenaBarbero.comentario}”</p>
                 </div>
               )}
 

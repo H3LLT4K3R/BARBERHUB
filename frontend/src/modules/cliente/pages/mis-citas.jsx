@@ -24,10 +24,9 @@ const citasDataIniciales = [
     badgeTipo: "esperando",
     icono: "scissors",
     pasos: [
-      { id: 1, label: "Enviada", estado: "completado" },
-      { id: 2, label: "Revisada", estado: "actual" },
-      { id: 3, label: "Confirmada", estado: "pendiente" },
-      { id: 4, label: "Completada", estado: "pendiente" },
+      { id: 1, label: "Enviada", estado: "actual" },
+      { id: 2, label: "Aceptada", estado: "pendiente" },
+      { id: 3, label: "Completada", estado: "pendiente" },
     ],
   },
   {
@@ -37,14 +36,13 @@ const citasDataIniciales = [
     barberia: "La Navaja Clásica",
     horario: "Jueves 29 de mayo a las 3:00 pm",
     precio: 120,
-    badgeTexto: "Confirmada - en 3 días",
-    badgeTipo: "confirmada",
+    badgeTexto: "Cita aceptada - en 3 días",
+    badgeTipo: "aceptada",
     icono: "moustache",
     pasos: [
       { id: 1, label: "Enviada", estado: "completado" },
-      { id: 2, label: "Aceptada", estado: "completado" },
-      { id: 3, label: "Confirmada", estado: "actual" },
-      { id: 4, label: "Completada", estado: "pendiente" },
+      { id: 2, label: "Aceptada", estado: "actual" },
+      { id: 3, label: "Completada", estado: "pendiente" },
     ],
   },
 ];
@@ -56,14 +54,28 @@ export default function MisCitas() {
   // Estados para modales de interacción
   const [citaDetalle, setCitaDetalle] = useState(null);
   const [citaCancelar, setCitaCancelar] = useState(null);
+  const [motivoCancelacion, setMotivoCancelacion] = useState("");
   const [citaComentario, setCitaComentario] = useState(null);
   const [comentarioTexto, setComentarioTexto] = useState("");
 
   // Handler para cancelar cita
   const handleConfirmarCancelacion = () => {
-    if (citaCancelar) {
+    if (citaCancelar && motivoCancelacion.trim()) {
+      const solicitudesActuales = JSON.parse(localStorage.getItem("barberhub_cancelaciones") || "[]");
+      localStorage.setItem("barberhub_cancelaciones", JSON.stringify([
+        ...solicitudesActuales,
+        {
+          citaId: citaCancelar.id,
+          barbero: citaCancelar.barbero,
+          barberia: citaCancelar.barberia,
+          servicio: citaCancelar.servicio,
+          motivo: motivoCancelacion.trim(),
+          fecha: new Date().toISOString(),
+        },
+      ]));
       setCitas(citas.filter((c) => c.id !== citaCancelar.id));
       setCitaCancelar(null);
+      setMotivoCancelacion("");
     }
   };
 
@@ -114,7 +126,7 @@ export default function MisCitas() {
 
                   <div className={`badge-estado ${cita.badgeTipo}`}>
                     <span className="icono-badge">
-                      {cita.badgeTipo === "confirmada" ? (
+                      {cita.badgeTipo === "aceptada" ? (
                         <IconCheck size={14} stroke={3} />
                       ) : (
                         <IconClock size={14} stroke={2.5} />
@@ -164,7 +176,10 @@ export default function MisCitas() {
                     <button
                       type="button"
                       className="boton-accion boton-cancelar"
-                      onClick={() => setCitaCancelar(cita)}
+                      onClick={() => {
+                        setCitaCancelar(cita);
+                        setMotivoCancelacion("");
+                      }}
                     >
                       Cancelar
                     </button>
@@ -223,16 +238,21 @@ export default function MisCitas() {
               </button>
             </div>
             <div className="modal-body">
-              <p>
-                ¿Estás seguro de cancelar tu cita de <strong>{citaCancelar.servicio}</strong> con{" "}
-                <strong>{citaCancelar.barbero}</strong>? Esta acción no se puede deshacer.
-              </p>
+              <p>Indica el motivo de la cancelación. El barbero podrá consultarlo.</p>
+              <textarea
+                className="textarea-comentario"
+                rows="4"
+                placeholder="Ej. Tuve un imprevisto y necesito cancelar la cita..."
+                value={motivoCancelacion}
+                onChange={(e) => setMotivoCancelacion(e.target.value)}
+                required
+              />
             </div>
             <div className="modal-footer">
-              <button className="btn-cerrar" onClick={() => setCitaCancelar(null)}>
+              <button className="btn-cerrar" onClick={() => { setCitaCancelar(null); setMotivoCancelacion(""); }}>
                 Volver
               </button>
-              <button className="btn-confirmar-cancelar" onClick={handleConfirmarCancelacion}>
+              <button className="btn-confirmar-cancelar" onClick={handleConfirmarCancelacion} disabled={!motivoCancelacion.trim()}>
                 Sí, cancelar cita
               </button>
             </div>

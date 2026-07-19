@@ -22,7 +22,7 @@
   display: flex;
   flex-wrap: wrap; /* Permite que las columnas se apilen automáticamente */
   width: 100%;
-  max-width: 1200px;
+  max-width: none;
   /* Gap dinámico entre columnas */
   gap: clamp(30px, 4vw, 50px);
   align-items: flex-start;
@@ -292,6 +292,92 @@
 
 .ajt-switch input:checked + .ajt-slider:before {
   transform: translateX(24px);
+}
+
+/* Perfil: alineaciÃ³n y presentaciÃ³n */
+.ajt-columna-izquierda {
+  flex: 0 1 350px;
+  width: min(100%, 350px);
+  align-items: stretch;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid #eee9dc;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #fffdf8 0%, #ffffff 100%);
+  box-shadow: 0 12px 30px rgba(38, 29, 9, 0.06);
+}
+
+.ajt-tarjeta-perfil {
+  border: 1px solid #eee7d7;
+  border-radius: 18px;
+  padding: 28px 20px 24px;
+  background-color: #ffffff;
+}
+
+.ajt-avatar {
+  background: linear-gradient(135deg, #f5d991, #ddb45a);
+  border: 4px solid #fff8e6;
+  box-shadow: 0 6px 14px rgba(193, 144, 37, 0.2);
+  margin-bottom: 14px;
+}
+
+.ajt-tarjeta-perfil h3 {
+  margin-bottom: 6px;
+}
+
+.ajt-boton-cambiar-foto {
+  justify-content: center;
+  min-height: 52px;
+  padding: 14px 20px;
+  border: 1px solid #d7b44b;
+  border-radius: 12px;
+  background: #fffaf0;
+  font-size: 0.98rem;
+  letter-spacing: 0.01em;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+
+.ajt-boton-cambiar-foto:hover {
+  background-color: #fdf2d5;
+  border-color: #c69c32;
+  transform: translateY(-1px);
+}
+
+.ajt-grid-estadisticas {
+  gap: 10px;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.ajt-boton-estadistica,
+.ajt-boton-estadistica:not(:last-child) {
+  justify-content: center;
+  min-height: 90px;
+  padding: 14px 8px;
+  border: 1px solid #ebe5d8;
+  border-radius: 14px;
+  background: #ffffff;
+  text-align: center;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.ajt-boton-estadistica:hover {
+  border-color: #d7b44b;
+  background: #ffffff;
+  box-shadow: 0 5px 12px rgba(38, 29, 9, 0.08);
+  transform: translateY(-1px);
+}
+
+.ajt-boton-estadistica strong {
+  font-size: 1.35rem;
+  line-height: 1.1;
+}
+
+.ajt-boton-estadistica span {
+  margin-top: 7px;
+  font-size: 0.76rem;
+  line-height: 1.2;
 }
 
 /* =========================================

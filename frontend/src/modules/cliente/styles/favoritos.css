@@ -130,6 +130,33 @@
   flex-shrink: 0;
 }
 
+.fav-cabecera-acciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fav-boton-quitar {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #fff1f2;
+  color: #d12d47;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.fav-boton-quitar:hover,
+.fav-boton-quitar:focus-visible {
+  background: #ffe0e5;
+  transform: scale(1.06);
+  outline: none;
+}
+
 .fav-calificacion {
   font-size: 1.8rem;
   font-weight: 700;
@@ -168,6 +195,15 @@
 
 .fav-boton.gris:hover {
   background-color: #dcdce1;
+}
+
+.fav-vacio {
+  margin: 0;
+  padding: 36px;
+  border: 1px dashed var(--fav-dorado-borde);
+  border-radius: 18px;
+  color: var(--fav-texto-muted);
+  text-align: center;
 }
 
 /*Responsivo*/

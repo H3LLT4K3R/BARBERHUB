@@ -226,22 +226,36 @@
 
 .opg-btn-back,
 .opg-btn-comment-barbero {
-  background: transparent;
-  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font: inherit;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  color: #1a1a1a;
-  border-bottom: 2px solid #1a1a1a;
-  padding-bottom: 2px;
-  transition: all 0.2s ease;
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
-.opg-btn-back:hover,
-.opg-btn-comment-barbero:hover {
-  color: var(--color-dorado-oscuro);
-  border-color: var(--color-dorado-oscuro);
+.opg-btn-back {
+  background: #fff;
+  border: 1px solid #d8d3c9;
+  color: #403d37;
 }
+
+.opg-btn-back:hover { background: #f6f3ed; border-color: #b9ad98; }
+
+.opg-btn-comment-barbero {
+  background: #1a1a1a;
+  border: 1px solid #1a1a1a;
+  color: #e5be6b;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.13);
+}
+
+.opg-btn-comment-barbero:hover { background: #303030; transform: translateY(-1px); }
 
 @media (max-width: 768px) {
   .opg-card {

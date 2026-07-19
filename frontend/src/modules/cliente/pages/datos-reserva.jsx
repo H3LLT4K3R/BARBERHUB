@@ -31,6 +31,7 @@ export default function DatosReserva() {
     moneda: state?.moneda ?? RESERVA_DEMO.moneda,
     fecha: state?.fecha ?? RESERVA_DEMO.fecha,
     hora: state?.hora ?? RESERVA_DEMO.hora,
+    barbero: state?.barbero ?? "Por asignar",
   };
 
   const fechaObj = keyAFecha(reserva.fecha);
@@ -150,6 +151,10 @@ export default function DatosReserva() {
               <div className="dr-fila-resumen">
                 <span className="dr-etiqueta">SERVICIO</span>
                 <span className="dr-valor">{reserva.servicio}</span>
+              </div>
+              <div className="dr-fila-resumen">
+                <span className="dr-etiqueta">BARBERO</span>
+                <span className="dr-valor">{reserva.barbero}</span>
               </div>
               <div className="dr-fila-resumen destacado">
                 <span className="dr-etiqueta">TOTAL A PAGAR</span>

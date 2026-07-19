@@ -65,6 +65,52 @@
   box-sizing: border-box;
 }
 
+.al-seleccion-reserva {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.8fr) minmax(430px, 1.2fr);
+  gap: 28px;
+  padding: 24px;
+  border: 1px solid #ead7aa;
+  border-radius: 18px;
+  background: #fffdf9;
+}
+
+.al-grupo-seleccion h3 { margin: 0 0 14px; color: #121212; font-size: 1rem; }
+
+.al-opciones-servicio,
+.al-opciones-barbero { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.al-opcion-servicio,
+.al-opcion-barbero {
+  border: 1px solid #dedee3;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.al-opcion-servicio { display: flex; justify-content: space-between; gap: 18px; width: 100%; padding: 10px 12px; border-radius: 10px; font-size: 0.88rem; }
+.al-opcion-servicio strong { color: #a77b24; }
+
+.al-opcion-barbero { display: flex; align-items: center; gap: 9px; flex: 1 1 180px; min-width: 0; padding: 9px; border-radius: 12px; }
+.al-opcion-barbero > svg { flex: 0 0 32px; padding: 6px; border-radius: 50%; color: #a77b24; background: #fff4d9; }
+.al-opcion-barbero img { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+.al-opcion-barbero span { min-width: 0; }
+.al-opcion-barbero strong, .al-opcion-barbero small { display: block; }
+.al-opcion-barbero strong { font-size: 0.85rem; }
+.al-opcion-barbero small { margin-top: 3px; color: #686868; font-size: 0.72rem; }
+
+.al-opcion-servicio:hover,
+.al-opcion-barbero:hover,
+.al-opcion-servicio.activo,
+.al-opcion-barbero.activo { border-color: #c9a227; background: #fff8e9; }
+.al-opcion-servicio.activo, .al-opcion-barbero.activo { box-shadow: 0 0 0 1px #c9a227; }
+
+.al-aviso-seleccion { display: flex; align-items: center; gap: 7px; margin: -18px 0 20px; color: #8a651c; font-size: 0.9rem; }
+
 .al-titulo-mes {
   font-size: 1.6rem;
   font-weight: 800;
@@ -250,6 +296,10 @@
     gap: 50px;
     padding: 40px 30px;
   }
+
+  .al-seleccion-reserva {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
@@ -267,6 +317,11 @@
   .al-contenido {
     padding: 24px 20px;
     gap: 36px;
+  }
+
+  .al-seleccion-reserva {
+    padding: 18px;
+    gap: 22px;
   }
 
   .al-celda-dia {

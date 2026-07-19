@@ -19,7 +19,7 @@ export default function Explorar() {
   const navigate = useNavigate();
   const user = getStoredUser();
   const [ubicacion, setUbicacion] = useState(null);
-  const [radio, setRadio] = useState(15); 
+  const [radio, setRadio] = useState(5);
   const [filtroServicio, setFiltroServicio] = useState('');
 
   // Nuevos estados para el filtro de disponibilidad 
@@ -146,7 +146,7 @@ export default function Explorar() {
               <input
                 type="range"
                 min="1"
-                max="50"
+                max="5"
                 value={radio}
                 onChange={(e) => setRadio(Number(e.target.value))} 
                 className="explorar-radius-slider"
@@ -208,13 +208,11 @@ export default function Explorar() {
                               key={hora}
                               onClick={() => {
                                 if (user) {
-                                  // CORRECCIÓN AQUÍ 👇
-                                  navigate(`/barberia-perfil/${b.id}?hora=${hora}`, {
+                                  navigate("/agenda-local", {
                                     state: { volverA: "/explorar" },
                                   });
                                 } else {
-                                  // CORRECCIÓN AQUÍ 👇
-                                  navigate('/login', { state: { from: `/barberia-perfil/${b.id}?hora=${hora}` } });
+                                  navigate("/agenda-local", { state: { volverA: "/explorar" } });
                                 }
                               }}
                               className={`explorar-slot ${estaOcupado ? 'no-disponible' : ''}`}
@@ -228,7 +226,6 @@ export default function Explorar() {
                     </div>
 
                     <button
-                      // CORRECCIÓN AQUÍ 👇
                       onClick={() =>
                         navigate(`/barberia-perfil/${b.id}`, {
                           state: { volverA: "/explorar" },

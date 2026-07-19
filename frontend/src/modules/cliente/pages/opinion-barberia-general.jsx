@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { IconArrowLeft, IconMessageCircle } from "@tabler/icons-react";
 import "../styles/opinion-barberia-general.css";
 
 export default function OpinionBarberiaGeneral() {
@@ -120,6 +121,7 @@ export default function OpinionBarberiaGeneral() {
             className="opg-btn-back"
             onClick={() => navigate("/mis-citas")}
           >
+            <IconArrowLeft size={17} aria-hidden="true" />
             Regresar
           </button>
           <button
@@ -127,7 +129,8 @@ export default function OpinionBarberiaGeneral() {
             className="opg-btn-comment-barbero"
             onClick={() => navigate("/opinion-barbero")}
           >
-            Hacer comentario general al barbero
+            <IconMessageCircle size={17} aria-hidden="true" />
+            Comentar a un barbero
           </button>
         </div>
       </div>

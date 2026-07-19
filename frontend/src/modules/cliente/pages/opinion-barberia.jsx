@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { IconArrowLeft } from "@tabler/icons-react";
 import "../styles/opinion-barberia.css";
 
 const opinionesBarberia = [
@@ -35,6 +36,7 @@ const opinionesBarberia = [
 const opinionesBarberos = [
   {
     id: 1,
+    barberoId: "carlos-reyes",
     nombre: "Carlos Reyes",
     avatar: "https://randomuser.me/api/portraits/men/22.jpg",
     rating: 5,
@@ -44,6 +46,7 @@ const opinionesBarberos = [
   },
   {
     id: 2,
+    barberoId: "juan-santos",
     nombre: "Juan Santos",
     avatar: "https://randomuser.me/api/portraits/men/60.jpg",
     rating: 3,
@@ -51,6 +54,11 @@ const opinionesBarberos = [
     fechaTimestamp: 1,
     comentario: "Buen corte aunque hubo algo de demora en el turno."
   },
+];
+
+const barberosConOpiniones = [
+  { id: "carlos-reyes", nombre: "Carlos Reyes" },
+  { id: "juan-santos", nombre: "Juan Santos" },
 ];
 
 function Estrellas({ rating, size = "normal" }) {
@@ -70,6 +78,7 @@ export default function OpinionBarberia() {
   const [tabActiva, setTabActiva] = useState("barberia");
   const [filtroEstrellas, setFiltroEstrellas] = useState("todas");
   const [orden, setOrden] = useState("recientes");
+  const [filtroBarbero, setFiltroBarbero] = useState("todos");
 
   // Filtrado y ordenamiento en tiempo real
   const opinionesFiltradas = useMemo(() => {
@@ -77,8 +86,9 @@ export default function OpinionBarberia() {
 
     return listaBase
       .filter((item) => {
-        if (filtroEstrellas === "todas") return true;
-        return item.rating === filtroEstrellas;
+        const coincideEstrellas = filtroEstrellas === "todas" || item.rating === filtroEstrellas;
+        const coincideBarbero = tabActiva !== "barberos" || filtroBarbero === "todos" || item.barberoId === filtroBarbero;
+        return coincideEstrellas && coincideBarbero;
       })
       .sort((a, b) => {
         if (orden === "recientes") {
@@ -86,7 +96,7 @@ export default function OpinionBarberia() {
         }
         return b.rating - a.rating; // Mejor valorados primero
       });
-  }, [tabActiva, filtroEstrellas, orden]);
+  }, [tabActiva, filtroEstrellas, filtroBarbero, orden]);
 
   return (
     <div className="obp-page">
@@ -119,7 +129,7 @@ export default function OpinionBarberia() {
               <button
                 type="button"
                 className={`obp-tab ${tabActiva === "barberia" ? "activo" : ""}`}
-                onClick={() => setTabActiva("barberia")}
+                onClick={() => { setTabActiva("barberia"); setFiltroBarbero("todos"); }}
               >
                 Comentarios Barbería
               </button>
@@ -157,6 +167,18 @@ export default function OpinionBarberia() {
                 </button>
               ))}
             </div>
+
+            {tabActiva === "barberos" && (
+              <label className="obp-barber-filter">
+                <span>Barbero:</span>
+                <select value={filtroBarbero} onChange={(e) => setFiltroBarbero(e.target.value)}>
+                  <option value="todos">Todos los barberos</option>
+                  {barberosConOpiniones.map((barbero) => (
+                    <option key={barbero.id} value={barbero.id}>{barbero.nombre}</option>
+                  ))}
+                </select>
+              </label>
+            )}
 
             {/* Selector de ordenamiento */}
             <div className="obp-sort-container">
@@ -201,6 +223,7 @@ export default function OpinionBarberia() {
               className="obp-btn-back"
               onClick={() => navigate("/barberia-perfil/urban-cuts")}
             >
+              <IconArrowLeft size={17} aria-hidden="true" />
               Regresar
             </button>
           </div>
