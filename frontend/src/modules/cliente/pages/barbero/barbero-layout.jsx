@@ -9,6 +9,7 @@ import {
   ClipboardList,
   LogOut,
   Menu,
+  Settings,
   X,
 } from "lucide-react";
 import "../../styles/barbero/barbero-layout.css";
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { href: "/barbero/perfil",      label: "Perfil Barbería",       icon: Store           },
   { href: "/barbero/opiniones",   label: "Opiniones",             icon: Star            },
   { href: "/barbero/seguimiento", label: "Seguimiento",           icon: ClipboardList   },
+  { href: "/barbero/ajustes",    label: "Ajustes",               icon: Settings        },
 ];
 
 export default function BarberoLayout({ children, titulo = "" }) {
