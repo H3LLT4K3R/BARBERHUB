@@ -63,8 +63,9 @@ import SeguimientoServicio from "./modules/cliente/pages/barbero/seguimiento-ser
 import AjustesBarbero from "./modules/cliente/pages/barbero/ajustes-barbero";
 
 
-// Layout cliente
-function AuthLayout() {
+// Layout cliente heredado; se conserva temporalmente mientras las rutas activas usan App.
+// eslint-disable-next-line no-unused-vars
+function LegacyAuthRoutes() {
   return (
     <BrowserRouter>
       <Routes>
@@ -200,6 +201,10 @@ function AuthLayout() {
   );
 }
 
+
+function AuthLayout({ children }) {
+  return <SidebarLayout>{children}</SidebarLayout>;
+}
 
 export default function App() {
 
