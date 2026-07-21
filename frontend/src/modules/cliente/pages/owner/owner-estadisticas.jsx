@@ -63,27 +63,48 @@ export default function EstadisticasView() {
     }
   };
 
+  // Diccionario para ajustar dinámicamente las leyendas de la gráfica de barras
+  const nombresLeyenda = {
+    dia: { actual: "Hoy", anterior: "Ayer" },
+    semana: { actual: "Esta Semana", anterior: "Semana Anterior" },
+    mes: { actual: "Este Mes", anterior: "Mes Anterior" }
+  };
+
   const datosActuales = baseDeDatos[periodo];
 
   const descargarExcelCompras = () => {
-    const encabezados = "Fecha,Articulo Comprado,Categoria,Cantidad,Costo Unitario,Costo Total\n";
+    // Definimos las columnas del archivo
+    const encabezados = ["Fecha", "Artículo Comprado", "Categoría", "Cantidad", "Costo Unitario", "Costo Total"];
+    
     const fechaFiltro = `2026-${mesDescarga}-${diaDescarga}`;
-    const datosSimulados = [
-      `${fechaFiltro},Cera Mate Pomade,Insumos,5,$100.00,$500.00`,
-      `${fechaFiltro},Shampoo Purificante,Insumos,2,$150.00,$300.00`,
-      `${fechaFiltro},Navajas (Caja 100),Herramientas,3,$80.00,$240.00`,
-      `${fechaFiltro},Bebidas (Cortesía),Gastos,10,$15.00,$150.00`
+    
+    // Matriz con los registros de datos
+    const filas = [
+      [fechaFiltro, "Cera Mate Pomade", "Insumos", "5", "$100.00", "$500.00"],
+      [fechaFiltro, "Shampoo Purificante", "Insumos", "2", "$150.00", "$300.00"],
+      [fechaFiltro, "Navajas (Caja 100)", "Herramientas", "3", "$80.00", "$240.00"],
+      [fechaFiltro, "Bebidas (Cortesía)", "Gastos", "10", "$15.00", "$150.00"]
+    ];
+
+    // Convertimos la matriz a formato de texto separado por comas, asegurando comillas para evitar rupturas de celdas
+    const contenidoCSV = [
+      encabezados.join(","),
+      ...filas.map(fila => fila.map(campo => `"${campo.replace(/"/g, '""')}"`).join(","))
     ].join("\n");
 
-    const contenidoCSV = "data:text/csv;charset=utf-8," + encabezados + datosSimulados;
-    const uriCodificada = encodeURI(contenidoCSV);
+    // El truco maestro: Agregamos el BOM de UTF-8 (\uFEFF) para que Excel interprete bien los acentos
+    const blob = new Blob(["\uFEFF" + contenidoCSV], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
     
     const enlace = document.createElement("a");
-    enlace.setAttribute("href", uriCodificada);
+    enlace.href = url;
     enlace.setAttribute("download", `Reporte_Compras_${diaDescarga}_${mesDescarga}.csv`);
     document.body.appendChild(enlace);
     enlace.click();
+    
+    // Limpieza de recursos en memoria
     document.body.removeChild(enlace);
+    URL.revokeObjectURL(url);
   };
 
   // Tooltip personalizado usando estilos en línea para evitar problemas de clases
@@ -118,12 +139,12 @@ export default function EstadisticasView() {
             className={`btn-periodo ${periodo === btn ? 'active' : ''}`}
             style={{ textTransform: 'capitalize' }}
           >
-            {btn}
+            {btn === 'dia' ? 'Día' : btn}
           </button>
         ))}
       </div>
 
-      {/* Contenedor Principal (Usa el grid de tu CSS) */}
+      {/* Contenedor Principal */}
       <div className="dashboard-container">
         
         {/* Tarjetas de Resumen */}
@@ -142,12 +163,12 @@ export default function EstadisticasView() {
           </div>
         </div>
 
-        {/* Sección de Gráficas Recharts (Forzadas a tener altura y fondo blanco) */}
+        {/* Sección de Gráficas Recharts */}
         <div className="charts-grid">
           
           {/* Gráfica 1: Área de Líneas */}
           <div className="chart-wrapper card-white" style={{ padding: '20px', borderRadius: '12px' }}>
-            <h3 className="chart-title">Ingresos de la {periodo}</h3>
+            <h3 className="chart-title">Ingresos de la {periodo === 'dia' ? 'jornada' : periodo}</h3>
             
             <div style={{ width: '100%', height: '300px' }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -192,8 +213,8 @@ export default function EstadisticasView() {
                     contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'}}
                   />
                   <Legend iconType="square" align="right" verticalAlign="top" wrapperStyle={{top: -20, fontSize: '12px', fontWeight: 'bold', color: '#666'}}/>
-                  <Bar dataKey="actual" name="Hoy" fill="#E5C158" radius={[4, 4, 0, 0]} barSize={25} />
-                  <Bar dataKey="anterior" name="Ayer" fill="#E5E7EB" radius={[4, 4, 0, 0]} barSize={25} />
+                  <Bar dataKey="actual" name={nombresLeyenda[periodo].actual} fill="#E5C158" radius={[4, 4, 0, 0]} barSize={25} />
+                  <Bar dataKey="anterior" name={nombresLeyenda[periodo].anterior} fill="#E5E7EB" radius={[4, 4, 0, 0]} barSize={25} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -201,7 +222,7 @@ export default function EstadisticasView() {
 
         </div>
 
-        {/* Sección de Exportación (Usa tu CSS original) */}
+        {/* Sección de Exportación */}
         <div className="export-section card-white" style={{ padding: '20px', borderRadius: '12px', marginTop: '20px' }}>
           <div className="export-info">
             <h3>Exportar Reporte de Compras</h3>

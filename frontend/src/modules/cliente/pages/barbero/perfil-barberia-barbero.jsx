@@ -1,36 +1,162 @@
-import { useState } from "react";
-import { Apple, CalendarDays, Clock3, MapPin, Plus, Share2, Star, Trash2, Upload, UserRound } from "lucide-react";
-import "../../styles/barbero/perfil-barberia-barbero.css";
-import BarberoModal from "./barbero-modal";
-
-const serviciosIniciales = [
-  { nombre: "Masaje", precio: "$150", imagen: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=300&q=80" },
-  { nombre: "Diseño personalizado", precio: "$150", imagen: "https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&w=300&q=80" },
-  { nombre: "Corte de cejas", precio: "$150", imagen: "https://images.unsplash.com/photo-1512690459411-b9245aed614b?auto=format&fit=crop&w=300&q=80" },
-  { nombre: "Corte de cabello", precio: "$150", imagen: "https://images.unsplash.com/photo-1517832606299-7ae9b720a186?auto=format&fit=crop&w=300&q=80" },
-];
-const dias = ["Lunes", "Martes", "Miércoles", "Jueves", "Sábado", "Domingo"];
+import React, { useState, useRef } from 'react';
+import { User, Upload, Calendar as CalendarIcon, ChevronLeft, ChevronRight, Check, Star, Scissors } from 'lucide-react';
+import "../../styles/Barberias/perfilbarberia.css";
 
 export default function PerfilBarberiaBarbero() {
-  const [servicios, setServicios] = useState(serviciosIniciales);
-  const [modal, setModal] = useState("");
-  const [nombreServicio, setNombreServicio] = useState("");
-  const [horarios, setHorarios] = useState(Object.fromEntries(dias.map((dia) => [dia, "12:00 PM - 3:00 PM"])));
-  const guardarServicio = (event) => { event.preventDefault(); if (!nombreServicio.trim()) return; setServicios((actual) => [...actual, { nombre: nombreServicio, precio: "$150", imagen: serviciosIniciales[0].imagen }]); setNombreServicio(""); setModal("guardado"); };
+  const [nombreBarbero, setNombreBarbero] = useState('Mathew McCoy');
+  const [avatarImage, setAvatarImage] = useState(null);
+  
+  const [skillsImages, setSkillsImages] = useState({
+    0: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=300&q=80',
+    1: 'https://images.unsplash.com/photo-1622296089863-eb7fc530daa8?auto=format&fit=crop&w=300&q=80',
+  });
 
-  return <section className="bp-page">
-    <header className="bp-heading"><div><p>Panel barbero</p><h2>Perfil barbería</h2><span>Administra la información visible para tus clientes.</span></div><button type="button" onClick={() => setModal("guardar")}>Guardar cambios</button></header>
-    <div className="bp-grid">
-      <aside className="bp-profile-card"><div className="bp-cover" /><div className="bp-avatar"><UserRound size={58} /></div><h3>Mathew McCoy · Barbería profesional</h3><span><MapPin size={13} /> Main St, Las Vegas (2 mi)</span><p><Star size={13} fill="currentColor" /> 5.0 (24)</p><div className="bp-quick"><button type="button" onClick={() => setModal("mapa")}><MapPin size={16} /> Mapa</button><button type="button" onClick={() => setModal("chat")}><Apple size={16} /> Chat</button><button type="button" onClick={() => setModal("compartir")}><Share2 size={16} /> Compartir</button></div><h4>Localización</h4><div className="bp-address"><MapPin size={16} /> 3799 S Las Vegas Blvd, Las Vegas, NV 89109</div><iframe title="Ubicación de la barbería" className="bp-map" src="https://maps.google.com/maps?q=3799%20S%20Las%20Vegas%20Blvd%2C%20Las%20Vegas&t=&z=13&ie=UTF8&iwloc=&output=embed" loading="lazy" /></aside>
-      <main className="bp-about"><nav><button className="active">Acerca</button><button>Servicios</button><button>Reseñas</button></nav><p className="bp-description">Somos una barbería con mucha experiencia en cortes, barba y tratamientos. <button type="button">Leer más…</button></p><h4>Horario de atención</h4><dl className="bp-hours"><div><dt>Lunes - Viernes</dt><dd>09:00 am - 08:00 pm</dd></div><div><dt>Sábado - Domingo</dt><dd>09:00 am - 09:00 pm</dd></div></dl><h4>Habilidades</h4><div className="bp-services">{servicios.map((servicio, index) => <article key={`${servicio.nombre}-${index}`}><img src={servicio.imagen} alt={servicio.nombre} /><strong>{servicio.nombre}</strong><span><Star size={11} fill="currentColor" /> 4.8</span><b>{servicio.precio}</b></article>)}</div><button type="button" className="bp-save" onClick={() => setModal("guardar")}>Guardar</button></main>
-      <section className="bp-settings"><div className="bp-stat"><div><span>Experiencia</span><strong>5 años</strong></div><div><span>Servicios/clientes</span><strong>342 clientes</strong></div><div><span>Puntuación</span><strong><Star size={12} fill="currentColor" /> 5.0</strong></div></div><div className="bp-setting-tabs"><button><Clock3 size={21} />Horario disponible</button><button><CalendarDays size={21} />Fechas importantes</button></div><div className="bp-day-pills">{["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((dia) => <button key={dia}>{dia}</button>)}</div><div className="bp-schedule">{dias.map((dia) => <div key={dia}><span>{dia}</span><button type="button" onClick={() => setModal(`horario-${dia}`)}>{horarios[dia]}</button><button className="bp-circle" type="button" onClick={() => setModal(`horario-${dia}`)}><Plus size={15} /></button><button className="bp-trash" type="button" onClick={() => setHorarios((actual) => ({ ...actual, [dia]: "Sin horario" }))}><Trash2 size={14} /></button></div>)}</div></section>
-      <aside className="bp-service-form"><div className="bp-form-title"><h3>Políticas de cancelación</h3><label><input type="checkbox" defaultChecked /> Flexible <small>(2 días · 50% refund)</small></label><label><input type="checkbox" defaultChecked /> Moderate <small>(7 días · 50% refund)</small></label><label><input type="checkbox" defaultChecked /> Strict <small>(14 días · 50% refund)</small></label></div><button type="button" className="bp-upload" onClick={() => setModal("imagen")}><Upload size={20} /> Subir imagen <small>Support: JPG, PNG, JPEG</small></button><form onSubmit={guardarServicio}><label>Seleccionar servicio<select defaultValue=""><option value="" disabled>Seleccionar servicio</option><option>Corte</option><option>Barba</option></select></label><div><input placeholder="Precio $" /><input placeholder="Servicio en físico" /></div><textarea placeholder="Descripción del servicio" /><button className="bp-save" type="submit">Guardar</button></form></aside>
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 10, 1));
+  const [selectedDay, setSelectedDay] = useState(14);
+  const [horariosBarbero, setHorariosBarbero] = useState({
+    '14': '10:00 Am - 6:00 Pm'
+  });
+  const [inputHoraInicio, setInputHoraInicio] = useState('');
+  const [inputHoraFin, setInputHoraFin] = useState('');
+
+  const avatarInputRef = useRef(null);
+  const fileInputRefs = useRef([]);
+
+  const procesarArchivoImagen = (file, callback) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => callback(reader.result);
+    reader.readAsDataURL(file);
+  };
+
+  const guardarHorario = () => {
+    if (!selectedDay || !inputHoraInicio || !inputHoraFin) return;
+    setHorariosBarbero(prev => ({
+      ...prev,
+      [selectedDay]: `${inputHoraInicio} - ${inputHoraFin}`
+    }));
+  };
+
+  return (
+    <div className="pagina-barberia-global fade-in">
+      <div className="perfil-clean-wrapper">
+        <div className="barber-cards-row-grid-three">
+          
+          {/* COLUMNA 1: Perfil */}
+          <div className="layout-column">
+            <div className="card-profile-black">
+              <input type="file" ref={avatarInputRef} onChange={(e) => procesarArchivoImagen(e.target.files[0], setAvatarImage)} className="hidden-file-input" accept="image/*" />
+              <div className="profile-avatar-circle interactive-avatar" onClick={() => avatarInputRef.current.click()}>
+                {avatarImage ? <img src={avatarImage} alt="Perfil" className="avatar-img-preview" /> : <User className="avatar-placeholder-icon" />}
+                <div className="avatar-hover-overlay"><Upload className="w-4 h-4 text-white" /></div>
+              </div>
+              
+              <div className="editable-name-container">
+                <input 
+                  type="text" 
+                  value={nombreBarbero} 
+                  onChange={(e) => setNombreBarbero(e.target.value)} 
+                  className="profile-title-name-input text-center"
+                />
+              </div>
+              <p className="profile-subtitle-geo">Barbero Especialista</p>
+              
+              {/* ESTADÍSTICAS CORREGIDAS CON FLEXBOX EN LÍNEA */}
+              <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center', marginTop: '25px', paddingTop: '20px', borderTop: '1px dashed #4b5563', width: '100%' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                  <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'white', display: 'flex', alignItems: 'center', gap: '4px' }}>4.9 <Star size={14} color="#D4AF37" fill="#D4AF37" /></span>
+                  <span style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase' }}>Calificación</span>
+                </div>
+                <div style={{ width: '1px', height: '30px', backgroundColor: '#4b5563' }}></div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                  <span style={{ fontSize: '18px', fontWeight: 'bold', color: 'white', display: 'flex', alignItems: 'center', gap: '4px' }}>184 <Scissors size={14} color="#D4AF37" /></span>
+                  <span style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase' }}>Cortes (Mes)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* COLUMNA 2: Portafolio */}
+          <div className="card-white-container layout-column">
+             <div style={{ borderBottom: '2px solid #f3f4f6', paddingBottom: '15px' }}>
+                {/* BOTÓN PORTAFOLIO CORREGIDO (LETRAS BLANCAS) */}
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', backgroundColor: '#111827', color: 'white', padding: '10px 20px', borderRadius: '8px', fontSize: '14px', fontWeight: 'bold' }}>
+                  <User size={16} /> Mi Portafolio
+                </div>
+             </div>
+             <p className="description-paragraph-text mt-4">Sube fotos de tus mejores cortes para que los clientes vean tu trabajo.</p>
+             
+             <div className="skills-image-display-grid mt-4">
+                {["Fade Clásico", "Diseño de Barba"].map((skill, index) => (
+                  <div key={index} className="skill-photo-card">
+                    <input type="file" ref={el => fileInputRefs.current[index] = el} onChange={(e) => procesarArchivoImagen(e.target.files[0], (img) => setSkillsImages(p => ({...p, [index]: img})))} className="hidden-file-input" accept="image/*" />
+                    <div className="skill-image-wrapper" style={{ backgroundImage: `url(${skillsImages[index]})` }}></div>
+                    <div className="skill-card-footer-info">
+                      <p className="skill-label-name">{skill}</p>
+                      <button onClick={() => fileInputRefs.current[index].click()} className="clean-upload-trigger-btn"><Upload size={14} /> Subir foto</button>
+                    </div>
+                  </div>
+                ))}
+             </div>
+          </div>
+
+          {/* COLUMNA 3: Disponibilidad */}
+          <div className="card-white-container layout-column">
+            <h3 className="sub-section-title-large"><CalendarIcon size={20}/> Mi Disponibilidad</h3>
+            
+            <div className="calendar-day-modifier-box">
+              <p className="modifier-selected-day-title">Día seleccionado: <strong>{selectedDay ? `${selectedDay} de Noviembre` : 'Selecciona un día'}</strong></p>
+              <div className="modifier-inputs-row">
+                <input type="text" value={inputHoraInicio} onChange={(e) => setInputHoraInicio(e.target.value)} placeholder="Ej. 10:00 Am" className="modifier-input" />
+                <span style={{color: '#6b7280'}}>a</span>
+                <input type="text" value={inputHoraFin} onChange={(e) => setInputHoraFin(e.target.value)} placeholder="Ej. 6:00 Pm" className="modifier-input" />
+                <button onClick={guardarHorario} className="modifier-save-btn"><Check size={16} /></button>
+              </div>
+              {selectedDay && horariosBarbero[selectedDay] && (
+                <div className="setting-pill green-pill">Horario: {horariosBarbero[selectedDay]}</div>
+              )}
+            </div>
+
+            {/* CABECERA DEL MES CORREGIDA (LETRAS BLANCAS) */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#111827', borderRadius: '10px', padding: '12px 15px', marginBottom: '15px' }}>
+              <button onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', display: 'flex' }}><ChevronLeft size={18} /></button>
+              <span style={{ fontWeight: 'bold', color: 'white', fontSize: '14px', letterSpacing: '1px' }}>{currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }).toUpperCase()}</span>
+              <button onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', display: 'flex' }}><ChevronRight size={18} /></button>
+            </div>
+            
+            {/* MALLA DEL CALENDARIO CORREGIDA CON GRID EN LÍNEA */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '8px', textAlign: 'center' }}>
+              {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((d, i) => (
+                <div key={i} style={{ fontSize: '12px', fontWeight: 'bold', color: '#9ca3af', marginBottom: '5px' }}>{d}</div>
+              ))}
+              {Array.from({length: 30}).map((_, i) => {
+                const isSelected = selectedDay === i + 1;
+                return (
+                  <div 
+                    key={i} 
+                    onClick={() => setSelectedDay(i + 1)}
+                    style={{
+                      padding: '10px 0',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      border: isSelected ? '1px solid #D4AF37' : '1px solid #e5e7eb',
+                      backgroundColor: isSelected ? '#D4AF37' : '#f9fafb',
+                      color: isSelected ? 'white' : '#374151',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {i + 1}
+                  </div>
+                );
+              })}
+            </div>
+
+          </div>
+
+        </div>
+      </div>
     </div>
-    <BarberoModal open={modal === "imagen"} title="Subir imagen" onClose={() => setModal("")} footer={<button className="bm-primary" onClick={() => setModal("guardado")}>Subir</button>}><p>Selecciona una fotografía para mostrarla en tu perfil. La carga será temporal hasta conectar el almacenamiento.</p><input type="file" accept="image/*" /></BarberoModal>
-    <BarberoModal open={modal.startsWith("horario-")} title="Editar horario" onClose={() => setModal("")} footer={<button className="bm-primary" onClick={() => setModal("guardado")}>Guardar horario</button>}><p>Configura el horario para {modal.replace("horario-", "")}.</p><input className="bp-modal-input" defaultValue="12:00 PM - 3:00 PM" /></BarberoModal>
-    <BarberoModal open={modal === "mapa"} title="Ubicación" onClose={() => setModal("")} footer={<button className="bm-primary" onClick={() => setModal("")}>Cerrar</button>}><p>3799 S Las Vegas Blvd, Las Vegas, NV 89109</p></BarberoModal>
-    <BarberoModal open={modal === "chat"} title="Chat de barbería" onClose={() => setModal("")} footer={<button className="bm-primary" onClick={() => setModal("")}>Enviar</button>}><textarea className="bp-modal-input" placeholder="Escribe un mensaje…" /></BarberoModal>
-    <BarberoModal open={modal === "compartir"} title="Compartir perfil" onClose={() => setModal("")} footer={<button className="bm-primary" onClick={() => setModal("")}>Copiar enlace</button>}><p>Comparte tu perfil de Barber Hub con tus clientes.</p></BarberoModal>
-    <BarberoModal open={modal === "guardar" || modal === "guardado"} title={modal === "guardar" ? "Guardar cambios" : "Cambios guardados"} onClose={() => setModal("")} footer={<button className="bm-primary" onClick={() => setModal("")}>{modal === "guardar" ? "Confirmar" : "Continuar"}</button>}><p>{modal === "guardar" ? "Los cambios se guardarán temporalmente en esta sesión." : "La interfaz se actualizó. El guardado permanente llegará con el backend."}</p></BarberoModal>
-  </section>;
+  );
 }

@@ -1,2 +1,355 @@
-.bp-page{max-width:1450px;margin:auto;padding:32px;color:#171717}.bp-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;gap:16px}.bp-heading p{color:#a77b24;text-transform:uppercase;font-size:11px;letter-spacing:.12em;font-weight:800;margin:0 0 5px}.bp-heading h2{font-size:32px;letter-spacing:-.04em;margin:0}.bp-heading span{color:#6b7280;font-size:14px}.bp-heading>button,.bp-save{background:#111827;border:0;border-radius:9px;color:#fff;cursor:pointer;font:inherit;font-size:12px;font-weight:800;padding:11px 16px}.bp-heading>button:hover,.bp-save:hover{background:#a77b24}.bp-grid{display:grid;grid-template-columns:260px minmax(280px,1fr) minmax(320px,1.15fr) 270px;gap:18px;align-items:start}.bp-profile-card,.bp-about,.bp-settings,.bp-service-form{background:#fff;border:1px solid #e5e7eb;border-radius:15px;overflow:hidden}.bp-profile-card{padding-bottom:15px;text-align:center}.bp-cover{background:linear-gradient(135deg,#3a217d,#7041c2);height:70px}.bp-avatar{display:flex;align-items:center;justify-content:center;width:100px;height:100px;margin:-38px auto 10px;border:3px solid #fff;border-radius:50%;background:#5b35a5;color:#fff}.bp-profile-card h3{font-size:13px;margin:0 10px 7px}.bp-profile-card>span,.bp-profile-card>p{display:flex;justify-content:center;align-items:center;gap:4px;font-size:10px;color:#6b7280;margin:5px}.bp-profile-card>p{color:#b8862d}.bp-quick{display:flex;justify-content:space-around;border-top:1px solid #f3f4f6;border-bottom:1px solid #f3f4f6;margin:12px 0;padding:10px}.bp-quick button{align-items:center;background:transparent;border:0;color:#4b5563;cursor:pointer;display:flex;flex-direction:column;font-size:9px;gap:3px}.bp-profile-card h4,.bp-about h4{font-size:12px;margin:15px}.bp-address{align-items:flex-start;color:#6b7280;display:flex;font-size:9px;gap:5px;margin:0 15px 10px;text-align:left}.bp-map{border:0;height:145px;width:100%}.bp-about{padding:12px}.bp-about nav{display:flex;background:#f3f4f6;border-radius:8px;padding:3px}.bp-about nav button{background:transparent;border:0;border-radius:6px;color:#6b7280;cursor:pointer;flex:1;font-size:11px;padding:8px}.bp-about nav button.active{background:#fff;box-shadow:0 1px 3px #00000018;color:#4b2a91}.bp-description{color:#4b5563;font-size:11px;line-height:1.5;margin:14px 3px}.bp-description button{background:transparent;border:0;color:#5b35a5;cursor:pointer;padding:0}.bp-hours{font-size:10px;margin:0 3px}.bp-hours div{display:flex;justify-content:space-between;margin:7px 0}.bp-hours dt{color:#9ca3af}.bp-hours dd{font-weight:700;margin:0}.bp-services{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.bp-services article{border:1px solid #eee;border-radius:8px;overflow:hidden;position:relative}.bp-services img{height:70px;object-fit:cover;width:100%}.bp-services strong,.bp-services span{display:block;font-size:10px;margin:5px 7px}.bp-services span{color:#b8862d}.bp-services b{background:#5b35a5;border-radius:999px;color:#fff;font-size:9px;padding:4px;position:absolute;right:4px;top:58px}.bp-about>.bp-save{margin-top:15px;width:100%}.bp-settings{padding:15px}.bp-stat{background:#f7f5ff;border-radius:10px;display:grid;grid-template-columns:repeat(3,1fr);padding:10px;text-align:center}.bp-stat span,.bp-stat strong{display:block;font-size:9px}.bp-stat span{color:#6b7280}.bp-stat strong{margin-top:5px}.bp-stat strong svg{color:#b8862d}.bp-setting-tabs{display:flex;justify-content:space-around;margin:20px 0}.bp-setting-tabs button{align-items:center;background:transparent;border:0;color:#374151;cursor:pointer;display:flex;flex-direction:column;font-size:9px;gap:4px}.bp-day-pills{display:flex;gap:5px;overflow:auto}.bp-day-pills button{background:#fff;border:1px solid #d1d5db;border-radius:7px;color:#374151;font-size:9px;padding:6px}.bp-schedule{margin-top:14px}.bp-schedule>div{align-items:center;display:grid;gap:8px;grid-template-columns:65px 1fr 24px 20px;margin:9px 0}.bp-schedule span{font-size:10px}.bp-schedule>div>button:first-of-type{background:#f5f3ff;border:1px solid #c4b5fd;border-radius:7px;color:#5b35a5;font-size:9px;padding:6px}.bp-circle{background:#3c3658;border:0;border-radius:50%;color:#fff;display:flex;padding:4px}.bp-trash{background:transparent;border:0;color:#ef4444;padding:0}.bp-service-form{padding:15px}.bp-service-form h3{font-size:13px;margin:0 0 12px}.bp-form-title label{display:block;font-size:10px;margin:9px 0}.bp-form-title small{color:#9ca3af}.bp-upload{align-items:center;background:#fafafa;border:1px dashed #8b5cf6;border-radius:9px;cursor:pointer;display:flex;flex-direction:column;font-size:11px;gap:5px;margin:20px 0;padding:25px;width:100%}.bp-upload small{color:#9ca3af;font-size:8px}.bp-service-form form{display:grid;gap:10px}.bp-service-form label{color:#6b7280;font-size:10px}.bp-service-form select,.bp-service-form input,.bp-service-form textarea{border:1px solid #e5e7eb;border-radius:7px;box-sizing:border-box;font:inherit;font-size:10px;margin-top:5px;padding:9px;width:100%}.bp-service-form form>div{display:flex;gap:7px}.bp-service-form textarea{min-height:55px;resize:vertical}.bp-service-form .bp-save{width:100%}.bp-modal-input{border:1px solid #e5e7eb;border-radius:8px;box-sizing:border-box;min-height:42px;padding:10px;width:100%}
-@media(max-width:1200px){.bp-grid{grid-template-columns:260px 1fr 1fr}.bp-service-form{grid-column:2/4}}@media(max-width:820px){.bp-page{padding:18px 16px}.bp-heading{align-items:flex-start;flex-direction:column}.bp-heading>button{width:100%}.bp-grid{grid-template-columns:1fr 1fr}.bp-profile-card{grid-row:span 2}.bp-service-form{grid-column:auto}}@media(max-width:580px){.bp-grid{grid-template-columns:1fr}.bp-profile-card{grid-row:auto}.bp-service-form{grid-column:auto}.bp-heading h2{font-size:26px}.bp-services img{height:100px}.bp-map{height:180px}}
+/* perfil-barberia-barbero.css */
+
+/* --- Contenedor Principal --- */
+.pagina-barberia-global {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  color: #374151;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Animación de entrada suave */
+.fade-in {
+  animation: fadeIn 0.4s ease-in-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Grid Layout (Estructura Principal) --- */
+.barber-cards-row-grid-three {
+  display: grid;
+  grid-template-columns: 300px 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* =========================================
+   COLUMNA 1: Tarjeta Perfil (Negra/Dorada)
+   ========================================= */
+.card-profile-black {
+  background: linear-gradient(145deg, #111827, #1f2937);
+  border-radius: 20px;
+  padding: 30px 20px;
+  color: white;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.profile-avatar-circle {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  margin: 0 auto;
+  background: #374151;
+  border: 4px solid #D4AF37; /* Toque dorado premium */
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.2s ease;
+}
+
+.profile-avatar-circle:hover {
+  transform: scale(1.02);
+}
+
+.avatar-img-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder-icon {
+  width: 50px;
+  height: 50px;
+  color: #9ca3af;
+}
+
+.avatar-hover-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.profile-avatar-circle:hover .avatar-hover-overlay {
+  opacity: 1;
+}
+
+.editable-name-container {
+  margin-top: 20px;
+}
+
+.profile-title-name-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed #4b5563;
+  color: white;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  width: 100%;
+  outline: none;
+  padding-bottom: 5px;
+  transition: border-color 0.2s;
+}
+
+.profile-title-name-input:focus {
+  border-bottom: 1px solid #D4AF37;
+}
+
+.profile-subtitle-geo {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+/* =========================================
+   COLUMNAS 2 y 3: Contenedores Blancos
+   ========================================= */
+.card-white-container {
+  background: white;
+  border-radius: 20px;
+  padding: 25px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+.custom-navigation-tabs {
+  display: flex;
+  border-bottom: 2px solid #f3f4f6;
+  padding-bottom: 10px;
+}
+
+.nav-tab-item {
+  background: none;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: #9ca3af;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  position: relative;
+}
+
+.nav-tab-item.active {
+  color: #111827;
+}
+
+.nav-tab-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #D4AF37;
+}
+
+.description-paragraph-text {
+  color: #6b7280;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* --- Portafolio (Habilidades) --- */
+.skills-image-display-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.skill-photo-card {
+  background: #f9fafb;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  transition: box-shadow 0.2s;
+}
+
+.skill-photo-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.skill-image-wrapper {
+  height: 140px;
+  background-position: center;
+}
+
+.skill-card-footer-info {
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.skill-label-name {
+  font-weight: 600;
+  font-size: 13px;
+  margin: 0;
+}
+
+.clean-upload-trigger-btn {
+  background: #111827;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.2s;
+}
+
+.clean-upload-trigger-btn:hover {
+  background: #D4AF37;
+}
+
+/* --- Calendario y Disponibilidad --- */
+.sub-section-title-large {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #111827;
+}
+
+.calendar-day-modifier-box {
+  background: #f9fafb;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.modifier-selected-day-title {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.modifier-inputs-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modifier-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  outline: none;
+}
+
+.modifier-input:focus {
+  border-color: #D4AF37;
+}
+
+.modifier-save-btn {
+  background: #D4AF37;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.setting-pill.green-pill {
+  display: inline-block;
+  background: #ecfdf5;
+  color: #059669;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.calendar-month-selector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 10px 0;
+}
+
+.calendar-arrow-btn {
+  background: #f3f4f6;
+  border: none;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: #4b5563;
+}
+
+.calendar-arrow-btn:hover {
+  background: #e5e7eb;
+}
+
+.calendar-month-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #111827;
+}
+
+/* =========================================
+   RESPONSIVE (Adaptación a Móviles)
+   ========================================= */
+@media (max-width: 1024px) {
+  .barber-cards-row-grid-three {
+    grid-template-columns: 1fr; /* Todo en una sola columna en móviles */
+  }
+  
+  .card-profile-black {
+    max-width: 450px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .pagina-barberia-global {
+    padding: 15px 10px;
+  }
+  
+  .skills-image-display-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .modifier-inputs-row {
+    flex-direction: column;
+  }
+  
+  .modifier-input, .modifier-save-btn {
+    width: 100%;
+  }
+}
