@@ -1,6 +1,6 @@
 /**
  * Catálogo de barberías (datos de prueba).
- * Cuando integres Google Maps, mapea los resultados de Places API a este formato.
+ * Para mostrar estos datos en OpenStreetMap se usan las coordenadas lat y lng.
  */
 
 export const BARBERIAS = [
@@ -94,16 +94,16 @@ export const BARBERIAS = [
     ],
   },
   {
-    id: "fade-house",
-    nombre: "Fade House",
-    direccion: "Calle 16 Sur 805, La Paz, Puebla",
+    id: "corte-central",
+    nombre: "Corte Central",
+    direccion: "Av. Reforma 245, La Paz, Puebla",
     rating: 4.9,
     totalOpiniones: 318,
-    abierto: false,
-    lat: 19.0286,
-    lng: -98.1912,
+    abierto: true,
+    lat: 19.0486,
+    lng: -98.2118,
     imagen: "/barberhublogo.jpg",
-    servicioDefault: "Degradado / Fade",
+    servicioDefault: "Corte contemporáneo",
     precioEstimado: 320,
     moneda: "MXN",
     slotInicio: 9,
@@ -125,6 +125,37 @@ export const BARBERIAS = [
     opiniones: [
       "Los mejores fades de la zona.",
     ],
+  },
+  {
+    id: "navaja-dorada",
+    nombre: "Navaja Dorada",
+    direccion: "Calle 7 Sur 810, El Carmen, Puebla",
+    rating: 4.6,
+    totalOpiniones: 186,
+    abierto: true,
+    lat: 19.0386,
+    lng: -98.1954,
+    imagen: "/barberhublogo.jpg",
+    servicioDefault: "Corte y perfilado de barba",
+    precioEstimado: 300,
+    moneda: "MXN",
+    slotInicio: 10,
+    slotFin: 19,
+    slotIntervalo: 30,
+    citasOcupadas: {},
+    servicios: [
+      { id: "corte", nombre: "Corte personalizado", precio: 190, icono: "scissors" },
+      { id: "barba", nombre: "Perfilado de barba", precio: 210, icono: "moustache" },
+    ],
+    serviciosExtendidos: [
+      { id: "corte", nombre: "Corte personalizado", precio: 190, icono: "scissors" },
+      { id: "barba", nombre: "Perfilado de barba", precio: 210, icono: "moustache" },
+      { id: "afeitado", nombre: "Afeitado tradicional", precio: 250, icono: "razor" },
+    ],
+    barberos: [
+      { id: "dario", nombre: "Darío Morales", rating: 4.7, opiniones: 108, foto: "https://i.pravatar.cc/120?u=dario-morales" },
+    ],
+    opiniones: ["Buen ambiente y atención muy cuidadosa."],
   },
 ];
 

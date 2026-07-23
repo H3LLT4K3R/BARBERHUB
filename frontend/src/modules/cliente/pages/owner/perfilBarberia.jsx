@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { 
   User, MapPin, MessageSquare, Share2, Heart, 
   Plus, Trash2, Upload, Scissors, Edit2, Check, 
@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 
 import "../../styles/Barberias/perfilbarberia.css";
+import { getOpenStreetMapEmbedUrl } from "../../../../utils/openStreetMap.js";
 
 export default function PerfilBarberia() {
   // === ESTADOS ===
@@ -16,6 +17,7 @@ export default function PerfilBarberia() {
   const [chatActive, setChatActive] = useState(false);
 
   const [ubicacion, setUbicacion] = useState('950 W Mesquite Blvd, Mesquite, NV 89027, Estados Unidos');
+  const [coordenadas, setCoordenadas] = useState({ lat: 36.8055, lng: -114.1077 });
   const [horarioSemana, setHorarioSemana] = useState('09.00 am - 08.00 pm');
   const [horarioFinde, setHorarioFinde] = useState('09.00 am - 09.00 pm');
   const [isEditingHours, setIsEditingHours] = useState(false);
@@ -52,6 +54,35 @@ export default function PerfilBarberia() {
 
   const fileInputRefs = useRef([]);
   const avatarInputRef = useRef(null);
+
+  // Convierte la dirección escrita a coordenadas para mostrarla en OpenStreetMap.
+  // Se espera un momento antes de consultar para no enviar una petición por cada tecla.
+  useEffect(() => {
+    const direccion = ubicacion.trim();
+    if (!direccion) return undefined;
+
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(direccion)}`,
+          { signal: controller.signal }
+        );
+        if (!response.ok) return;
+        const [resultado] = await response.json();
+        if (resultado) {
+          setCoordenadas({ lat: Number(resultado.lat), lng: Number(resultado.lon) });
+        }
+      } catch (error) {
+        if (error.name !== 'AbortError') console.warn('No fue posible localizar la dirección en OpenStreetMap.', error);
+      }
+    }, 700);
+
+    return () => {
+      window.clearTimeout(timer);
+      controller.abort();
+    };
+  }, [ubicacion]);
 
   // === FUNCIONES UTILITARIAS ===
 
@@ -267,8 +298,8 @@ export default function PerfilBarberia() {
               </div>
               <div className="map-container-frame-box-modern">
                 <iframe 
-                  title="Map" 
-                  src={`https://maps.google.com/maps?q=$${encodeURIComponent(ubicacion)}&t=&z=14&ie=UTF8&iwloc=&output=embed`} 
+                  title="Mapa de OpenStreetMap"
+                  src={getOpenStreetMapEmbedUrl(coordenadas.lat, coordenadas.lng)}
                   className="osm-real-map-embed" 
                   allowFullScreen 
                   loading="lazy"
