@@ -13,6 +13,7 @@ import {
 } from "@tabler/icons-react";
 import AppNavbar from "../components/app-navbar";
 import { getBarberiaById } from "../data/barberias.js";
+import { getOpenStreetMapUrl } from "../../../utils/openStreetMap.js";
 import "../styles/barberia-perfil.css";
 
 /* Diccionario de iconos de servicio */
@@ -62,9 +63,9 @@ export default function BarberiaPerfil() {
   }
 
 
-  // Abrir Google Maps
+  // Abrir la ubicación en OpenStreetMap
   const abrirMapa = () => {
-    const url = `https://www.google.com/maps?q=${barberia.lat},${barberia.lng}`;
+    const url = getOpenStreetMapUrl(barberia.lat, barberia.lng);
     window.open(url, "_blank", "noopener,noreferrer");
   };
 

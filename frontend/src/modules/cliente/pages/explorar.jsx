@@ -1,11 +1,35 @@
 import { useState, useEffect, useMemo } from 'react';
 import { MapPin, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
+import { divIcon } from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 import { BARBERIAS, generarSlots } from "../data/barberias.js";
 // La ruta correcta para archivos en /pages/ hacia utils
 import { getStoredUser } from "../../../utils/api.js";
+import { getOpenStreetMapEmbedUrl } from "../../../utils/openStreetMap.js";
 import "../styles/explorar.css";
+
+const iconoBarberia = divIcon({
+  className: 'explorar-map-marker',
+  html: '<span aria-hidden="true">💈</span>',
+  iconSize: [34, 34],
+  iconAnchor: [17, 17],
+  popupAnchor: [0, -17],
+});
+
+function AjustarVistaMapa({ ubicacion, barberias }) {
+  const map = useMap();
+
+  useEffect(() => {
+    const puntos = barberias.map((barberia) => [barberia.lat, barberia.lng]);
+    if (ubicacion) puntos.push(ubicacion);
+    if (puntos.length) map.fitBounds(puntos, { padding: [28, 28], maxZoom: 14 });
+  }, [barberias, map, ubicacion]);
+
+  return null;
+}
 
 const calcularDistancia = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
@@ -87,7 +111,7 @@ export default function Explorar() {
     else if (radio <= 30) zoom = 11;
     else zoom = 10;
 
-    return `https://maps.google.com/maps?q=${lat},${lon}&z=${zoom}&output=embed`;
+    return getOpenStreetMapEmbedUrl(lat, lon, zoom);
   }, [ubicacion, radio]);
 
   //PANTALLA DE CARGA
@@ -244,14 +268,25 @@ export default function Explorar() {
         </div>
 
         <div className="explorar-map-container">
-          <iframe
+          <MapContainer center={ubicacion} zoom={14}
             title="Mapa BarberHub Dinámico"
             className="explorar-map-iframe"
-            src={mapaUrl}
-            allowFullScreen=""
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-          />
+            scrollWheelZoom
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <AjustarVistaMapa ubicacion={ubicacion} barberias={BARBERIAS} />
+            {BARBERIAS.map((barberia) => (
+              <Marker key={barberia.id} position={[barberia.lat, barberia.lng]} icon={iconoBarberia}>
+                <Popup>
+                  <strong>{barberia.nombre}</strong><br />
+                  {barberia.direccion}
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
         </div>
 
       </div>

@@ -316,6 +316,17 @@
   border: none;
 }
 
+.explorar-map-marker {
+  background: #111111;
+  border: 2px solid #e9c46a;
+  border-radius: 50%;
+  box-shadow: 0 3px 10px rgb(0 0 0 / 35%);
+  display: grid;
+  font-size: 17px;
+  line-height: 1;
+  place-items: center;
+}
+
 /* Estados*/
 .explorar-loading {
   display: flex;
