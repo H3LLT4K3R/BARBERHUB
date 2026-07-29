@@ -1,115 +1,98 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart } from "lucide-react";
+import { supabase } from "../../../lib/supabase.js";
 import "../styles/favoritos.css";
-
-// Mock de datos de barberías favoritas con IDs de ruta añadidos
-const favoritosData = [
-  {
-    id: 1,
-    barberiaId: "urban-cuts",
-    nombre: "Barbería La Reforma",
-    direccion: "Av. Sor Juana 142  0.8km",
-    estado: "Abierto",
-    calificacion: "4.7",
-    imagen: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=200&auto=format&fit=crop"
-  },
-  {
-    id: 2,
-    barberiaId: "la-navaja-clasica",
-    nombre: "Barbería La Navaja clásica",
-    direccion: "Av. Sor Juana 142  0.8km",
-    estado: "Abierto",
-    calificacion: "4.8",
-    imagen: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=200&auto=format&fit=crop"
-  },
-  {
-    id: 3,
-    barberiaId: "black-edge",
-    nombre: "Carlos Reyes",
-    direccion: "Barbería Black Edge",
-    estado: "Cerrado",
-    calificacion: "4.9",
-    imagen: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=200&auto=format&fit=crop"
-  }
-];
 
 export default function Favoritos() {
   const navigate = useNavigate();
-  const [menuActivo, setMenuActivo] = useState("Favoritos");
-  const [tarjetaSeleccionada, setTarjetaSeleccionada] = useState(2);
-  const [favoritos, setFavoritos] = useState(favoritosData);
+  const [favoritos, setFavoritos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+
+  useEffect(() => {
+    let cancelado = false;
+
+    async function cargar() {
+      const uid = (await supabase.auth.getUser()).data.user?.id;
+      if (!uid) {
+        setCargando(false);
+        return;
+      }
+
+      const { data } = await supabase
+        .from("favorite_barberias")
+        .select("barberia_id, barberias(id, name, address_line1, city)")
+        .eq("profile_id", uid);
+
+      if (cancelado) return;
+
+      const barberiasBase = (data ?? []).map((f) => f.barberias).filter(Boolean);
+      const ids = barberiasBase.map((b) => b.id);
+      const { data: publicas } = ids.length
+        ? await supabase.from("barberias_public").select("id, rating").in("id", ids)
+        : { data: [] };
+
+      const ratingsPorId = new Map((publicas ?? []).map((p) => [p.id, p.rating]));
+      setFavoritos(barberiasBase.map((b) => ({ ...b, rating: ratingsPorId.get(b.id) ?? 0 })));
+      setCargando(false);
+    }
+
+    cargar();
+    return () => { cancelado = true; };
+  }, []);
 
   const manejarAgendar = (e, barberiaId) => {
     e.stopPropagation();
-    navigate("/agenda-local", {
-      state: { barberiaId, volverA: "/favoritos" },
-    });
+    navigate("/agenda-local", { state: { barberiaId, volverA: "/favoritos" } });
   };
 
   const manejarVerBarberia = (e, barberiaId) => {
     e.stopPropagation();
-    navigate(`/barberia-perfil/${barberiaId}`, {
-      state: { volverA: "/favoritos" },
-    });
+    navigate(`/barberia-perfil/${barberiaId}`, { state: { volverA: "/favoritos" } });
   };
 
-  const quitarDeFavoritos = (e, id) => {
+  const quitarDeFavoritos = async (e, barberiaId) => {
     e.stopPropagation();
-    setFavoritos((actuales) => actuales.filter((barberia) => barberia.id !== id));
-    if (tarjetaSeleccionada === id) setTarjetaSeleccionada(null);
+    const uid = (await supabase.auth.getUser()).data.user?.id;
+    if (!uid) return;
+    await supabase.from("favorite_barberias").delete().eq("profile_id", uid).eq("barberia_id", barberiaId);
+    setFavoritos((actuales) => actuales.filter((b) => b.id !== barberiaId));
   };
+
+  if (cargando) {
+    return <div className="fav-dashboard"><p style={{ padding: 24 }}>Cargando favoritos...</p></div>;
+  }
 
   return (
     <div className="fav-dashboard">
       <div className="fav-main-wrapper">
-
         <main className="fav-content-layout">
           <div className="fav-cards-container">
             {favoritos.map((barberia) => (
-              <div
-                key={barberia.id}
-                className={`fav-tarjeta ${tarjetaSeleccionada === barberia.id ? "seleccionada" : ""}`}
-                onClick={() => setTarjetaSeleccionada(barberia.id)}
-              >
-                {/* Imagen miniatura */}
-                <img src={barberia.imagen} alt={barberia.nombre} className="fav-imagen" />
-
-                {/* Información central */}
+              <div key={barberia.id} className="fav-tarjeta">
                 <div className="fav-info">
-                  <h3>{barberia.nombre}</h3>
-                  <p className="fav-direccion">{barberia.direccion}</p>
-                  <div className="fav-estado">
-                    <span className={`fav-punto-estado ${barberia.estado.toLowerCase()}`}></span>
-                    <span className="fav-texto-estado">{barberia.estado}</span>
-                  </div>
+                  <h3>{barberia.name}</h3>
+                  <p className="fav-direccion">{barberia.address_line1}, {barberia.city}</p>
                 </div>
 
-                {/* Acciones a la derecha */}
                 <div className="fav-acciones">
                   <div className="fav-cabecera-acciones">
                     <button
                       type="button"
                       className="fav-boton-quitar"
                       onClick={(e) => quitarDeFavoritos(e, barberia.id)}
-                      aria-label={`Quitar ${barberia.nombre} de favoritos`}
+                      aria-label={`Quitar ${barberia.name} de favoritos`}
                       title="Quitar de favoritos"
                     >
                       <Heart size={20} fill="currentColor" aria-hidden="true" />
                     </button>
-                    <span className="fav-calificacion">{barberia.calificacion}</span>
+                    <span className="fav-calificacion">{Number(barberia.rating).toFixed(1)}</span>
                   </div>
                   <div className="fav-grupo-botones">
-                    <button
-                      className="fav-boton dorado"
-                      onClick={(e) => manejarAgendar(e, barberia.barberiaId)}
-                    >
+                    <button className="fav-boton dorado" onClick={(e) => manejarAgendar(e, barberia.id)}>
                       Agendar
                     </button>
-                    <button
-                      className="fav-boton gris"
-                      onClick={(e) => manejarVerBarberia(e, barberia.barberiaId)}
-                    >
+                    <button className="fav-boton gris" onClick={(e) => manejarVerBarberia(e, barberia.id)}>
                       Ver barbería
                     </button>
                   </div>
@@ -122,11 +105,6 @@ export default function Favoritos() {
           </div>
         </main>
       </div>
-
-      {/* menuActivo para evitar alertas/errores */}
-      <span className="fav-oculto" onClick={() => setMenuActivo("Favoritos")}>
-        {menuActivo}
-      </span>
     </div>
   );
 }

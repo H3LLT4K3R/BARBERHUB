@@ -1,98 +1,126 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   IconScissors,
-  IconMoustache,
   IconClock,
   IconCheck,
   IconX,
-  IconMessage,
-  IconInfoCircle,
 } from "@tabler/icons-react";
+import { supabase } from "../../../lib/supabase.js";
+import { apiFetch } from "../../../utils/api.js";
+import { formatearHorarioCorto } from "../../../utils/fecha.js";
 import "../styles/mis-citas.css";
 
-/* Datos simulados del proyecto */
-const citasDataIniciales = [
-  {
-    id: 1,
-    servicio: "Corte Clásico",
-    barbero: "Carlos Reyes",
-    barberia: "Peluquería Black Edge",
-    horario: "Mañana 11:00 am",
-    precio: 80,
-    badgeTexto: "Esperando respuesta - 10 min",
-    badgeTipo: "esperando",
-    icono: "scissors",
-    pasos: [
-      { id: 1, label: "Enviada", estado: "actual" },
-      { id: 2, label: "Aceptada", estado: "pendiente" },
-      { id: 3, label: "Completada", estado: "pendiente" },
-    ],
-  },
-  {
-    id: 2,
-    servicio: "Corte + Barba",
-    barbero: "Miguel González",
-    barberia: "La Navaja Clásica",
-    horario: "Jueves 29 de mayo a las 3:00 pm",
-    precio: 120,
-    badgeTexto: "Cita aceptada - en 3 días",
-    badgeTipo: "aceptada",
-    icono: "moustache",
-    pasos: [
-      { id: 1, label: "Enviada", estado: "completado" },
-      { id: 2, label: "Aceptada", estado: "actual" },
-      { id: 3, label: "Completada", estado: "pendiente" },
-    ],
-  },
-];
+const ESTADOS_ACTIVOS = ["pending_payment", "pending_confirmation", "confirmed", "in_progress"];
+// Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
+const ANTICIPO_FIJO_MXN = 100;
+
+function infoEstado(cita) {
+  const pagoAprobado = (cita.payments ?? []).some((p) => p.status === "approved");
+
+  switch (cita.status) {
+    case "pending_confirmation":
+      return pagoAprobado
+        ? { texto: "Pago recibido - falta confirmación final", tipo: "aceptada", paso: 2 }
+        : { texto: "Esperando respuesta del barbero", tipo: "esperando", paso: 1 };
+    case "pending_payment":
+      return { texto: "Aceptada - realiza tu pago", tipo: "esperando", paso: 2 };
+    case "confirmed":
+      return { texto: "Cita confirmada", tipo: "aceptada", paso: 3 };
+    case "in_progress":
+      return { texto: "Servicio en curso", tipo: "aceptada", paso: 3 };
+    default:
+      return { texto: cita.status, tipo: "esperando", paso: 1 };
+  }
+}
+
+const PASOS_LABELS = ["Enviada", "Aceptada", "Confirmada"];
 
 export default function MisCitas() {
-  const navigate = useNavigate();
-  const [citas, setCitas] = useState(citasDataIniciales);
-  
-  // Estados para modales de interacción
+  const [citas, setCitas] = useState([]);
+  const [cargando, setCargando] = useState(true);
   const [citaDetalle, setCitaDetalle] = useState(null);
   const [citaCancelar, setCitaCancelar] = useState(null);
   const [motivoCancelacion, setMotivoCancelacion] = useState("");
-  const [citaComentario, setCitaComentario] = useState(null);
-  const [comentarioTexto, setComentarioTexto] = useState("");
+  const [procesando, setProcesando] = useState(false);
+  const [error, setError] = useState("");
 
-  // Handler para cancelar cita
-  const handleConfirmarCancelacion = () => {
-    if (citaCancelar && motivoCancelacion.trim()) {
-      const solicitudesActuales = JSON.parse(localStorage.getItem("barberhub_cancelaciones") || "[]");
-      localStorage.setItem("barberhub_cancelaciones", JSON.stringify([
-        ...solicitudesActuales,
-        {
-          citaId: citaCancelar.id,
-          barbero: citaCancelar.barbero,
-          barberia: citaCancelar.barberia,
-          servicio: citaCancelar.servicio,
-          motivo: motivoCancelacion.trim(),
-          fecha: new Date().toISOString(),
-        },
-      ]));
-      setCitas(citas.filter((c) => c.id !== citaCancelar.id));
+  async function obtenerCitas() {
+    const { data } = await supabase
+      .from("appointments")
+      .select(`
+        id, scheduled_at, status, total,
+        barberias(name),
+        barberia_memberships(display_name),
+        appointment_services(service_name),
+        payments(status)
+      `)
+      .in("status", ESTADOS_ACTIVOS)
+      .order("scheduled_at");
+
+    return data ?? [];
+  }
+
+  const cargarCitas = async () => {
+    setCargando(true);
+    setCitas(await obtenerCitas());
+    setCargando(false);
+  };
+
+  useEffect(() => {
+    let cancelado = false;
+    (async () => {
+      const data = await obtenerCitas();
+      if (!cancelado) {
+        setCitas(data);
+        setCargando(false);
+      }
+    })();
+    return () => { cancelado = true; };
+  }, []);
+
+  const handlePagar = async (cita) => {
+    setProcesando(true);
+    setError("");
+    try {
+      const { checkoutUrl } = await apiFetch("/pagos/mp/crear-preferencia", {
+        method: "POST",
+        body: JSON.stringify({ appointmentId: cita.id }),
+      });
+      window.location.href = checkoutUrl;
+    } catch (err) {
+      setError(err.message || "No fue posible iniciar el pago.");
+      setProcesando(false);
+    }
+  };
+
+  const handleConfirmarCancelacion = async () => {
+    if (!citaCancelar || !motivoCancelacion.trim()) return;
+    setProcesando(true);
+    setError("");
+    try {
+      await apiFetch(`/citas/${citaCancelar.id}/cancelar`, {
+        method: "POST",
+        body: JSON.stringify({ motivo: motivoCancelacion.trim() }),
+      });
       setCitaCancelar(null);
       setMotivoCancelacion("");
+      await cargarCitas();
+    } catch (err) {
+      setError(err.message || "No fue posible cancelar la cita.");
+    } finally {
+      setProcesando(false);
     }
   };
 
-  // Handler para guardar comentario
-  const handleGuardarComentario = (e) => {
-    e.preventDefault();
-    if (comentarioTexto.trim()) {
-      alert(`Comentario enviado para la cita #${citaComentario.id}`);
-      setComentarioTexto("");
-      setCitaComentario(null);
-    }
-  };
+  if (cargando) {
+    return <div className="contenido-citas"><p>Cargando tus citas...</p></div>;
+  }
 
   return (
     <div className="contenido-citas">
       <div className="contenedor-citas">
         <h2 className="titulo-seccion">Mis Citas Agendadas</h2>
+        {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
 
         {citas.length === 0 ? (
           <div className="citas-vacias">
@@ -101,106 +129,95 @@ export default function MisCitas() {
           </div>
         ) : (
           <div className="lista-citas">
-            {citas.map((cita) => (
-              <div key={cita.id} className="tarjeta-cita">
-                
-                {/* Bloque izquierdo: Detalles, Badge y Stepper */}
-                <div className="bloque-izquierdo">
-                  <div className="info-header">
-                    <div className="icono-servicio">
-                      {cita.icono === "moustache" ? (
-                        <IconMoustache size={24} stroke={1.7} />
-                      ) : (
+            {citas.map((cita) => {
+              const estado = infoEstado(cita);
+              const servicio = cita.appointment_services?.[0]?.service_name ?? "Servicio";
+              const barberia = cita.barberias?.name ?? "Barbería";
+              const barbero = cita.barberia_memberships?.display_name ?? "Por asignar";
+              const horario = formatearHorarioCorto(new Date(cita.scheduled_at), new Date(cita.scheduled_at).toTimeString().slice(0, 5));
+
+              return (
+                <div key={cita.id} className="tarjeta-cita">
+                  <div className="bloque-izquierdo">
+                    <div className="info-header">
+                      <div className="icono-servicio">
                         <IconScissors size={24} stroke={1.7} />
+                      </div>
+                      <div className="detalles-texto">
+                        <h3>
+                          {servicio} · <span className="nombre-barbero">{barbero}</span>
+                        </h3>
+                        <p>
+                          {barberia} — <strong>{horario}</strong>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className={`badge-estado ${estado.tipo}`}>
+                      <span className="icono-badge">
+                        {estado.tipo === "aceptada" ? <IconCheck size={14} stroke={3} /> : <IconClock size={14} stroke={2.5} />}
+                      </span>
+                      {estado.texto}
+                    </div>
+
+                    <div className="stepper-progreso" aria-label="Progreso de la cita">
+                      {PASOS_LABELS.map((label, idx) => {
+                        const numero = idx + 1;
+                        const estadoPaso = numero < estado.paso ? "completado" : numero === estado.paso ? "actual" : "pendiente";
+                        return (
+                          <span key={label} style={{ display: "contents" }}>
+                            <div className={`nodo-step ${estadoPaso}`}>
+                              <span className="punto-step" />
+                              <span className="label-step">{label}</span>
+                            </div>
+                            {idx < PASOS_LABELS.length - 1 && (
+                              <div className={`linea-step ${numero < estado.paso ? "activa" : ""}`} />
+                            )}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="bloque-derecho">
+                    <div className="contenedor-precio">
+                      <span className="precio-cita">${Number(cita.total).toFixed(2)}</span>
+                      {cita.status === "pending_payment" && (
+                        <small style={{ display: "block", color: "#6b7280", fontWeight: 500 }}>
+                          Anticipo a pagar: ${ANTICIPO_FIJO_MXN} MXN
+                        </small>
                       )}
                     </div>
-                    <div className="detalles-texto">
-                      <h3>
-                        {cita.servicio} · <span className="nombre-barbero">{cita.barbero}</span>
-                      </h3>
-                      <p>
-                        {cita.barberia} — <strong>{cita.horario}</strong>
-                      </p>
+
+                    <div className="acciones-cita">
+                      <button type="button" className="boton-accion boton-detalles" onClick={() => setCitaDetalle({ ...cita, estado, servicio, barberia, barbero, horario })}>
+                        Ver detalles
+                      </button>
+
+                      {cita.status === "pending_payment" && (
+                        <button type="button" className="boton-accion boton-comentario-gris" onClick={() => handlePagar(cita)} disabled={procesando}>
+                          Pagar ahora
+                        </button>
+                      )}
+
+                      {cita.status !== "in_progress" && (
+                        <button
+                          type="button"
+                          className="boton-accion boton-cancelar"
+                          onClick={() => { setCitaCancelar(cita); setMotivoCancelacion(""); }}
+                        >
+                          Cancelar
+                        </button>
+                      )}
                     </div>
                   </div>
-
-                  <div className={`badge-estado ${cita.badgeTipo}`}>
-                    <span className="icono-badge">
-                      {cita.badgeTipo === "aceptada" ? (
-                        <IconCheck size={14} stroke={3} />
-                      ) : (
-                        <IconClock size={14} stroke={2.5} />
-                      )}
-                    </span>
-                    {cita.badgeTexto}
-                  </div>
-
-                  {/* Stepper Lineal */}
-                  <div className="stepper-progreso" aria-label="Progreso de la cita">
-                    {cita.pasos.map((paso, idx) => (
-                      <React.Fragment key={paso.id}>
-                        <div className={`nodo-step ${paso.estado}`}>
-                          <span className="punto-step" />
-                          <span className="label-step">{paso.label}</span>
-                        </div>
-                        {idx < cita.pasos.length - 1 && (
-                          <div
-                            className={`linea-step ${
-                              cita.pasos[idx + 1].estado === "completado" ||
-                              cita.pasos[idx + 1].estado === "actual"
-                                ? "activa"
-                                : ""
-                            }`}
-                          />
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </div>
                 </div>
-
-                {/* BLOQUE DERECHO: Cobro y Acciones */}
-                <div className="bloque-derecho">
-                  <div className="contenedor-precio">
-                    <span className="precio-cita">${Number(cita.precio).toFixed(2)}</span>
-                  </div>
-
-                  <div className="acciones-cita">
-                    <button
-                      type="button"
-                      className="boton-accion boton-detalles"
-                      onClick={() => setCitaDetalle(cita)}
-                    >
-                      Ver detalles
-                    </button>
-
-                    <button
-                      type="button"
-                      className="boton-accion boton-cancelar"
-                      onClick={() => {
-                        setCitaCancelar(cita);
-                        setMotivoCancelacion("");
-                      }}
-                    >
-                      Cancelar
-                    </button>
-
-                    <button
-                      type="button"
-                      className="boton-accion boton-comentario-gris"
-                      onClick={() => navigate("/opinion-barberia-general")}
-                    >
-                      Hacer comentario
-                    </button>
-                  </div>
-                </div>
-
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* -Modal detalles */}
       {citaDetalle && (
         <div className="modal-overlay" onClick={() => setCitaDetalle(null)}>
           <div className="modal-contenido" onClick={(e) => e.stopPropagation()}>
@@ -215,19 +232,17 @@ export default function MisCitas() {
               <p><strong>Barbero:</strong> {citaDetalle.barbero}</p>
               <p><strong>Barbería:</strong> {citaDetalle.barberia}</p>
               <p><strong>Horario:</strong> {citaDetalle.horario}</p>
-              <p><strong>Total a pagar:</strong> ${Number(citaDetalle.precio).toFixed(2)}</p>
-              <p><strong>Estado:</strong> {citaDetalle.badgeTexto}</p>
+              <p><strong>Total del servicio (se paga en el local):</strong> ${Number(citaDetalle.total).toFixed(2)}</p>
+              <p><strong>Anticipo por Mercado Pago:</strong> ${ANTICIPO_FIJO_MXN}.00</p>
+              <p><strong>Estado:</strong> {citaDetalle.estado.texto}</p>
             </div>
             <div className="modal-footer">
-              <button className="btn-cerrar" onClick={() => setCitaDetalle(null)}>
-                Cerrar
-              </button>
+              <button className="btn-cerrar" onClick={() => setCitaDetalle(null)}>Cerrar</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* -Modal cancelar */}
       {citaCancelar && (
         <div className="modal-overlay" onClick={() => setCitaCancelar(null)}>
           <div className="modal-contenido" onClick={(e) => e.stopPropagation()}>
@@ -249,58 +264,16 @@ export default function MisCitas() {
               />
             </div>
             <div className="modal-footer">
-              <button className="btn-cerrar" onClick={() => { setCitaCancelar(null); setMotivoCancelacion(""); }}>
+              <button className="btn-cerrar" onClick={() => { setCitaCancelar(null); setMotivoCancelacion(""); }} disabled={procesando}>
                 Volver
               </button>
-              <button className="btn-confirmar-cancelar" onClick={handleConfirmarCancelacion} disabled={!motivoCancelacion.trim()}>
-                Sí, cancelar cita
+              <button className="btn-confirmar-cancelar" onClick={handleConfirmarCancelacion} disabled={!motivoCancelacion.trim() || procesando}>
+                {procesando ? "Cancelando..." : "Sí, cancelar cita"}
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal comentario */}
-      {citaComentario && (
-        <div className="modal-overlay" onClick={() => setCitaComentario(null)}>
-          <div className="modal-contenido" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Hacer un Comentario</h3>
-              <button className="btn-cerrar-modal" onClick={() => setCitaComentario(null)}>
-                <IconX size={20} />
-              </button>
-            </div>
-            <form onSubmit={handleGuardarComentario}>
-              <div className="modal-body">
-                <p className="subtexto-modal">
-                  Comentario para <strong>{citaComentario.barberia}</strong> ({citaComentario.barbero}):
-                </p>
-                <textarea
-                  className="textarea-comentario"
-                  rows="4"
-                  placeholder="Escribe tus notas, especificaciones o dudas sobre tu cita..."
-                  value={comentarioTexto}
-                  onChange={(e) => setComentarioTexto(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn-cerrar"
-                  onClick={() => setCitaComentario(null)}
-                >
-                  Cancelar
-                </button>
-                <button type="submit" className="btn-guardar">
-                  Enviar Comentario
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}
     </div>
   );
 }
-

@@ -1,97 +1,34 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, Star, X } from "lucide-react";
+import { supabase } from "../../../lib/supabase.js";
 import "../styles/historial-citas.css";
 
-const citasData = [
-  {
-    id: 1,
-    barberiaId: "urban-cuts",
-    servicio: "Corte + Barba",
-    barbero: "Carlos Reyes",
-    barberia: "Barbería La Reforma",
-    direccion: "Av. Sor Juana 142 0.8km",
-    imagen: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=200&auto=format&fit=crop",
-    tiempo: "hace 2 días",
-    fecha: "26 de mayo 2026",
-    hora: "11:00 am",
-    fechaISO: "2026-05-26",
-    precio: 130,
-    estado: "Pendiente",
-    duracion: "1 Hora",
-    puntosGanados: "+10 pts",
-    resenaBarberia: null,
-    resenaBarbero: null
-  },
-  {
-    id: 2,
-    barberiaId: "urban-cuts",
-    servicio: "Corte Clásico",
-    barbero: "Carlos Reyes",
-    barberia: "Barbería La Reforma",
-    direccion: "Av. Sor Juana 142 0.8km",
-    imagen: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=200&auto=format&fit=crop",
-    tiempo: "hace 1 mes",
-    fecha: "25 de abril 2026",
-    hora: "04:30 pm",
-    fechaISO: "2026-04-25",
-    precio: 100,
-    estado: "Completada",
-    duracion: "45 Min",
-    puntosGanados: "+10 pts",
-    resenaBarberia: {
-      puntuacion: 5,
-      comentario: "Muy buen corte tradicional.",
-    },
-    resenaBarbero: {
-      puntuacion: 5,
-      comentario: "Carlos fue muy atento y el corte quedó justo como lo pedí.",
-    }
-  },
-  {
-    id: 3,
-    barberiaId: "la-navaja",
-    servicio: "Corte Clásico",
-    barbero: "Miguel G",
-    barberia: "Barbería La Navaja",
-    direccion: "Calle Benito Juárez 405",
-    imagen: "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=200&auto=format&fit=crop",
-    tiempo: "hace 1 mes",
-    fecha: "24 de abril 2026",
-    hora: "10:00 am",
-    fechaISO: "2026-04-24",
-    precio: 120,
-    estado: "Rechazada",
-    duracion: "40 Min",
-    puntosGanados: "0 pts",
-    motivoRechazo: "No tengo disponibilidad para atender este servicio en el horario solicitado.",
-    resenaBarberia: null,
-    resenaBarbero: null
-  },
-  {
-    id: 4,
-    barberiaId: "urban-cuts",
-    servicio: "Perfilado de barba",
-    barbero: "Carlos Reyes",
-    barberia: "Barbería La Reforma",
-    direccion: "Av. Sor Juana 142 0.8km",
-    imagen: "https://images.unsplash.com/photo-1503951914875-452162b0f3f1?q=80&w=200&auto=format&fit=crop",
-    tiempo: "hace 3 semanas",
-    fecha: "05 de mayo 2026",
-    hora: "02:00 pm",
-    fechaISO: "2026-05-05",
-    precio: 90,
-    estado: "Cancelada",
-    duracion: "30 Min",
-    puntosGanados: "0 pts",
-    motivoCancelacion: "Tuve un imprevisto y no podré asistir a la cita.",
-    resenaBarberia: null,
-    resenaBarbero: null
-  }
-];
+const ESTADOS_FINALIZADOS = ["completed", "cancelled", "rejected", "no_show"];
+
+const ESTADO_LABEL = {
+  completed: "Completada",
+  cancelled: "Cancelada",
+  rejected: "Rechazada",
+  no_show: "No asistió",
+};
+
+const ESTADO_CLASE = {
+  completed: "hc-estado-completada",
+  cancelled: "hc-estado-cancelada",
+  rejected: "hc-estado-rechazada",
+  no_show: "hc-estado-rechazada",
+};
+
+function formatearFechaLarga(fechaISO) {
+  return new Date(`${fechaISO}T12:00:00`).toLocaleDateString("es-MX", { day: "2-digit", month: "long", year: "numeric" });
+}
 
 export default function HistorialCitas() {
   const navigate = useNavigate();
+  const [citas, setCitas] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [stats, setStats] = useState({ totalVisitas: 0, gastoTotal: 0, calificacionDada: 0 });
   const [filtroEstado, setFiltroEstado] = useState("Todas");
   const [filtroPeriodo, setFiltroPeriodo] = useState("Todo");
   const [fechaDesde, setFechaDesde] = useState("");
@@ -100,54 +37,103 @@ export default function HistorialCitas() {
   const fechaDesdeRef = useRef(null);
   const fechaHastaRef = useRef(null);
 
+  useEffect(() => {
+    let cancelado = false;
+
+    async function cargar() {
+      const uid = (await supabase.auth.getUser()).data.user?.id;
+
+      const [{ data: appointments }, { data: misResenas }] = await Promise.all([
+        supabase
+          .from("appointments")
+          .select(`
+            id, scheduled_at, status, total, cancellation_reason, barberia_id,
+            barberias(name, address_line1),
+            barberia_memberships(id, display_name),
+            appointment_services(service_name),
+            reviews(id, rating, comment)
+          `)
+          .in("status", ESTADOS_FINALIZADOS)
+          .order("scheduled_at", { ascending: false }),
+        uid ? supabase.from("reviews").select("rating").eq("client_id", uid) : Promise.resolve({ data: [] }),
+      ]);
+
+      if (cancelado) return;
+
+      const lista = appointments ?? [];
+      setCitas(lista);
+
+      const completadas = lista.filter((c) => c.status === "completed");
+      const gastoTotal = completadas.reduce((acc, c) => acc + Number(c.total), 0);
+      const calificaciones = misResenas ?? [];
+      const calificacionDada = calificaciones.length
+        ? calificaciones.reduce((acc, r) => acc + r.rating, 0) / calificaciones.length
+        : 0;
+
+      setStats({ totalVisitas: completadas.length, gastoTotal, calificacionDada });
+      setCargando(false);
+    }
+
+    cargar();
+    return () => { cancelado = true; };
+  }, []);
+
   const abrirCalendario = (input) => {
     if (!input) return;
     if (typeof input.showPicker === "function") input.showPicker();
     else input.focus();
   };
 
-  const citasFiltradas = citasData.filter((cita) => {
+  const citasFiltradas = citas.filter((cita) => {
+    const label = ESTADO_LABEL[cita.status];
     const coincideEstado = filtroEstado === "Todas"
-      || (filtroEstado === "Canceladas" ? cita.estado === "Cancelada" : filtroEstado === "Rechazadas" ? cita.estado === "Rechazada" : cita.estado === filtroEstado);
+      || (filtroEstado === "Completadas" ? label === "Completada"
+        : filtroEstado === "Canceladas" ? label === "Cancelada"
+        : filtroEstado === "Rechazadas" ? (label === "Rechazada" || label === "No asistió")
+        : true);
     if (!coincideEstado) return false;
+
+    const fechaISO = cita.scheduled_at.slice(0, 10);
     if (filtroPeriodo === "Rango personalizado") {
-      return (!fechaDesde || cita.fechaISO >= fechaDesde) && (!fechaHasta || cita.fechaISO <= fechaHasta);
+      return (!fechaDesde || fechaISO >= fechaDesde) && (!fechaHasta || fechaISO <= fechaHasta);
     }
     if (filtroPeriodo === "Todo") return true;
-    const fechaReferencia = new Date(`${citasData[0].fechaISO}T12:00:00`);
-    const dias = filtroPeriodo === "Esta semana" ? 7 : filtroPeriodo === "Este mes" ? 30 : 90;
-    fechaReferencia.setDate(fechaReferencia.getDate() - dias);
-    return new Date(`${cita.fechaISO}T12:00:00`) >= fechaReferencia;
-  });
 
-  const getBadgeClass = (estado) => {
-    switch (estado) {
-      case "Pendiente": return "hc-estado-pendiente";
-      case "Completada": return "hc-estado-completada";
-      case "Cancelada": return "hc-estado-cancelada";
-      case "Rechazada": return "hc-estado-rechazada";
-      default: return "";
-    }
-  };
+    const dias = filtroPeriodo === "Esta semana" ? 7 : filtroPeriodo === "Este mes" ? 30 : 90;
+    const limite = new Date();
+    limite.setDate(limite.getDate() - dias);
+    return new Date(cita.scheduled_at) >= limite;
+  });
 
   const manejarVolverAAgendar = () => {
     if (citaSeleccionada) {
       navigate("/agenda-local", {
-        state: {
-          barberiaId: citaSeleccionada.barberiaId,
-          volverA: "/historial-citas",
-        },
+        state: { barberiaId: citaSeleccionada.barberia_id, volverA: "/historial-citas" },
       });
     }
   };
 
   const manejarVerBarberia = () => {
     if (citaSeleccionada) {
-      navigate(`/barberia-perfil/${citaSeleccionada.barberiaId}`, {
-        state: { volverA: "/historial-citas" },
-      });
+      navigate(`/barberia-perfil/${citaSeleccionada.barberia_id}`, { state: { volverA: "/historial-citas" } });
     }
   };
+
+  const manejarDejarResena = () => {
+    if (!citaSeleccionada) return;
+    navigate("/opinion-barberia-general", {
+      state: {
+        appointmentId: citaSeleccionada.id,
+        barberiaId: citaSeleccionada.barberia_id,
+        barberMembershipId: citaSeleccionada.barberia_memberships?.id,
+        establecimiento: citaSeleccionada.barberias?.name,
+      },
+    });
+  };
+
+  if (cargando) {
+    return <div className="hc-contenido"><p>Cargando historial...</p></div>;
+  }
 
   return (
     <div className="hc-contenido">
@@ -157,21 +143,21 @@ export default function HistorialCitas() {
         <main className="hc-contenido-central">
           <div className="hc-tarjetas-resumen">
             <div className="hc-tarjeta-resumen">
-              <span className="hc-numero-resumen dorado">14</span>
+              <span className="hc-numero-resumen dorado">{stats.totalVisitas}</span>
               <span className="hc-etiqueta-resumen">Total visitas</span>
             </div>
             <div className="hc-tarjeta-resumen">
-              <span className="hc-numero-resumen dorado">$ 1,480</span>
+              <span className="hc-numero-resumen dorado">$ {stats.gastoTotal.toLocaleString("es-MX")}</span>
               <span className="hc-etiqueta-resumen">Gastado Total</span>
             </div>
             <div className="hc-tarjeta-resumen">
-              <span className="hc-numero-resumen">4.9</span>
+              <span className="hc-numero-resumen">{stats.calificacionDada.toFixed(1)}</span>
               <span className="hc-etiqueta-resumen">Calificación dada</span>
             </div>
           </div>
 
           <div className="hc-filtros">
-            {["Todas", "Completadas", "Canceladas", "Rechazadas", "Pendientes"].map((status) => (
+            {["Todas", "Completadas", "Canceladas", "Rechazadas"].map((status) => (
               <button
                 key={status}
                 className={`hc-boton-filtro ${filtroEstado === status ? "activo" : ""}`}
@@ -214,27 +200,28 @@ export default function HistorialCitas() {
           </div>
 
           <div className="hc-lista-citas">
-            {citasFiltradas.map((cita) => (
-              <div key={cita.id} className="hc-item-cita">
-                <img src={cita.imagen} alt={cita.barberia} className="hc-imagen-cita" />
-                <div className="hc-info-cita">
-                  <h3>{cita.servicio} · {cita.barbero}</h3>
-                  <p>{cita.barberia} · {cita.tiempo}</p>
-                </div>
-                <div className="hc-acciones-cita">
-                  <span className="hc-precio-cita">${cita.precio}</span>
-                  <span className="hc-fecha-cita">{cita.fecha}</span>
-                  <div className="hc-fila-acciones">
-                    <button className="hc-boton-detalle" onClick={() => setCitaSeleccionada(cita)}>
-                      Ver detalle
-                    </button>
-                    <span className={`hc-badge-estado ${getBadgeClass(cita.estado)}`}>
-                      {cita.estado}
-                    </span>
+            {citasFiltradas.map((cita) => {
+              return (
+                <div key={cita.id} className="hc-item-cita">
+                  <div className="hc-info-cita">
+                    <h3>{cita.appointment_services?.[0]?.service_name ?? "Servicio"} · {cita.barberia_memberships?.display_name ?? "Barbero"}</h3>
+                    <p>{cita.barberias?.name}</p>
+                  </div>
+                  <div className="hc-acciones-cita">
+                    <span className="hc-precio-cita">${Number(cita.total).toFixed(2)}</span>
+                    <span className="hc-fecha-cita">{formatearFechaLarga(cita.scheduled_at.slice(0, 10))}</span>
+                    <div className="hc-fila-acciones">
+                      <button className="hc-boton-detalle" onClick={() => setCitaSeleccionada(cita)}>
+                        Ver detalle
+                      </button>
+                      <span className={`hc-badge-estado ${ESTADO_CLASE[cita.status]}`}>
+                        {ESTADO_LABEL[cita.status]}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {citasFiltradas.length === 0 && (
               <p className="hc-mensaje-vacio">No se encontraron citas en esta categoría.</p>
             )}
@@ -246,101 +233,61 @@ export default function HistorialCitas() {
             <div className="hc-detalle-cita">
               <div className="hc-detalle-cita-header">
                 <h3 className="hc-titulo-detalle">Detalle de cita</h3>
-                <button
-                  className="hc-boton-cerrar-detalle"
-                  onClick={() => setCitaSeleccionada(null)}
-                  aria-label="Cerrar detalle"
-                >
+                <button className="hc-boton-cerrar-detalle" onClick={() => setCitaSeleccionada(null)} aria-label="Cerrar detalle">
                   <X size={18} />
                 </button>
               </div>
-              <p className="hc-timestamp-detalle">{citaSeleccionada.fecha} {citaSeleccionada.hora}</p>
+              <p className="hc-timestamp-detalle">{formatearFechaLarga(citaSeleccionada.scheduled_at.slice(0, 10))}</p>
 
               <div className="hc-tarjeta-barberia-detalle">
                 <span className="hc-icono-tijeras">✂</span>
                 <div>
-                  <h4>{citaSeleccionada.barberia}</h4>
-                  <p>{citaSeleccionada.direccion}</p>
+                  <h4>{citaSeleccionada.barberias?.name}</h4>
+                  <p>{citaSeleccionada.barberias?.address_line1}</p>
                 </div>
               </div>
 
               <div className="hc-tabla-detalle">
                 <div className="hc-fila-detalle">
                   <span>Servicio</span>
-                  <strong>{citaSeleccionada.servicio}</strong>
+                  <strong>{citaSeleccionada.appointment_services?.[0]?.service_name ?? "-"}</strong>
                 </div>
                 <div className="hc-fila-detalle">
                   <span>Barbero</span>
-                  <strong>{citaSeleccionada.barbero}</strong>
-                </div>
-                <div className="hc-fila-detalle">
-                  <span>Duración</span>
-                  <strong>{citaSeleccionada.estado === "Completada" ? citaSeleccionada.duracion : "0 Min"}</strong>
+                  <strong>{citaSeleccionada.barberia_memberships?.display_name ?? "-"}</strong>
                 </div>
                 <hr className="hc-separador-detalle" />
                 <div className="hc-fila-detalle">
                   <span>Total Pagado</span>
-                  <strong className="dorado">${citaSeleccionada.estado === "Completada" ? citaSeleccionada.precio : 0}</strong>
-                </div>
-                <div className="hc-fila-detalle">
-                  <span>Puntos Ganados</span>
-                  <strong className="dorado">{citaSeleccionada.estado === "Completada" ? citaSeleccionada.puntosGanados : "0 pts"}</strong>
+                  <strong className="dorado">${citaSeleccionada.status === "completed" ? Number(citaSeleccionada.total).toFixed(2) : "0.00"}</strong>
                 </div>
               </div>
 
-              {citaSeleccionada.motivoCancelacion && (
+              {citaSeleccionada.cancellation_reason && (
                 <div className="hc-resena-detalle hc-motivo-cancelacion">
-                  <h5>Motivo de cancelación</h5>
-                  <p>“{citaSeleccionada.motivoCancelacion}”</p>
+                  <h5>Motivo</h5>
+                  <p>"{citaSeleccionada.cancellation_reason}"</p>
                 </div>
               )}
 
-              {citaSeleccionada.motivoRechazo && (
-                <div className="hc-resena-detalle hc-motivo-rechazo">
-                  <h5>Motivo de {citaSeleccionada.barbero}</h5>
-                  <p>“{citaSeleccionada.motivoRechazo}”</p>
-                </div>
-              )}
-
-              {citaSeleccionada.resenaBarberia && (
+              {citaSeleccionada.reviews?.[0] ? (
                 <div className="hc-resena-detalle">
-                  <h5>Tu reseña de la barbería</h5>
-                  <div
-                    className="hc-estrellas-resena"
-                    aria-label={`${citaSeleccionada.resenaBarberia.puntuacion} de 5 estrellas`}
-                  >
+                  <h5>Tu reseña</h5>
+                  <div className="hc-estrellas-resena" aria-label={`${citaSeleccionada.reviews[0].rating} de 5 estrellas`}>
                     {Array.from({ length: 5 }, (_, indice) => (
-                      <Star
-                        key={indice}
-                        size={17}
-                        fill={indice < citaSeleccionada.resenaBarberia.puntuacion ? "currentColor" : "none"}
-                      />
+                      <Star key={indice} size={17} fill={indice < citaSeleccionada.reviews[0].rating ? "currentColor" : "none"} />
                     ))}
-                    <span>{citaSeleccionada.resenaBarberia.puntuacion}/5</span>
+                    <span>{citaSeleccionada.reviews[0].rating}/5</span>
                   </div>
-                  <p>“{citaSeleccionada.resenaBarberia.comentario}”</p>
+                  {citaSeleccionada.reviews[0].comment && <p>"{citaSeleccionada.reviews[0].comment}"</p>}
                 </div>
-              )}
-
-              {citaSeleccionada.resenaBarbero && (
-                <div className="hc-resena-detalle">
-                  <h5>Tu reseña de {citaSeleccionada.barbero}</h5>
-                  <div
-                    className="hc-estrellas-resena"
-                    aria-label={`${citaSeleccionada.resenaBarbero.puntuacion} de 5 estrellas`}
-                  >
-                    {Array.from({ length: 5 }, (_, indice) => (
-                      <Star
-                        key={indice}
-                        size={17}
-                        fill={indice < citaSeleccionada.resenaBarbero.puntuacion ? "currentColor" : "none"}
-                      />
-                    ))}
-                    <span>{citaSeleccionada.resenaBarbero.puntuacion}/5</span>
-                  </div>
-                  <p>“{citaSeleccionada.resenaBarbero.comentario}”</p>
+              ) : citaSeleccionada.status === "completed" ? (
+                <div className="hc-acciones-detalle">
+                  <button className="hc-boton-reagendar" onClick={manejarDejarResena}>
+                    Dejar reseña
+                  </button>
                 </div>
-              )}
+              ) : null}
 
               <div className="hc-acciones-detalle">
                 <button className="hc-boton-reagendar" onClick={manejarVolverAAgendar}>

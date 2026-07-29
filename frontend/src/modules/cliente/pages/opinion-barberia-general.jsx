@@ -1,33 +1,64 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { IconArrowLeft, IconMessageCircle } from "@tabler/icons-react";
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { IconArrowLeft } from "@tabler/icons-react";
+import { supabase } from "../../../lib/supabase.js";
 import "../styles/opinion-barberia-general.css";
 
 export default function OpinionBarberiaGeneral() {
   const navigate = useNavigate();
+  const { state } = useLocation();
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
   const [comentario, setComentario] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
+  const [error, setError] = useState("");
 
   const maxCaracteres = 1000;
 
-  const handleSubmit = (e) => {
+  if (!state?.appointmentId || !state?.barberiaId) {
+    return (
+      <div className="opg-page">
+        <div className="opg-content">
+          <p>Falta información de la cita para dejar una opinión.</p>
+          <button className="opg-btn-back" onClick={() => navigate("/historial-citas")}>
+            <IconArrowLeft size={17} /> Regresar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!comentario.trim() && rating === 0) return;
+    if (rating === 0) return;
 
     setEnviando(true);
-    // Simulación de petición al backend
-    setTimeout(() => {
-      setEnviando(false);
+    setError("");
+
+    try {
+      const { error: insertError } = await supabase.from("reviews").insert({
+        appointment_id: state.appointmentId,
+        barberia_id: state.barberiaId,
+        barber_membership_id: state.barberMembershipId ?? null,
+        client_id: (await supabase.auth.getUser()).data.user.id,
+        rating,
+        comment: comentario.trim() || null,
+      });
+      if (insertError) throw insertError;
+
       setEnviado(true);
-    }, 1200);
+    } catch (err) {
+      setError(err.message === "duplicate key value violates unique constraint \"reviews_appointment_id_key\""
+        ? "Ya dejaste una opinión para esta cita."
+        : "No fue posible enviar tu opinión. Intenta de nuevo.");
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
     <div className="opg-page">
-      {/* Encabezado */}
       <header className="opg-header">
         <img src="/logo.png" alt="Barber Hub" className="opg-logo-barberhub" />
       </header>
@@ -40,29 +71,12 @@ export default function OpinionBarberiaGeneral() {
         </h1>
 
         <div className="opg-card">
-          {/* Logo Barbería */}
-          <div className="opg-logo-section">
-            <button className="opg-logo-button" type="button">
-              <img
-                src="/logo-ejemplo.png"
-                alt="Logo URBAN CUTS"
-                className="opg-barberia-logo"
-              />
-            </button>
-          </div>
-
-          {/* Formulario */}
           <form className="opg-form" onSubmit={handleSubmit}>
             <div className="opg-divider" />
-            <h2 className="opg-barberia-name">URBAN CUTS</h2>
-            <p className="opg-form-subtitle">Valora el establecimiento</p>
+            <h2 className="opg-barberia-name">{state.establecimiento ?? "Tu barbería"}</h2>
+            <p className="opg-form-subtitle">Valora el servicio recibido</p>
 
-            {/* Selector de Estrellas con Accesibilidad */}
-            <div 
-              className="opg-stars" 
-              role="radiogroup" 
-              aria-label="Calificación con estrellas"
-            >
+            <div className="opg-stars" role="radiogroup" aria-label="Calificación con estrellas">
               {[1, 2, 3, 4, 5].map((starIndex) => {
                 const activeStar = hoverRating ? starIndex <= hoverRating : starIndex <= rating;
                 return (
@@ -81,14 +95,13 @@ export default function OpinionBarberiaGeneral() {
               })}
             </div>
 
-            {/* Textarea con placeholder nativo y contador */}
             <div className="opg-comment-wrapper">
               <textarea
                 className="opg-comment-textarea"
                 maxLength={maxCaracteres}
                 value={comentario}
                 onChange={(e) => setComentario(e.target.value)}
-                placeholder="Escribe tu comentario general aquí... Comparte tu experiencia en el establecimiento, servicio, ambiente o instalaciones."
+                placeholder="Escribe tu comentario aquí... Comparte tu experiencia con el servicio, la atención o las instalaciones."
                 rows={5}
                 disabled={enviado}
               />
@@ -97,40 +110,24 @@ export default function OpinionBarberiaGeneral() {
               </span>
             </div>
 
-            {/* Estado de envío */}
+            {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
+
             {enviado ? (
               <div className="opg-success-msg">
                 ✓ ¡Gracias! Tu opinión ha sido enviada con éxito.
               </div>
             ) : (
-              <button 
-                type="submit" 
-                className="opg-submit-btn"
-                disabled={enviando}
-              >
-                {enviando ? "ENVIANDO..." : "ENVIAR COMENTARIO A LA BARBERÍA"}
+              <button type="submit" className="opg-submit-btn" disabled={enviando}>
+                {enviando ? "ENVIANDO..." : "ENVIAR OPINIÓN"}
               </button>
             )}
           </form>
         </div>
 
-        {/* Acciones inferiores */}
         <div className="opg-footer-actions">
-          <button
-            type="button"
-            className="opg-btn-back"
-            onClick={() => navigate("/mis-citas")}
-          >
+          <button type="button" className="opg-btn-back" onClick={() => navigate("/historial-citas")}>
             <IconArrowLeft size={17} aria-hidden="true" />
             Regresar
-          </button>
-          <button
-            type="button"
-            className="opg-btn-comment-barbero"
-            onClick={() => navigate("/opinion-barbero")}
-          >
-            <IconMessageCircle size={17} aria-hidden="true" />
-            Comentar a un barbero
           </button>
         </div>
       </div>

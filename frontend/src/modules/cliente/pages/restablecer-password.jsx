@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { IconLock } from "@tabler/icons-react";
-import { apiFetch } from "../../../utils/api";
+import { supabase } from "../../../lib/supabase.js";
 import { evaluarPassword } from "../../../utils/passwordStrength";
 import PasswordStrength from "../components/password-strength";
 import BrandLogo from "../components/brand-logo";
@@ -9,8 +9,6 @@ import "../styles/restablecer-password.css";
 
 export default function RestablecerPassword() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const token = searchParams.get("token") ?? "";
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -20,23 +18,37 @@ export default function RestablecerPassword() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!token) {
-      setValidando(false);
-      setError("El enlace no es válido. Solicita uno nuevo desde recuperar contraseña.");
-      return;
+    let cancelado = false;
+
+    async function validarEnlace() {
+      const hash = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : "";
+      const params = new URLSearchParams(hash);
+      const access_token = params.get("access_token");
+      const refresh_token = params.get("refresh_token");
+
+      if (!access_token || !refresh_token) {
+        return { ok: false };
+      }
+
+      const { error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
+      return { ok: !sessionError };
     }
 
-    apiFetch(`/auth/validar-reset-token?token=${encodeURIComponent(token)}`)
-      .then(() => {
+    validarEnlace().then((resultado) => {
+      if (cancelado) return;
+      if (resultado.ok) {
+        window.history.replaceState(null, "", window.location.pathname);
         setTokenValido(true);
-      })
-      .catch((err) => {
-        setError(err.message);
-      })
-      .finally(() => {
-        setValidando(false);
-      });
-  }, [token]);
+      } else {
+        setError("El enlace no es válido o ya expiró. Solicita uno nuevo desde recuperar contraseña.");
+      }
+      setValidando(false);
+    });
+
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,17 +68,14 @@ export default function RestablecerPassword() {
     }
 
     setLoading(true);
-    try {
-      await apiFetch("/auth/restablecer-password", {
-        method: "POST",
-        body: JSON.stringify({ token, password, confirmPassword }),
-      });
-      navigate("/restablecer-password-exito", { replace: true });
-    } catch (err) {
-      setError(err.message);
-    } finally {
+    const { error: updateError } = await supabase.auth.updateUser({ password });
+    if (updateError) {
+      setError(updateError.message || "No fue posible actualizar la contraseña.");
       setLoading(false);
+      return;
     }
+
+    navigate("/restablecer-password-exito", { replace: true });
   };
 
   return (

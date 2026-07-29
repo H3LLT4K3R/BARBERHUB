@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../../../lib/supabase.js";
 import {
   IconSearch,
   IconMapPin,
@@ -32,8 +33,8 @@ const EXP_CARDS = [
     title: "Para Clientes",
     desc: "Olvídate de las largas filas de espera. Encuentra profesionales disponibles en tu zona de inmediato.",
     feats: [
-      { icon: <IconMapPin size={15} />,                   text: "Ubicación por mapa interactivo en tiempo real." },
-      { icon: <IconAdjustmentsHorizontal size={15} />,    text: "Filtros por precio, valoración y servicios." },
+      { icon: <IconMapPin size={15} />,                   text: "Filtros por estado, ciudad y zona." },
+      { icon: <IconAdjustmentsHorizontal size={15} />,    text: "Dependiendo de su localización, se muestran opciones relevantes." },
     ],
   },
   {
@@ -46,30 +47,13 @@ const EXP_CARDS = [
     title: "Para Barberos y Dueños",
     desc: "Lleva tu negocio al entorno digital. Controla tus horarios, muestra tu ubicación y llena tu agenda.",
     feats: [
-      { icon: <IconLayoutDashboard size={15} />, text: "Dashboard inteligente para gestionar turnos." },
+      { icon: <IconLayoutDashboard size={15} />, text: "Dashboard inteligente para gestionar tu negocio." },
       { icon: <IconCash size={15} />,            text: "Historial de ingresos y organización visual." },
     ],
   },
 ];
 
-const TESTIMONIOS = [
-  {
-    initial: "C",
-    color: "gold",
-    name: "Carlos Mendoza",
-    role: "Cliente Frecuente",
-    quote: '"Buscaba una barbería abierta un lunes por la tarde. Con el mapa la encontré a 5 minutos y agendé de inmediato. El corte impecable."',
-  },
-  {
-    initial: "M",
-    color: "gray",
-    name: "Marco Aurelio",
-    role: "Dueño de Barbería",
-    quote: '"Antes perdía mucho tiempo respondiendo mensajes. Ahora mis clientes entran aquí, ven horas libres y reservan solos."',
-  },
-];
-
-// estrellas 
+// estrellas
 function Stars({ count = 5 }) {
   return (
     <div className="lp-stars">
@@ -85,7 +69,27 @@ export default function Landing() {
   const [query, setQuery] = useState("");
   const [coords, setCoords] = useState(null);
   const [geoStatus, setGeoStatus] = useState("idle");
+  const [testimonios, setTestimonios] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    let cancelado = false;
+
+    supabase
+      .from("reviews")
+      .select("id, rating, comment, barberias(name)")
+      .eq("is_featured", true)
+      .eq("is_published", true)
+      .order("created_at", { ascending: false })
+      .limit(6)
+      .then(({ data }) => {
+        if (!cancelado) setTestimonios(data ?? []);
+      });
+
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   const solicitarUbicacion = () => {
     if (!navigator.geolocation) {
@@ -142,9 +146,6 @@ export default function Landing() {
         <BrandLogo className="lp-nav-logo" imgClassName="lp-nav-logo-img" />
 
         <div className="lp-nav-actions">
-          <button className="lp-btn-outline" onClick={() => navigate("/agenda-local")}>
-            Agenda en local
-          </button>
           <button className="lp-btn-gold" onClick={() => navigate("/login")}>
             Iniciar sesión
           </button>
@@ -243,32 +244,54 @@ export default function Landing() {
                   </div>
                 ))}
               </div>
+
+              {card.ctaTexto && (
+                <button
+                  type="button"
+                  className="lp-btn-search"
+                  style={{ marginTop: 16 }}
+                  onClick={async () => {
+                    const { data } = await supabase.auth.getSession();
+                    if (data.session) {
+                      navigate(card.ctaRuta);
+                    } else {
+                      navigate("/login", { state: { redirigirA: card.ctaRuta } });
+                    }
+                  }}
+                >
+                  {card.ctaTexto}
+                </button>
+              )}
             </div>
           ))}
         </div>
       </section>
 
       {/* Opiniones*/}
-      <section className="lp-testi">
-        <div className="lp-testi-badge">Testimonios</div>
-        <h2>Lo que dice nuestra comunidad</h2>
+      {testimonios.length > 0 && (
+        <section className="lp-testi">
+          <div className="lp-testi-badge">Testimonios</div>
+          <h2>Lo que dice nuestra comunidad</h2>
 
-        <div className="lp-testi-grid">
-          {TESTIMONIOS.map((t) => (
-            <div className="lp-testi-card" key={t.name}>
-              <Stars />
-              <p className="lp-testi-quote">{t.quote}</p>
-              <div className="lp-testi-author">
-                <div className={`lp-testi-av lp-av-${t.color}`}>{t.initial}</div>
-                <div>
-                  <div className="lp-testi-name">{t.name}</div>
-                  <div className="lp-testi-role">{t.role}</div>
+          <div className="lp-testi-grid">
+            {testimonios.map((t) => (
+              <div className="lp-testi-card" key={t.id}>
+                <Stars count={t.rating} />
+                <p className="lp-testi-quote">"{t.comment}"</p>
+                <div className="lp-testi-author">
+                  <div className="lp-testi-av lp-av-gold">
+                    <IconStarFilled size={14} />
+                  </div>
+                  <div>
+                    <div className="lp-testi-name">Cliente verificado</div>
+                    <div className="lp-testi-role">{t.barberias?.name}</div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </section>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Footer */}
       <footer className="lp-footer">

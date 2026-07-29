@@ -7,4 +7,14 @@ export default defineConfig({
     react(),
     tailwindcss(), // Agrega esta línea
   ],
+  server: {
+    proxy: {
+      // El frontend llama a rutas relativas "/api/..." (ver utils/api.js);
+      // Vite las reenvía al backend Express que corre en el puerto 3000.
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
+  },
 })

@@ -1,26 +1,15 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   IconMapPin,
   IconStarFilled,
   IconScissors,
-  IconMoustache,
-  IconRazor,
-  IconUser,
   IconChevronLeft,
 } from "@tabler/icons-react";
 import AppNavbar from "../components/app-navbar";
-import { getBarberiaById } from "../data/barberias.js";
+import { supabase } from "../../../lib/supabase.js";
 import "../styles/mas-servicios.css";
 
-/* Diccionario de iconos de servicio */
-const ICONOS_SERVICIO = {
-  moustache: IconMoustache,
-  razor: IconRazor,
-  user: IconUser,
-  scissors: IconScissors,
-};
-
-/* Componente de estrellas */
 function Estrellas({ count = 5 }) {
   return (
     <span className="ms-estrellas" aria-hidden>
@@ -31,107 +20,117 @@ function Estrellas({ count = 5 }) {
   );
 }
 
-/* Componente principal: Más Servicios  */
 export default function MasServicios() {
   const navigate = useNavigate();
   const { id } = useParams();
-  const barberia = getBarberiaById(id);
+  const [barberia, setBarberia] = useState(null);
+  const [servicios, setServicios] = useState([]);
+  const [cargando, setCargando] = useState(true);
 
-  // control de errores: Si la barbería no existe en la base de datos de prueba
+  useEffect(() => {
+    let cancelado = false;
+
+    async function cargar() {
+      const [{ data: b }, { data: s }] = await Promise.all([
+        supabase.from("barberias_public").select("*").eq("id", id).maybeSingle(),
+        supabase.from("services").select("id, name, price").eq("barberia_id", id).eq("is_active", true).order("sort_order"),
+      ]);
+
+      if (cancelado) return;
+      setBarberia(b ?? null);
+      setServicios(s ?? []);
+      setCargando(false);
+    }
+
+    cargar();
+    return () => {
+      cancelado = true;
+    };
+  }, [id]);
+
+  if (cargando) {
+    return (
+      <div className="ms-pagina">
+        <AppNavbar />
+        <main className="ms-contenido"><p>Cargando...</p></main>
+      </div>
+    );
+  }
+
   if (!barberia) {
     return (
       <div className="ms-pagina">
         <AppNavbar />
         <main className="ms-contenido ms-contenido--error">
           <h2>Barbería no encontrada</h2>
-          <button onClick={() => navigate("/")}>Volver al inicio</button>
+          <button onClick={() => navigate("/explorar")}>Volver a explorar</button>
         </main>
       </div>
     );
   }
 
-  // Servicios extendidos o normales
-  const servicios = barberia.serviciosExtendidos ?? barberia.servicios;
   const mitad = Math.ceil(servicios.length / 2);
   const colA = servicios.slice(0, mitad);
   const colB = servicios.slice(mitad);
 
   return (
     <div className="ms-pagina">
-      {/* Navbar superior */}
       <AppNavbar />
 
       <main className="ms-contenido">
-        {/* Sección hero con datos de barbería */}
         <section className="ms-hero">
           <div className="ms-hero-izquierda">
-            <img className="ms-logo" src={barberia.imagen} alt="" />
             <div>
-              <h1 className="ms-titulo">{barberia.nombre}</h1>
+              <h1 className="ms-titulo">{barberia.name}</h1>
               <div className="ms-rating">
                 <Estrellas />
                 <span>
-                  {barberia.rating.toFixed(1)} ({barberia.totalOpiniones} opiniones)
+                  {Number(barberia.rating).toFixed(1)} ({barberia.total_opiniones} opiniones)
                 </span>
               </div>
               <p className="ms-direccion">
                 <IconMapPin size={17} />
-                {barberia.direccion}
-              </p>
-              <p className="ms-estado">
-                <span
-                  className={`ms-estado-dot ${barberia.abierto ? "abierto" : ""}`}
-                />
-                {barberia.abierto ? "Abierto ahora" : "Cerrado"}
+                {barberia.address_line1}, {barberia.city}
               </p>
             </div>
           </div>
         </section>
 
-        {/* Sección de servicios */}
         <section className="ms-lista-servicios">
           <h2>Servicios disponibles</h2>
 
           <div className="ms-grid-servicios">
-            {/* Columna A */}
             <ul className="ms-columna-servicios">
-              {colA.map((s) => {
-                const Icon = ICONOS_SERVICIO[s.icono] ?? IconScissors;
-                return (
-                  <li key={s.id} className="ms-item-servicio">
-                    <span className="ms-servicio-izquierda">
-                      <Icon size={22} stroke={1.7} />
-                      {s.nombre}
-                    </span>
-                    <span className="ms-precio-servicio">${s.precio}</span>
-                  </li>
-                );
-              })}
+              {colA.map((s) => (
+                <li key={s.id} className="ms-item-servicio">
+                  <span className="ms-servicio-izquierda">
+                    <IconScissors size={22} stroke={1.7} />
+                    {s.name}
+                  </span>
+                  <span className="ms-precio-servicio">${s.price}</span>
+                </li>
+              ))}
             </ul>
 
-            {/* Columna B */}
             <ul className="ms-columna-servicios">
-              {colB.map((s) => {
-                const Icon = ICONOS_SERVICIO[s.icono] ?? IconScissors;
-                return (
-                  <li key={s.id} className="ms-item-servicio">
-                    <span className="ms-servicio-izquierda">
-                      <Icon size={22} stroke={1.7} />
-                      {s.nombre}
-                    </span>
-                    <span className="ms-precio-servicio">${s.precio}</span>
-                  </li>
-                );
-              })}
+              {colB.map((s) => (
+                <li key={s.id} className="ms-item-servicio">
+                  <span className="ms-servicio-izquierda">
+                    <IconScissors size={22} stroke={1.7} />
+                    {s.name}
+                  </span>
+                  <span className="ms-precio-servicio">${s.price}</span>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* Botón regresar */}
+          {servicios.length === 0 && <p>Aún no hay servicios publicados.</p>}
+
           <div className="ms-acciones">
             <button
               type="button"
               className="ms-boton-regresar"
-              // CORRECCIÓN AQUÍ 👇
               onClick={() => navigate(`/barberia-perfil/${barberia.id}`)}
             >
               <IconChevronLeft size={18} />

@@ -1,67 +1,85 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { saveSession } from "../../../utils/api.js"; // Quitamos apiFetch temporalmente
-import { authenticateUser } from "../data/mockAuth.js"; // <-- NUESTRO MOCK
+import { saveSession } from "../../../utils/api.js";
+import { supabase } from "../../../lib/supabase.js";
 import BrandLogo from "../components/brand-logo";
 import "../styles/login.css";
 
-/* Componente principal: Login*/
+const ROLE_REDIRECTS = {
+  owner: "/owner-finanzas",
+  admin: "/owner-finanzas",
+  barber: "/barbero/inicio",
+  cliente: "/explorar",
+};
+
 export default function Login() {
   const navigate = useNavigate();
   const { state } = useLocation();
-
-  // 1. Capturamos la ruta pendiente a la que el usuario quería ir antes del login
-  const rutaDestino = state?.redirigirA;
-
-  // Estado del formulario
-  const [form, setForm] = useState({
-    email: state?.email ?? "",
-    password: "",
-  });
-
-  // Estados auxiliares
+  const rutaDestino = state?.redirigirA || state?.from;
+  const [form, setForm] = useState({ email: state?.email ?? "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const mensajeExito = state?.cuentaVerificada ? state.mensaje : null;
+  const mensajeExito = state?.mensaje || null;
 
-  // Manejo de cambios en inputs
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (event) => {
+    setForm({ ...form, [event.target.name]: event.target.value });
     setError("");
   };
 
-  // Manejo de envío de formulario
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      // 1. Llamamos a nuestra función de prueba
-      const response = authenticateUser(form.email, form.password);
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: form.email.trim(),
+        password: form.password,
+      });
+      if (authError) throw authError;
 
-      // Simulamos un pequeño retraso de red
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const [{ data: profile }, { data: memberships, error: membershipError }] = await Promise.all([
+        supabase.from("profiles").select("full_name, is_super_admin").eq("id", data.user.id).maybeSingle(),
+        supabase
+          .from("barberia_memberships")
+          .select("role")
+          .eq("profile_id", data.user.id)
+          .eq("is_active", true),
+      ]);
+      if (membershipError) throw membershipError;
 
-      if (response.success) {
-        // Usamos tu misma función saveSession con los datos falsos
-        saveSession({ token: response.data.token, user: response.data.user });
-        
-        // 👇 ESTA ES LA LÍNEA NUEVA QUE SOLUCIONA EL PROBLEMA 👇
-        // Guardamos el token con el mismo nombre que BarberiaPerfil está buscando
-        localStorage.setItem("token_sesion", response.data.token);
-        
-        // 3. Priorizamos la ruta pendiente sobre la del mock
-        const rutaFinal = rutaDestino || response.redirect;
-        
-        // Usamos replace: true para no dejar historial basura
-        navigate(rutaFinal, { replace: true });
-      } else {
-        // Mostramos el error si escriben mal la clave
-        setError(response.error);
+      if (profile?.is_super_admin) {
+        saveSession({ token: data.session.access_token, user: { id: data.user.id, email: data.user.email, nombre: profile.full_name, role: "super_admin" } });
+        localStorage.setItem("token_sesion", data.session.access_token);
+        navigate("/admin", { replace: true });
+        return;
       }
-    } catch (err) {
-      setError("Ocurrió un error inesperado al iniciar sesión.");
+
+      const roles = memberships?.map((membership) => membership.role) ?? [];
+      const role = roles.includes("owner")
+        ? "owner"
+        : roles.includes("barber")
+          ? "barber"
+          : roles.includes("admin")
+            ? "admin"
+            : "cliente";
+      const user = {
+        id: data.user.id,
+        email: data.user.email,
+        nombre: profile?.full_name || data.user.user_metadata?.full_name || data.user.email,
+        role,
+      };
+
+      // Compatibilidad temporal con pantallas que aún leen la sesión local.
+      saveSession({ token: data.session.access_token, user });
+      localStorage.setItem("token_sesion", data.session.access_token);
+      navigate(rutaDestino || ROLE_REDIRECTS[role], { replace: true });
+    } catch (requestError) {
+      setError(
+        requestError.message === "Invalid login credentials"
+          ? "Correo o contraseña incorrectos."
+          : "No fue posible iniciar sesión. Revisa tus datos e inténtalo de nuevo.",
+      );
     } finally {
       setLoading(false);
     }
@@ -69,107 +87,37 @@ export default function Login() {
 
   return (
     <div className="login-pagina">
-
-      {/* Columna izquierda: imagen + overlay */}
       <div className="login-columna-izquierda">
         <div className="login-overlay" />
         <div className="login-contenido-izquierdo">
-
-          {/* Logo de marca */}
           <BrandLogo className="login-logo-boton" imgClassName="login-logo" />
-
-          {/* Texto hero */}
           <div className="login-texto-hero">
-            <h2>
-              Encuentra tu barbería ideal{" "}
-              <span className="login-acento">en segundos</span>
-            </h2>
-            <p>
-              Reserva citas, conviértete en cliente VIP y
-              descubre las mejores barberías cerca de ti.
-            </p>
+            <h2>Encuentra tu barbería ideal <span className="login-acento">en segundos</span></h2>
+            <p>Reserva citas, conviértete en cliente VIP y descubre las mejores barberías cerca de ti.</p>
           </div>
-
-          {/* Footer izquierdo */}
-          <div className="login-footer-izquierdo">
-            © 2026 Barber Hub · Todos los derechos reservados
-          </div>
+          <div className="login-footer-izquierdo">© 2026 Barber Hub · Todos los derechos reservados</div>
         </div>
       </div>
 
-      {/* Columna derecha: formulario */}
       <div className="login-columna-derecha">
         <div className="login-formulario-contenedor">
           <h1 className="login-titulo">¡Bienvenido!</h1>
           <p className="login-subtitulo">Inicia sesión para continuar</p>
+          {mensajeExito && <p className="login-mensaje-exito" role="status">{mensajeExito}</p>}
 
-          {/* Mensaje de éxito si la cuenta fue verificada */}
-          {mensajeExito && (
-            <p className="login-mensaje-exito" role="status">
-              {mensajeExito}
-            </p>
-          )}
-
-          {/* Formulario */}
           <form className="login-formulario" onSubmit={handleSubmit}>
-            <input
-              className="login-input"
-              type="email"
-              name="email"
-              placeholder="Correo electrónico"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
-
-            <input
-              className="login-input"
-              type="password"
-              name="password"
-              placeholder="Contraseña"
-              value={form.password}
-              onChange={handleChange}
-              required
-            />
-
-            {/* Mensaje de error */}
+            <input className="login-input" type="email" name="email" placeholder="Correo electrónico" value={form.email} onChange={handleChange} required />
+            <input className="login-input" type="password" name="password" placeholder="Contraseña" value={form.password} onChange={handleChange} required />
             {error && <p className="login-error">{error}</p>}
-
-            {/* Link recuperar contraseña */}
             <div className="login-recuperar">
-              <button
-                type="button"
-                className="login-enlace-dorado"
-                onClick={() => navigate("/recuperar-password")}
-              >
-                ¿Olvidaste tu contraseña?
-              </button>
+              <button type="button" className="login-enlace-dorado" onClick={() => navigate("/recuperar-password")}>¿Olvidaste tu contraseña?</button>
             </div>
-
-            {/* Botón enviar */}
-            <button
-              className="login-boton-enviar"
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? "Iniciando sesión..." : "Iniciar sesión"}
-            </button>
+            <button className="login-boton-enviar" type="submit" disabled={loading}>{loading ? "Iniciando sesión..." : "Iniciar sesión"}</button>
           </form>
 
-          {/* Link registro */}
-          <p className="login-registro">
-            ¿No tienes cuenta?{" "}
-            <button
-              type="button"
-              className="login-enlace-dorado"
-              onClick={() => navigate("/registro")}
-            >
-              Regístrate
-            </button>
-          </p>
+          <p className="login-registro">¿No tienes cuenta? <button type="button" className="login-enlace-dorado" onClick={() => navigate("/registro")}>Regístrate</button></p>
         </div>
       </div>
-
     </div>
   );
 }
