@@ -71,7 +71,9 @@ export const crearCuentaStaff = async (req, res) => {
         });
         if (createError) {
             if (createError.message?.includes('already registered')) {
-                return res.status(409).json({ error: 'Ya existe una cuenta con ese correo.' });
+                // Un barbero/administrador solo puede pertenecer a una barbería: si el correo ya
+                // tiene cuenta (en esta u otra barbería), no se reutiliza, se rechaza.
+                return res.status(409).json({ error: 'Ya existe una cuenta con ese correo. Un barbero o administrador solo puede pertenecer a una barbería, así que no se puede reutilizar un correo ya registrado.' });
             }
             throw createError;
         }
@@ -79,12 +81,34 @@ export const crearCuentaStaff = async (req, res) => {
         // El trigger on_auth_user_created ya creó profiles; ahora la membresía en esta barbería.
         const { data: nuevaMembresia, error: membershipError } = await supabaseAdmin
             .from('barberia_memberships')
-            .insert({ barberia_id: barberiaId, profile_id: nuevoUsuario.user.id, role })
+            .insert({ barberia_id: barberiaId, profile_id: nuevoUsuario.user.id, role, display_name: fullName })
             .select('id, role, is_active')
             .single();
         if (membershipError) {
             await supabaseAdmin.auth.admin.deleteUser(nuevoUsuario.user.id);
             throw membershipError;
+        }
+
+        // El horario individual del barbero arranca igual al horario general de la barbería
+        // (el owner ya lo configuró en Perfil Barbería); el barbero lo puede ajustar después
+        // desde su propio Perfil Barbero.
+        if (role === 'barber') {
+            const { data: horarioBarberia } = await supabaseAdmin
+                .from('business_hours')
+                .select('weekday, opens_at, closes_at, is_closed')
+                .eq('barberia_id', barberiaId);
+
+            const diasAbiertos = (horarioBarberia ?? []).filter((h) => !h.is_closed);
+            if (diasAbiertos.length) {
+                await supabaseAdmin.from('staff_availability').insert(
+                    diasAbiertos.map((h) => ({
+                        membership_id: nuevaMembresia.id,
+                        weekday: h.weekday,
+                        starts_at: h.opens_at,
+                        ends_at: h.closes_at,
+                    }))
+                );
+            }
         }
 
         await registrarAuditoria({
