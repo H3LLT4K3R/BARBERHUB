@@ -104,3 +104,44 @@ export const moderarResena = async (req, res) => {
         res.status(500).json({ error: 'No fue posible actualizar la reseña.' });
     }
 };
+
+// El dueño/admin marca una reseña como destacada para mostrarla en el landing público.
+export const destacarResena = async (req, res) => {
+    const { destacar } = req.body;
+    if (typeof destacar !== 'boolean') {
+        return res.status(400).json({ error: 'Falta destacar (true/false).' });
+    }
+
+    try {
+        const { data: review, error: fetchError } = await supabaseAdmin
+            .from('reviews')
+            .select('id, barberia_id')
+            .eq('id', req.params.id)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!review) return res.status(404).json({ error: 'Reseña no encontrada.' });
+
+        const membership = await esOwnerOAdmin(req.user.id, review.barberia_id);
+        if (!membership) return res.status(403).json({ error: 'No tienes permiso sobre esta barbería.' });
+
+        const { error: updateError } = await supabaseAdmin
+            .from('reviews')
+            .update({ is_featured: destacar })
+            .eq('id', review.id);
+        if (updateError) throw updateError;
+
+        await registrarAuditoria({
+            barberiaId: review.barberia_id,
+            actorId: req.user.id,
+            action: destacar ? 'review.feature' : 'review.unfeature',
+            entityType: 'review',
+            entityId: review.id,
+            newData: { is_featured: destacar },
+        });
+
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al destacar la reseña:', error);
+        res.status(500).json({ error: 'No fue posible actualizar la reseña.' });
+    }
+};

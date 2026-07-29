@@ -1,11 +1,15 @@
 import crypto from 'node:crypto';
-import { Preference, Payment, PaymentRefund } from 'mercadopago';
+import { Preference, Payment, PaymentRefund, PreApproval } from 'mercadopago';
 import { mercadoPagoClient } from '../config/mercadopago.js';
 import { supabaseAdmin } from '../config/supabase.js';
 import { registrarIngresoPorPago } from './operacionController.js';
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
+
+// Anticipo fijo para todas las citas (por ahora, sin importar el precio del servicio).
+// El resto del total se liquida directamente en el local.
+const ANTICIPO_FIJO_MXN = 100;
 
 // Un cliente solo puede pagar una cita que sea suya; un miembro de la barbería no puede pagarla en su nombre.
 async function getAppointmentForPayer(appointmentId, userId) {
@@ -35,19 +39,13 @@ export const crearPreferencia = async (req, res) => {
             return res.status(409).json({ error: 'Esta cita no está esperando un pago.' });
         }
 
-        const { data: services, error: servicesError } = await supabaseAdmin
-            .from('appointment_services')
-            .select('service_name, unit_price, quantity')
-            .eq('appointment_id', appointmentId);
-        if (servicesError) throw servicesError;
-
-        const items = (services?.length ? services : [{ service_name: 'Anticipo de cita', unit_price: appointment.total, quantity: 1 }])
-            .map((service) => ({
-                title: service.service_name,
-                quantity: service.quantity ?? 1,
-                unit_price: Number(service.unit_price),
-                currency_id: appointment.barberia?.currency_code || 'MXN',
-            }));
+        // El anticipo es un monto fijo, no el total del servicio: el resto se paga en el local.
+        const items = [{
+            title: 'Anticipo de cita',
+            quantity: 1,
+            unit_price: ANTICIPO_FIJO_MXN,
+            currency_id: appointment.barberia?.currency_code || 'MXN',
+        }];
 
         // Mercado Pago exige que back_urls.success sea una URL pública (https) para usar
         // auto_return; en desarrollo local (http://localhost) lo omitimos y el cliente
@@ -74,7 +72,7 @@ export const crearPreferencia = async (req, res) => {
             provider: 'mercado_pago',
             preference_id: preference.id,
             checkout_url: preference.init_point,
-            amount: appointment.total,
+            amount: ANTICIPO_FIJO_MXN,
             currency_code: appointment.barberia?.currency_code || 'MXN',
             status: 'pending',
         });
@@ -114,7 +112,7 @@ export const recibirWebhook = async (req, res) => {
     }
 
     const { type, data, id: notificationId } = req.body || {};
-    if (type !== 'payment' || !data?.id) {
+    if ((type !== 'payment' && type !== 'subscription_preapproval') || !data?.id) {
         return res.sendStatus(200);
     }
 
@@ -129,6 +127,25 @@ export const recibirWebhook = async (req, res) => {
             // Código 23505 = unique_violation: ya procesamos esta notificación antes.
             if (eventError.code === '23505') return res.sendStatus(200);
             throw eventError;
+        }
+
+        if (type === 'subscription_preapproval') {
+            const preapproval = await new PreApproval(mercadoPagoClient).get({ id: data.id });
+            const estadoMap = {
+                authorized: 'activa',
+                paused: 'pausada',
+                cancelled: 'cancelada',
+                pending: 'pendiente',
+            };
+            await supabaseAdmin
+                .from('barberias')
+                .update({
+                    subscription_status: estadoMap[preapproval.status] || 'pendiente',
+                    subscription_next_payment: preapproval.auto_recurring?.next_payment_date ?? null,
+                })
+                .eq('mp_preapproval_id', preapproval.id);
+
+            return res.sendStatus(200);
         }
 
         const payment = await new Payment(mercadoPagoClient).get({ id: data.id });
