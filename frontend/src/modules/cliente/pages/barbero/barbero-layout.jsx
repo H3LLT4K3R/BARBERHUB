@@ -12,6 +12,7 @@ import {
   Settings,
   X,
 } from "lucide-react";
+import { clearSession } from "../../../../utils/api.js";
 import "../../styles/barbero/barbero-layout.css";
 
 const NAV_ITEMS = [
@@ -38,8 +39,8 @@ export default function BarberoLayout({ children, titulo = "" }) {
 
   const isActive = (href) => location.pathname.startsWith(href);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
+  const handleLogout = async () => {
+    await clearSession();
     navigate("/login");
   };
 

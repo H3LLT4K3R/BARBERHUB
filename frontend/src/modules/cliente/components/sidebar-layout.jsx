@@ -32,8 +32,8 @@ export default function SidebarLayout({ children }) {
   const esExplorar = location.pathname === "/explorar";
   const esAjustes = location.pathname === "/ajustes";
 
-  const handleLogout = () => {
-    clearSession();
+  const handleLogout = async () => {
+    await clearSession();
     navigate("/login");
   };
 

@@ -1,34 +1,202 @@
-import { useMemo, useState } from "react";
-import { Check, ChevronDown, Eye, MessageCircle, Search, Star, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Eye, EyeOff, Search, Sparkles, Star } from "lucide-react";
+import { supabase } from "../../../../lib/supabase.js";
+import { apiFetch } from "../../../../utils/api.js";
 import "../../styles/barbero/opiniones-barbero.css";
-import BarberoModal from "./barbero-modal";
-
-const opinionesIniciales = [
-  { id: 1, nombre: "Mai B", servicio: "Corte y peinado", texto: "Me gustaría arreglar mi cabello usando productos de alta calidad.", fecha: "Sáb, 08:00 - 07:30 PM", rating: 4.8 },
-  { id: 2, nombre: "Mina Za", servicio: "Corte y peinado", texto: "Me gustaría arreglar mi cabello usando productos de alta calidad.", fecha: "Sáb, 09:00 - 07:30 PM", rating: 4.8 },
-  { id: 3, nombre: "Milad zaher", servicio: "Corte clásico", texto: "Excelente servicio y atención; volvería sin dudarlo.", fecha: "Dom, 11:00 - 12:00 PM", rating: 5.0 },
-];
-const promociones = ["HairCut", "Corte + barba", "Fade premium"];
 
 export default function OpinionesBarbero() {
-  const [opiniones, setOpiniones] = useState(opinionesIniciales);
+  const [opiniones, setOpiniones] = useState([]);
+  const [cargando, setCargando] = useState(true);
   const [busqueda, setBusqueda] = useState("");
-  const [seleccionada, setSeleccionada] = useState(opinionesIniciales[0]);
-  const [modal, setModal] = useState("");
-  const [orden, setOrden] = useState("Rating");
-  const resultados = useMemo(() => opiniones.filter((opinion) => `${opinion.nombre} ${opinion.texto}`.toLowerCase().includes(busqueda.toLowerCase())), [opiniones, busqueda]);
-  const borrar = () => { setOpiniones([]); setSeleccionada(null); setModal(""); };
-  return <section className="bo-page">
-    <header className="bo-heading"><div><p>Panel barbero</p><h2>Opiniones</h2><span>Conoce la experiencia de tus clientes y gestiona sus reseñas.</span></div><button type="button" onClick={() => setModal("borrar")}><Trash2 size={16} /> Borrar comentarios</button></header>
-    <div className="bo-layout">
-      <aside className="bo-summary"><div className="bo-back"><strong>Mina Za</strong></div><img src="https://images.unsplash.com/photo-1532710093739-9470acff878f?auto=format&fit=crop&w=500&q=80" alt="Cliente" /><div className="bo-rating"><strong>4.7</strong><div><span>★★★★★</span><small>25.7 miles</small></div></div><div className="bo-bars">{[100, 0, 0, 0, 0].map((valor, index) => <div key={index}><span>{5 - index}</span><i><b style={{ width: `${valor}%` }} /></i><small>{valor}%</small></div>)}</div><p className="bo-views"><Eye size={13} /> 10K vistas</p><h4>Sobre el servicio:</h4><p>Me gustaría arreglar mi cabello usando productos de alta calidad.</p><div className="bo-filters"><button>Todos <ChevronDown size={13} /></button><button onClick={() => setOrden(orden === "Rating" ? "Recientes" : "Rating")}>{orden} <ChevronDown size={13} /></button></div><label className="bo-search"><Search size={15} /><input placeholder="Buscar…" value={busqueda} onChange={(event) => setBusqueda(event.target.value)} /></label></aside>
-      <main className="bo-featured">{seleccionada ? <><article className="bo-featured-card"><img src="https://images.unsplash.com/photo-1532710093739-9470acff878f?auto=format&fit=crop&w=500&q=80" alt={seleccionada.nombre} /><div className="bo-stars">★★★★☆</div><h3>{seleccionada.nombre}</h3><div className="bo-featured-actions"><button onClick={() => setModal("aceptar")}><Check size={14} /> Aceptar</button><button onClick={() => setModal("chat")}><MessageCircle size={14} /> Chat</button></div></article><article className="bo-review-detail"><h3>Hair by Alan C.</h3><p className="bo-stars">★★★★★ <span>4.0</span></p><p><strong>Buen cliente!</strong> Llegó a tiempo y listo para disfrutar de una experiencia de calidad.</p></article></> : <p className="bo-empty">No hay opiniones disponibles.</p>}</main>
-      <section className="bo-list"><div className="bo-list-head"><h3>Reseñas recientes</h3><span>{resultados.length} opiniones</span></div>{resultados.map((opinion) => <button className={seleccionada?.id === opinion.id ? "bo-review active" : "bo-review"} key={opinion.id} onClick={() => setSeleccionada(opinion)}><strong>{opinion.nombre} · {opinion.servicio}</strong><span>{opinion.texto}</span><small>◷ {opinion.fecha} <b>☆ {opinion.rating} (3.2 mi)</b></small></button>)}{!resultados.length && <p className="bo-empty">No encontramos reseñas.</p>}</section>
-    </div>
-    <section className="bo-promotions"><div><p>Catálogo</p><h3>Opiniones del servicio</h3></div><div className="bo-promo-grid">{promociones.map((promo) => <article key={promo}><div><Star size={26} /></div><h4>{promo}</h4><span>★★★★★ 4.8 · 1,250 vistas</span><button onClick={() => setModal("promo")}>Ver detalle</button></article>)}</div></section>
-    <BarberoModal open={modal === "aceptar"} title="Aceptar opinión" onClose={() => setModal("")} footer={<button className="bm-primary" onClick={() => setModal("")}>Confirmar</button>}><p>La opinión de {seleccionada?.nombre} quedará marcada como revisada.</p></BarberoModal>
-    <BarberoModal open={modal === "chat"} title={`Chat con ${seleccionada?.nombre || "cliente"}`} onClose={() => setModal("")} footer={<button className="bm-primary" onClick={() => setModal("")}>Enviar</button>}><textarea className="bo-message" placeholder="Escribe un mensaje…" /></BarberoModal>
-    <BarberoModal open={modal === "borrar"} title="Borrar comentarios" onClose={() => setModal("")} footer={<><button className="bm-secondary" onClick={() => setModal("")}>Cancelar</button><button className="bm-primary" onClick={borrar}>Sí, borrar</button></>}><p>Se ocultarán todas las opiniones de forma temporal durante esta sesión.</p></BarberoModal>
-    <BarberoModal open={modal === "promo"} title="Detalle de servicio" onClose={() => setModal("")} footer={<button className="bm-primary" onClick={() => setModal("")}>Cerrar</button>}><p>Consulta el rendimiento y las opiniones asociadas a este servicio.</p></BarberoModal>
-  </section>;
+  const [seleccionada, setSeleccionada] = useState(null);
+  const [respuesta, setRespuesta] = useState("");
+  const [procesando, setProcesando] = useState(false);
+  const [error, setError] = useState("");
+
+  async function obtenerOpiniones() {
+    const uid = (await supabase.auth.getUser()).data.user?.id;
+    const { data: membership } = await supabase
+      .from("barberia_memberships")
+      .select("barberia_id")
+      .eq("profile_id", uid)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (!membership) return [];
+
+    const { data } = await supabase
+      .from("reviews")
+      .select("id, rating, comment, owner_response, is_published, is_featured, created_at, profiles!client_id(full_name)")
+      .eq("barberia_id", membership.barberia_id)
+      .order("created_at", { ascending: false });
+
+    return data ?? [];
+  }
+
+  const cargar = async () => {
+    setCargando(true);
+    setOpiniones(await obtenerOpiniones());
+    setCargando(false);
+  };
+
+  useEffect(() => {
+    let cancelado = false;
+    (async () => {
+      const data = await obtenerOpiniones();
+      if (!cancelado) {
+        setOpiniones(data);
+        setCargando(false);
+      }
+    })();
+    return () => { cancelado = true; };
+  }, []);
+
+  const resultados = useMemo(
+    () => opiniones.filter((o) => `${o.profiles?.full_name ?? ""} ${o.comment ?? ""}`.toLowerCase().includes(busqueda.toLowerCase())),
+    [opiniones, busqueda]
+  );
+
+  const promedio = opiniones.length
+    ? (opiniones.reduce((acc, o) => acc + o.rating, 0) / opiniones.length).toFixed(1)
+    : "0.0";
+
+  const enviarRespuesta = async () => {
+    if (!seleccionada || !respuesta.trim()) return;
+    setProcesando(true);
+    setError("");
+    try {
+      await apiFetch(`/resenas/${seleccionada.id}/responder`, {
+        method: "POST",
+        body: JSON.stringify({ respuesta: respuesta.trim() }),
+      });
+      setRespuesta("");
+      await cargar();
+      setSeleccionada((prev) => ({ ...prev, owner_response: respuesta.trim() }));
+    } catch (err) {
+      setError(err.message || "No fue posible enviar la respuesta.");
+    } finally {
+      setProcesando(false);
+    }
+  };
+
+  const alternarPublicacion = async (opinion) => {
+    setProcesando(true);
+    setError("");
+    try {
+      await apiFetch(`/resenas/${opinion.id}/moderar`, {
+        method: "POST",
+        body: JSON.stringify({ publicar: !opinion.is_published }),
+      });
+      await cargar();
+      setSeleccionada((prev) => (prev?.id === opinion.id ? { ...prev, is_published: !opinion.is_published } : prev));
+    } catch (err) {
+      setError(err.message || "No fue posible actualizar la reseña.");
+    } finally {
+      setProcesando(false);
+    }
+  };
+
+  const alternarDestacada = async (opinion) => {
+    setProcesando(true);
+    setError("");
+    try {
+      await apiFetch(`/resenas/${opinion.id}/destacar`, {
+        method: "POST",
+        body: JSON.stringify({ destacar: !opinion.is_featured }),
+      });
+      await cargar();
+      setSeleccionada((prev) => (prev?.id === opinion.id ? { ...prev, is_featured: !opinion.is_featured } : prev));
+    } catch (err) {
+      setError(err.message || "No fue posible actualizar la reseña.");
+    } finally {
+      setProcesando(false);
+    }
+  };
+
+  if (cargando) {
+    return <section className="bo-page"><p>Cargando opiniones...</p></section>;
+  }
+
+  return (
+    <section className="bo-page">
+      <header className="bo-heading">
+        <div>
+          <h2>Opiniones</h2>
+          <span>Conoce la experiencia de tus clientes, gestiona sus reseñas y elige cuáles mostrar en tu página principal.</span>
+        </div>
+      </header>
+
+      {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
+
+      <div className="bo-layout">
+        <aside className="bo-summary">
+          <div className="bo-rating">
+            <strong>{promedio}</strong>
+            <div><span>{"★".repeat(Math.round(promedio))}</span><small>{opiniones.length} opiniones</small></div>
+          </div>
+          <label className="bo-search">
+            <Search size={15} />
+            <input placeholder="Buscar…" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+          </label>
+        </aside>
+
+        <main className="bo-featured">
+          {seleccionada ? (
+            <>
+              <article className="bo-featured-card">
+                <div className="bo-stars">{"★".repeat(seleccionada.rating)}{"☆".repeat(5 - seleccionada.rating)}</div>
+                <h3>{seleccionada.profiles?.full_name ?? "Cliente"}</h3>
+                <div className="bo-featured-actions">
+                  <button onClick={() => alternarPublicacion(seleccionada)} disabled={procesando}>
+                    {seleccionada.is_published ? <EyeOff size={14} /> : <Eye size={14} />}
+                    {seleccionada.is_published ? "Ocultar" : "Publicar"}
+                  </button>
+                  <button onClick={() => alternarDestacada(seleccionada)} disabled={procesando || !seleccionada.is_published}>
+                    <Sparkles size={14} />
+                    {seleccionada.is_featured ? "Quitar de landing" : "Destacar en landing"}
+                  </button>
+                </div>
+              </article>
+              <article className="bo-review-detail">
+                <p>{seleccionada.comment || "Sin comentario."}</p>
+                {seleccionada.owner_response ? (
+                  <p><strong>Tu respuesta:</strong> {seleccionada.owner_response}</p>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <textarea className="bo-message" placeholder="Responder a esta reseña…" value={respuesta} onChange={(e) => setRespuesta(e.target.value)} />
+                    <button className="bm-primary" onClick={enviarRespuesta} disabled={procesando || !respuesta.trim()} style={{ alignSelf: "flex-start" }}>
+                      Enviar respuesta
+                    </button>
+                  </div>
+                )}
+              </article>
+            </>
+          ) : (
+            <p className="bo-empty">Selecciona una reseña para ver el detalle.</p>
+          )}
+        </main>
+
+        <section className="bo-list">
+          <div className="bo-list-head">
+            <h3>Reseñas recientes</h3>
+            <span>{resultados.length} opiniones</span>
+          </div>
+          {resultados.map((opinion) => (
+            <button
+              className={seleccionada?.id === opinion.id ? "bo-review active" : "bo-review"}
+              key={opinion.id}
+              onClick={() => { setSeleccionada(opinion); setRespuesta(""); }}
+            >
+              <strong>{opinion.profiles?.full_name ?? "Cliente"}</strong>
+              <span>{opinion.comment || "Sin comentario"}</span>
+              <small>
+                <Star size={12} /> {opinion.rating}/5 {!opinion.is_published && "· Oculta"} {opinion.is_featured && "· ✨ En landing"}
+              </small>
+            </button>
+          ))}
+          {!resultados.length && <p className="bo-empty">No encontramos reseñas.</p>}
+        </section>
+      </div>
+    </section>
+  );
 }

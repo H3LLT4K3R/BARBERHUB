@@ -5,11 +5,13 @@ import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet';
 import { divIcon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-import { BARBERIAS, generarSlots } from "../data/barberias.js";
-// La ruta correcta para archivos en /pages/ hacia utils
-import { getStoredUser } from "../../../utils/api.js";
-import { getOpenStreetMapEmbedUrl } from "../../../utils/openStreetMap.js";
+import { supabase } from "../../../lib/supabase.js";
+import { apiFetch } from "../../../utils/api.js";
+import { ESTADOS, ciudadesDe, zonasDe } from "../data/ubicaciones.js";
+import { getOpenStreetMapUrl } from "../../../utils/openStreetMap.js";
 import "../styles/explorar.css";
+
+const CENTRO_MEXICO = [23.6345, -102.5528];
 
 const iconoBarberia = divIcon({
   className: 'explorar-map-marker',
@@ -19,107 +21,90 @@ const iconoBarberia = divIcon({
   popupAnchor: [0, -17],
 });
 
-function AjustarVistaMapa({ ubicacion, barberias }) {
+function AjustarVistaMapa({ barberias }) {
   const map = useMap();
 
   useEffect(() => {
-    const puntos = barberias.map((barberia) => [barberia.lat, barberia.lng]);
-    if (ubicacion) puntos.push(ubicacion);
+    const puntos = barberias.filter((b) => b.lat != null && b.lng != null).map((b) => [b.lat, b.lng]);
     if (puntos.length) map.fitBounds(puntos, { padding: [28, 28], maxZoom: 14 });
-  }, [barberias, map, ubicacion]);
+  }, [barberias, map]);
 
   return null;
 }
 
-const calcularDistancia = (lat1, lon1, lat2, lon2) => {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-  return parseFloat((R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))).toFixed(1));
-};
-
 export default function Explorar() {
   const navigate = useNavigate();
-  const user = getStoredUser();
-  const [ubicacion, setUbicacion] = useState(null);
-  const [radio, setRadio] = useState(5);
-  const [filtroServicio, setFiltroServicio] = useState('');
+  const [barberias, setBarberias] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [slotsPorBarberia, setSlotsPorBarberia] = useState({});
+  const [estado, setEstado] = useState('');
+  const [ciudad, setCiudad] = useState('');
+  const [zona, setZona] = useState('');
+  const [fecha, setFecha] = useState('');
+  const [hora, setHora] = useState('');
 
-  // Nuevos estados para el filtro de disponibilidad 
-  const [fechaFiltro, setFechaFiltro] = useState('');
-  const [horaFiltro, setHoraFiltro] = useState('');
-
-  // geolocalización 
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          setUbicacion([pos.coords.latitude, pos.coords.longitude]);
-        },
-        async () => {
-          try {
-            const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
-            const data = await res.json();
-            if (data.latitude && data.longitude) {
-              setUbicacion([parseFloat(data.latitude), parseFloat(data.longitude)]);
-            } else {
-              setUbicacion([19.0433, -98.2019]); 
-            }
-          } catch {
-            setUbicacion([19.0433, -98.2019]);
-          }
-        },
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-      );
-    } else {
-      setTimeout(() => {
-        setUbicacion([19.0433, -98.2019]);
-      }, 0);
-    }
+    let cancelado = false;
+
+    supabase
+      .from("barberias_public")
+      .select("*")
+      .then(({ data, error }) => {
+        if (cancelado) return;
+        if (error) {
+          console.error(error);
+          setBarberias([]);
+        } else {
+          setBarberias(data ?? []);
+        }
+        setCargando(false);
+      });
+
+    return () => {
+      cancelado = true;
+    };
   }, []);
 
-  //  FILTRADO DE BARBERÍAS 
+  const barberiasPorUbicacion = useMemo(() => {
+    return barberias
+      .filter((b) => !estado || b.state === estado)
+      .filter((b) => !ciudad || b.city === ciudad)
+      .filter((b) => !zona || b.zone === zona);
+  }, [barberias, estado, ciudad, zona]);
+
+  useEffect(() => {
+    if (!fecha) return;
+
+    barberiasPorUbicacion.forEach((b) => {
+      const clave = `${b.id}:${fecha}`;
+      if (slotsPorBarberia[clave]) return;
+      const params = new URLSearchParams({ barberiaId: b.id, fecha });
+      apiFetch(`/citas/disponibilidad?${params.toString()}`)
+        .then((data) => {
+          setSlotsPorBarberia((prev) => ({ ...prev, [clave]: data.slots ?? [] }));
+        })
+        .catch(() => {
+          setSlotsPorBarberia((prev) => ({ ...prev, [clave]: [] }));
+        });
+    });
+  }, [barberiasPorUbicacion, fecha, slotsPorBarberia]);
+
   const barberiasFiltradas = useMemo(() => {
-    if (!ubicacion) return [];
-    const [lat, lon] = ubicacion;
+    if (!fecha) return barberiasPorUbicacion;
 
-    return BARBERIAS
-      .filter((b) => b.abierto)
-      .map((b) => ({
-        ...b,
-        dist: calcularDistancia(lat, lon, b.lat, b.lng),
-      }))
-      .filter((b) => b.dist <= radio)
-      .filter((b) => {
-        if (!filtroServicio) return true;
-        const serviciosBH = b.servicios?.map(s => s.toLowerCase()) || [];
-        return serviciosBH.includes(filtroServicio.toLowerCase()) || b.categoria?.toLowerCase() === filtroServicio.toLowerCase();
-      })
-      .sort((a, b) => a.dist - b.dist);
-  }, [ubicacion, radio, filtroServicio]);
+    return barberiasPorUbicacion.filter((b) => {
+      const slots = slotsPorBarberia[`${b.id}:${fecha}`];
+      if (!slots) return true; // aún cargando disponibilidad, no ocultar todavía
+      if (hora) return slots.some((s) => s.hora === hora && s.disponible);
+      return slots.some((s) => s.disponible);
+    });
+  }, [barberiasPorUbicacion, fecha, hora, slotsPorBarberia]);
 
-  // MAPEO DINÁMICO 
-  const mapaUrl = useMemo(() => {
-    if (!ubicacion) return '';
-    const [lat, lon] = ubicacion;
-
-    let zoom;
-    if (radio <= 2) zoom = 15;
-    else if (radio <= 5) zoom = 14;
-    else if (radio <= 15) zoom = 12;
-    else if (radio <= 30) zoom = 11;
-    else zoom = 10;
-
-    return getOpenStreetMapEmbedUrl(lat, lon, zoom);
-  }, [ubicacion, radio]);
-
-  //PANTALLA DE CARGA
-  if (!ubicacion) {
+  if (cargando) {
     return (
       <div className="explorar-loading">
         <div className="explorar-spinner"></div>
-        <p>Ubicándote en el mapa...</p>
+        <p>Cargando barberías...</p>
       </div>
     );
   }
@@ -131,63 +116,82 @@ export default function Explorar() {
         <div className="explorar-content">
           <div className="explorar-section-header">
             <div className="explorar-header-left">
-              <h2 className="explorar-title">Buscar por Disponibilidad</h2>
+              <h2 className="explorar-title">Barberías</h2>
               <div className="explorar-filters">
                 <div className="explorar-filter-group">
-                  <label className="explorar-filter-label">FECHA</label>
-                  <input
-                    type="date"
-                    value={fechaFiltro}
-                    onChange={(e) => setFechaFiltro(e.target.value)}
-                    className="explorar-input-fecha"
-                  />
+                  <label className="explorar-filter-label">ESTADO</label>
+                  <select
+                    className="explorar-select-hora"
+                    value={estado}
+                    onChange={(e) => { setEstado(e.target.value); setCiudad(''); setZona(''); }}
+                  >
+                    <option value="">Todos</option>
+                    {ESTADOS.map((e) => <option key={e} value={e}>{e}</option>)}
+                  </select>
                 </div>
                 <div className="explorar-filter-group">
-                  <label className="explorar-filter-label">HORA</label>
+                  <label className="explorar-filter-label">CIUDAD</label>
                   <select
-                    value={horaFiltro}
-                    onChange={(e) => setHoraFiltro(e.target.value)}
                     className="explorar-select-hora"
+                    value={ciudad}
+                    onChange={(e) => { setCiudad(e.target.value); setZona(''); }}
+                    disabled={!estado}
                   >
-                    <option value="">Cualquier hora</option>
-                    <option value="09:00">09:00 a.m.</option>
-                    <option value="10:00">10:00 a.m.</option>
-                    <option value="11:00">11:00 a.m.</option>
-                    <option value="12:00">12:00 p.m.</option>
-                    <option value="13:00">01:00 p.m.</option>
-                    <option value="14:00">02:00 p.m.</option>
-                    <option value="15:00">03:00 p.m.</option>
-                    <option value="16:00">04:00 p.m.</option>
+                    <option value="">Todas</option>
+                    {ciudadesDe(estado).map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="explorar-filter-group">
+                  <label className="explorar-filter-label">ZONA</label>
+                  <select
+                    className="explorar-select-hora"
+                    value={zona}
+                    onChange={(e) => setZona(e.target.value)}
+                    disabled={!ciudad}
+                  >
+                    <option value="">Todas</option>
+                    {zonasDe(estado, ciudad).map((z) => <option key={z} value={z}>{z}</option>)}
                   </select>
                 </div>
               </div>
             </div>
 
-            <div className="explorar-radius-control">
-              <label className="explorar-radius-label">
-                Radio de búsqueda: <span>{radio} km</span>
-              </label>
-              <input
-                type="range"
-                min="1"
-                max="5"
-                value={radio}
-                onChange={(e) => setRadio(Number(e.target.value))} 
-                className="explorar-radius-slider"
-              />
+            <div className="explorar-filters">
+              <div className="explorar-filter-group">
+                <label className="explorar-filter-label">FECHA</label>
+                <input
+                  type="date"
+                  className="explorar-input-fecha"
+                  value={fecha}
+                  onChange={(e) => { setFecha(e.target.value); setHora(''); }}
+                />
+              </div>
+              <div className="explorar-filter-group">
+                <label className="explorar-filter-label">HORA</label>
+                <select
+                  className="explorar-select-hora"
+                  value={hora}
+                  onChange={(e) => setHora(e.target.value)}
+                  disabled={!fecha}
+                >
+                  <option value="">Cualquier hora</option>
+                  {["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"].map((h) => (
+                    <option key={h} value={h}>{h}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
 
           <div className="explorar-barberias-list">
             {barberiasFiltradas.length === 0 && (
               <div className="explorar-empty">
-                <p>No hay barberías que cumplan con los filtros en este rango de {radio}km.</p>
+                <p>No hay barberías que coincidan con estos filtros.</p>
               </div>
             )}
 
             {barberiasFiltradas.map((b) => {
-              const slots = generarSlots(b).slice(0, 6);
-              const horariosNoDisponibles = ['10:00', '11:30', '16:00'];
+              const slots = (slotsPorBarberia[`${b.id}:${fecha}`] ?? []).slice(0, 6);
 
               return (
                 <div key={b.id} className="explorar-barberia-card">
@@ -195,7 +199,7 @@ export default function Explorar() {
                   <div className="explorar-barberia-left-block">
                     <div className="explorar-barberia-icon">💈</div>
                     <div className="explorar-barberia-info">
-                      <h3 className="explorar-barberia-name">{b.nombre}</h3>
+                      <h3 className="explorar-barberia-name">{b.name}</h3>
                       <div className="explorar-barberia-rating">
                         <div className="explorar-stars">
                           {[...Array(5)].map((_, i) => (
@@ -206,48 +210,49 @@ export default function Explorar() {
                             />
                           ))}
                         </div>
-                        <span className="explorar-opiniones">{b.rating} ({b.totalOpiniones || 14} opiniones)</span>
+                        <span className="explorar-opiniones">{b.rating} ({b.total_opiniones} opiniones)</span>
                       </div>
                       <p className="explorar-barberia-address">
                         <MapPin className="explorar-address-icon" />
-                        {b.direccion}
+                        {[b.zone, b.city, b.state].filter(Boolean).join(', ')}
                       </p>
-                      <div className="explorar-barberia-distance">
-                        A {b.dist} km de ti
-                      </div>
+                      {b.lat != null && b.lng != null && (
+                        <button
+                          type="button"
+                          className="explorar-profile-link"
+                          style={{ padding: "2px 0" }}
+                          onClick={() => window.open(getOpenStreetMapUrl(b.lat, b.lng), "_blank", "noopener,noreferrer")}
+                        >
+                          Ver ubicación en el mapa
+                        </button>
+                      )}
                       <p className="explorar-barberia-price">
-                        Servicio desde ${b.precioEstimado || 150} pesos
+                        Servicio desde ${b.precio_desde ?? 0} {b.currency_code}
                       </p>
                     </div>
                   </div>
 
                   <div className="explorar-barberia-right-block">
-                    <div className="explorar-slots-section">
-                      <p className="explorar-slots-title">Horarios disponibles hoy:</p>
-                      <div className="explorar-slots">
-                        {slots.map((hora) => {
-                          const estaOcupado = horariosNoDisponibles.includes(hora);
-                          return (
+                    {fecha && (
+                      <div className="explorar-slots-section">
+                        <p className="explorar-slots-title">Horarios disponibles:</p>
+                        <div className="explorar-slots">
+                          {slots.length === 0 && <span style={{ fontSize: "0.85rem", color: "#777" }}>Sin horarios ese día</span>}
+                          {slots.map((slot) => (
                             <button
-                              key={hora}
-                              onClick={() => {
-                                if (user) {
-                                  navigate("/agenda-local", {
-                                    state: { volverA: "/explorar" },
-                                  });
-                                } else {
-                                  navigate("/agenda-local", { state: { volverA: "/explorar" } });
-                                }
-                              }}
-                              className={`explorar-slot ${estaOcupado ? 'no-disponible' : ''}`}
-                              disabled={estaOcupado}
+                              key={slot.hora}
+                              onClick={() =>
+                                navigate(`/barberia-perfil/${b.id}`, { state: { volverA: "/explorar" } })
+                              }
+                              className={`explorar-slot ${!slot.disponible ? 'no-disponible' : ''}`}
+                              disabled={!slot.disponible}
                             >
-                              {hora}
+                              {slot.hora}
                             </button>
-                          );
-                        })}
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     <button
                       onClick={() =>
@@ -268,8 +273,8 @@ export default function Explorar() {
         </div>
 
         <div className="explorar-map-container">
-          <MapContainer center={ubicacion} zoom={14}
-            title="Mapa BarberHub Dinámico"
+          <MapContainer center={CENTRO_MEXICO} zoom={5}
+            title="Mapa BarberHub"
             className="explorar-map-iframe"
             scrollWheelZoom
           >
@@ -277,12 +282,12 @@ export default function Explorar() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <AjustarVistaMapa ubicacion={ubicacion} barberias={BARBERIAS} />
-            {BARBERIAS.map((barberia) => (
+            <AjustarVistaMapa barberias={barberiasFiltradas} />
+            {barberiasFiltradas.filter((b) => b.lat != null && b.lng != null).map((barberia) => (
               <Marker key={barberia.id} position={[barberia.lat, barberia.lng]} icon={iconoBarberia}>
                 <Popup>
-                  <strong>{barberia.nombre}</strong><br />
-                  {barberia.direccion}
+                  <strong>{barberia.name}</strong><br />
+                  {barberia.address_line1}, {barberia.city}
                 </Popup>
               </Marker>
             ))}
@@ -290,7 +295,6 @@ export default function Explorar() {
         </div>
 
       </div>
-      <span className="explorar-oculto" onClick={() => setFiltroServicio('')}>{filtroServicio}</span>
     </div>
   );
 }

@@ -12,7 +12,7 @@ export default function ComentarioEnviado() {
       <div className="ce-tarjeta">
 
         {/* Logo superior */}
-        <img src="/logo-ejemplo.png" alt="Barber Hub" className="ce-logo" />
+        <img src="/logo.png" alt="Barber Hub" className="ce-logo" />
 
         {/* Título principal */}
         <h1 className="ce-titulo">¡Gracias por tu comentario!</h1>

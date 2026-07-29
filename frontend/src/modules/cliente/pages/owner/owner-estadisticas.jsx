@@ -1,248 +1,244 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Download } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer,
-  BarChart, Bar, Legend
+  BarChart, Bar,
 } from 'recharts';
-
-/* ASEGÚRATE DE QUE LA RUTA SEA LA CORRECTA */
+import { supabase } from '../../../../lib/supabase.js';
 import '../../styles/owner/owner-estadisticas.css';
 
+const DIAS_CORTOS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+
+function TooltipPersonalizado({ active, payload, label }) {
+  if (active && payload && payload.length) {
+    return (
+      <div style={{ backgroundColor: '#1a1a1a', color: 'white', padding: '12px', borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.2)', border: '1px solid #333' }}>
+        <p style={{ margin: 0, fontWeight: 'bold' }}>
+          {label}: <span style={{ color: '#E5C158' }}>${Number(payload[0].value).toLocaleString()}</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+}
+
+function inicioDeRango(periodo) {
+  const inicio = new Date();
+  if (periodo === 'dia') inicio.setHours(0, 0, 0, 0);
+  else if (periodo === 'semana') inicio.setDate(inicio.getDate() - 6);
+  else inicio.setDate(inicio.getDate() - 29);
+  if (periodo !== 'dia') inicio.setHours(0, 0, 0, 0);
+  return inicio;
+}
+
 export default function EstadisticasView() {
+  const [barberiaId, setBarberiaId] = useState(null);
   const [periodo, setPeriodo] = useState('semana');
-  const [mesDescarga, setMesDescarga] = useState('06');
-  const [diaDescarga, setDiaDescarga] = useState('15');
+  const [mesDescarga, setMesDescarga] = useState(String(new Date().getMonth() + 1).padStart(2, '0'));
+  const [diaDescarga, setDiaDescarga] = useState(String(new Date().getDate()).padStart(2, '0'));
+  const [cargando, setCargando] = useState(true);
+  const [resumen, setResumen] = useState({ ingresos: 0, clientes: 0, promedio: 0 });
+  const [graficaLinea, setGraficaLinea] = useState([]);
+  const [graficaBarras, setGraficaBarras] = useState([]);
 
-  // Base de datos con valores reales (no porcentajes)
-  const baseDeDatos = {
-    dia: {
-      ingresos: 3500, clientes: 45, promedio: 77,
-      graficaLinea: [
-        { label: '10 AM', val: 500, clientes: 8 },
-        { label: '1 PM', val: 1200, clientes: 15 },
-        { label: '4 PM', val: 800, clientes: 10 },
-        { label: '7 PM', val: 1000, clientes: 12 },
-      ],
-      graficaBarras: [
-        { categoria: 'Corte', actual: 1500, anterior: 1200 },
-        { categoria: 'Barba', actual: 800, anterior: 900 },
-        { categoria: 'Facial', actual: 400, anterior: 600 }
-      ]
-    },
-    semana: {
-      ingresos: 19850, clientes: 142, promedio: 140,
-      graficaLinea: [
-        { label: 'Lun', val: 300, clientes: 5 },
-        { label: 'Mar', val: 700, clientes: 12 },
-        { label: 'Mié', val: 950, clientes: 15 },
-        { label: 'Jue', val: 1200, clientes: 20 },
-        { label: 'Vie', val: 3500, clientes: 45 },
-        { label: 'Sáb', val: 4200, clientes: 45 },
-      ],
-      graficaBarras: [
-        { categoria: 'Corte', actual: 7500, anterior: 6500 },
-        { categoria: 'Barba', actual: 3500, anterior: 4200 },
-        { categoria: 'Facial', actual: 1200, anterior: 1500 },
-        { categoria: 'Color', actual: 2800, anterior: 2000 }
-      ]
-    },
-    mes: {
-      ingresos: 85400, clientes: 610, promedio: 140,
-      graficaLinea: [
-        { label: 'Sem 1', val: 19000, clientes: 135 },
-        { label: 'Sem 2', val: 21000, clientes: 150 },
-        { label: 'Sem 3', val: 25000, clientes: 175 },
-        { label: 'Sem 4', val: 20400, clientes: 150 },
-      ],
-      graficaBarras: [
-        { categoria: 'Corte', actual: 35000, anterior: 32000 },
-        { categoria: 'Barba', actual: 15000, anterior: 14500 },
-        { categoria: 'Facial', actual: 8000, anterior: 9000 },
-        { categoria: 'Color', actual: 12000, anterior: 10000 }
-      ]
+  useEffect(() => {
+    async function cargarBarberia() {
+      const uid = (await supabase.auth.getUser()).data.user?.id;
+      const { data: membership } = await supabase
+        .from('barberia_memberships')
+        .select('barberia_id')
+        .eq('profile_id', uid)
+        .in('role', ['owner', 'admin'])
+        .eq('is_active', true)
+        .maybeSingle();
+      setBarberiaId(membership?.barberia_id ?? null);
     }
-  };
+    cargarBarberia();
+  }, []);
 
-  // Diccionario para ajustar dinámicamente las leyendas de la gráfica de barras
-  const nombresLeyenda = {
-    dia: { actual: "Hoy", anterior: "Ayer" },
-    semana: { actual: "Esta Semana", anterior: "Semana Anterior" },
-    mes: { actual: "Este Mes", anterior: "Mes Anterior" }
-  };
+  useEffect(() => {
+    if (!barberiaId) return;
+    let cancelado = false;
 
-  const datosActuales = baseDeDatos[periodo];
+    async function cargarDatos() {
+      setCargando(true);
+      const inicio = inicioDeRango(periodo);
 
-  const descargarExcelCompras = () => {
-    // Definimos las columnas del archivo
-    const encabezados = ["Fecha", "Artículo Comprado", "Categoría", "Cantidad", "Costo Unitario", "Costo Total"];
-    
-    const fechaFiltro = `2026-${mesDescarga}-${diaDescarga}`;
-    
-    // Matriz con los registros de datos
-    const filas = [
-      [fechaFiltro, "Cera Mate Pomade", "Insumos", "5", "$100.00", "$500.00"],
-      [fechaFiltro, "Shampoo Purificante", "Insumos", "2", "$150.00", "$300.00"],
-      [fechaFiltro, "Navajas (Caja 100)", "Herramientas", "3", "$80.00", "$240.00"],
-      [fechaFiltro, "Bebidas (Cortesía)", "Gastos", "10", "$15.00", "$150.00"]
-    ];
+      const [{ data: ingresos }, { data: appointments }] = await Promise.all([
+        supabase
+          .from('financial_transactions')
+          .select('amount, occurred_at')
+          .eq('barberia_id', barberiaId)
+          .eq('type', 'income')
+          .gte('occurred_at', inicio.toISOString()),
+        supabase
+          .from('appointments')
+          .select('id, scheduled_at, total, appointment_services(service_name, unit_price, quantity)')
+          .eq('barberia_id', barberiaId)
+          .eq('status', 'completed')
+          .gte('scheduled_at', inicio.toISOString()),
+      ]);
 
-    // Convertimos la matriz a formato de texto separado por comas, asegurando comillas para evitar rupturas de celdas
+      if (cancelado) return;
+
+      const buckets = new Map();
+      for (const t of ingresos ?? []) {
+        const fecha = new Date(t.occurred_at);
+        const label = periodo === 'dia'
+          ? `${String(fecha.getHours()).padStart(2, '0')}:00`
+          : periodo === 'semana'
+            ? DIAS_CORTOS[fecha.getDay()]
+            : `Sem ${Math.ceil(fecha.getDate() / 7)}`;
+        buckets.set(label, (buckets.get(label) ?? 0) + Number(t.amount));
+      }
+      setGraficaLinea(Array.from(buckets.entries()).map(([label, val]) => ({ label, val })));
+
+      const porServicio = new Map();
+      for (const a of appointments ?? []) {
+        for (const s of a.appointment_services ?? []) {
+          const total = Number(s.unit_price) * s.quantity;
+          porServicio.set(s.service_name, (porServicio.get(s.service_name) ?? 0) + total);
+        }
+      }
+      setGraficaBarras(Array.from(porServicio.entries()).map(([categoria, actual]) => ({ categoria, actual })));
+
+      const totalIngresos = (ingresos ?? []).reduce((acc, t) => acc + Number(t.amount), 0);
+      const totalClientes = appointments?.length ?? 0;
+      setResumen({
+        ingresos: totalIngresos,
+        clientes: totalClientes,
+        promedio: totalClientes ? Math.round(totalIngresos / totalClientes) : 0,
+      });
+
+      setCargando(false);
+    }
+
+    cargarDatos();
+    return () => { cancelado = true; };
+  }, [barberiaId, periodo]);
+
+  const descargarExcelCompras = async () => {
+    const anio = new Date().getFullYear();
+    const fechaFiltro = `${anio}-${mesDescarga}-${diaDescarga}`;
+    const inicio = `${fechaFiltro}T00:00:00`;
+    const fin = `${fechaFiltro}T23:59:59`;
+
+    const { data } = await supabase
+      .from('inventory_movements')
+      .select('created_at, type, quantity, unit_cost, inventory_items!inner(name, barberia_id)')
+      .eq('inventory_items.barberia_id', barberiaId)
+      .gte('created_at', inicio)
+      .lte('created_at', fin);
+
+    const encabezados = ["Fecha", "Artículo", "Tipo", "Cantidad", "Costo Unitario", "Costo Total"];
+    const filas = (data ?? []).map((m) => [
+      new Date(m.created_at).toLocaleString('es-MX'),
+      m.inventory_items?.name ?? '',
+      m.type,
+      m.quantity,
+      m.unit_cost ?? '',
+      m.unit_cost ? (Number(m.unit_cost) * Math.abs(m.quantity)).toFixed(2) : '',
+    ]);
+
     const contenidoCSV = [
       encabezados.join(","),
-      ...filas.map(fila => fila.map(campo => `"${campo.replace(/"/g, '""')}"`).join(","))
+      ...filas.map((fila) => fila.map((campo) => `"${String(campo).replace(/"/g, '""')}"`).join(",")),
     ].join("\n");
 
-    // El truco maestro: Agregamos el BOM de UTF-8 (\uFEFF) para que Excel interprete bien los acentos
-    const blob = new Blob(["\uFEFF" + contenidoCSV], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob(["﻿" + contenidoCSV], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
-    
     const enlace = document.createElement("a");
     enlace.href = url;
-    enlace.setAttribute("download", `Reporte_Compras_${diaDescarga}_${mesDescarga}.csv`);
+    enlace.setAttribute("download", `Reporte_Inventario_${diaDescarga}_${mesDescarga}.csv`);
     document.body.appendChild(enlace);
     enlace.click();
-    
-    // Limpieza de recursos en memoria
     document.body.removeChild(enlace);
     URL.revokeObjectURL(url);
   };
 
-  // Tooltip personalizado usando estilos en línea para evitar problemas de clases
-  const TooltipPersonalizado = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div style={{
-          backgroundColor: '#1a1a1a', color: 'white', padding: '12px', 
-          borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.2)', border: '1px solid #333'
-        }}>
-          <p style={{ margin: '0 0 5px 0', fontWeight: 'bold' }}>
-            {label}: <span style={{ color: '#E5C158' }}>${payload[0].value.toLocaleString()}</span>
-          </p>
-          <p style={{ margin: 0, fontSize: '0.85rem', color: '#aaa' }}>
-            {payload[0].payload.clientes} Clientes
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
+  if (!barberiaId && !cargando) {
+    return <div className="estadisticas-wrapper"><p>Solo el dueño o un administrador puede ver estadísticas.</p></div>;
+  }
 
   return (
     <div className="estadisticas-wrapper fade-in">
-      
-      {/* Botones Superiores */}
       <div className="periodo-actions">
         {['dia', 'semana', 'mes'].map((btn) => (
-          <button 
-            key={btn}
-            onClick={() => setPeriodo(btn)}
-            className={`btn-periodo ${periodo === btn ? 'active' : ''}`}
-            style={{ textTransform: 'capitalize' }}
-          >
+          <button key={btn} onClick={() => setPeriodo(btn)} className={`btn-periodo ${periodo === btn ? 'active' : ''}`} style={{ textTransform: 'capitalize' }}>
             {btn === 'dia' ? 'Día' : btn}
           </button>
         ))}
       </div>
 
-      {/* Contenedor Principal */}
       <div className="dashboard-container">
-        
-        {/* Tarjetas de Resumen */}
-        <div className="summary-grid">
-          <div className="summary-card card-gold">
-            <p>Ingresos Totales</p>
-            <h3>${datosActuales.ingresos.toLocaleString()}</h3>
-          </div>
-          <div className="summary-card card-white">
-            <p>Clientes Atendidos</p>
-            <h3>{datosActuales.clientes}</h3>
-          </div>
-          <div className="summary-card card-black">
-            <p>Promedio por Cliente</p>
-            <h3>${datosActuales.promedio}</h3>
-          </div>
-        </div>
-
-        {/* Sección de Gráficas Recharts */}
-        <div className="charts-grid">
-          
-          {/* Gráfica 1: Área de Líneas */}
-          <div className="chart-wrapper card-white" style={{ padding: '20px', borderRadius: '12px' }}>
-            <h3 className="chart-title">Ingresos de la {periodo === 'dia' ? 'jornada' : periodo}</h3>
-            
-            <div style={{ width: '100%', height: '300px' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={datosActuales.graficaLinea} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorIngresos" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#E5C158" stopOpacity={0.6}/>
-                      <stop offset="95%" stopColor="#E5C158" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                  <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{fill: '#888', fontSize: 12}} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#888', fontSize: 12}} tickFormatter={(value) => `$${value}`} />
-                  <RechartsTooltip content={<TooltipPersonalizado />} cursor={{ stroke: '#ccc', strokeWidth: 1, strokeDasharray: '5 5' }} />
-                  <Area 
-                    type="monotone" 
-                    dataKey="val" 
-                    stroke="#111827" 
-                    strokeWidth={3} 
-                    fillOpacity={1} 
-                    fill="url(#colorIngresos)" 
-                    activeDot={{ r: 6, fill: "#E5C158", stroke: "#111827", strokeWidth: 2 }}
-                    dot={{ r: 4, fill: "#fff", stroke: "#111827", strokeWidth: 2 }}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+        {cargando ? <p>Cargando estadísticas...</p> : (
+          <>
+            <div className="summary-grid">
+              <div className="summary-card card-gold">
+                <p>Ingresos Totales</p>
+                <h3>${resumen.ingresos.toLocaleString()}</h3>
+              </div>
+              <div className="summary-card card-white">
+                <p>Clientes Atendidos</p>
+                <h3>{resumen.clientes}</h3>
+              </div>
+              <div className="summary-card card-black">
+                <p>Promedio por Cliente</p>
+                <h3>${resumen.promedio}</h3>
+              </div>
             </div>
-          </div>
 
-          {/* Gráfica 2: Barras */}
-          <div className="chart-wrapper card-white" style={{ padding: '20px', borderRadius: '12px' }}>
-            <h3 className="chart-title">Ingresos por categoría de servicio</h3>
-            
-            <div style={{ width: '100%', height: '300px' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={datosActuales.graficaBarras} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barGap={4}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                  <XAxis dataKey="categoria" axisLine={false} tickLine={false} tick={{fill: '#888', fontSize: 12}} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#888', fontSize: 12}} tickFormatter={(value) => `$${value}`} />
-                  <RechartsTooltip 
-                    cursor={{fill: '#f9fafb'}} 
-                    contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'}}
-                  />
-                  <Legend iconType="square" align="right" verticalAlign="top" wrapperStyle={{top: -20, fontSize: '12px', fontWeight: 'bold', color: '#666'}}/>
-                  <Bar dataKey="actual" name={nombresLeyenda[periodo].actual} fill="#E5C158" radius={[4, 4, 0, 0]} barSize={25} />
-                  <Bar dataKey="anterior" name={nombresLeyenda[periodo].anterior} fill="#E5E7EB" radius={[4, 4, 0, 0]} barSize={25} />
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="charts-grid">
+              <div className="chart-wrapper card-white" style={{ padding: '20px', borderRadius: '12px' }}>
+                <h3 className="chart-title">Ingresos de la {periodo === 'dia' ? 'jornada' : periodo}</h3>
+                <div style={{ width: '100%', height: '300px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={graficaLinea} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorIngresos" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#E5C158" stopOpacity={0.6} />
+                          <stop offset="95%" stopColor="#E5C158" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                      <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 12 }} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 12 }} tickFormatter={(v) => `$${v}`} />
+                      <RechartsTooltip content={<TooltipPersonalizado />} cursor={{ stroke: '#ccc', strokeWidth: 1, strokeDasharray: '5 5' }} />
+                      <Area type="monotone" dataKey="val" stroke="#111827" strokeWidth={3} fillOpacity={1} fill="url(#colorIngresos)" activeDot={{ r: 6, fill: "#E5C158", stroke: "#111827", strokeWidth: 2 }} dot={{ r: 4, fill: "#fff", stroke: "#111827", strokeWidth: 2 }} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="chart-wrapper card-white" style={{ padding: '20px', borderRadius: '12px' }}>
+                <h3 className="chart-title">Ingresos por categoría de servicio</h3>
+                <div style={{ width: '100%', height: '300px' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={graficaBarras} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barGap={4}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                      <XAxis dataKey="categoria" axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 12 }} dy={10} />
+                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#888', fontSize: 12 }} tickFormatter={(v) => `$${v}`} />
+                      <RechartsTooltip cursor={{ fill: '#f9fafb' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
+                      <Bar dataKey="actual" name="Ingresos" fill="#E5C158" radius={[4, 4, 0, 0]} barSize={25} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
             </div>
-          </div>
+          </>
+        )}
 
-        </div>
-
-        {/* Sección de Exportación */}
         <div className="export-section card-white" style={{ padding: '20px', borderRadius: '12px', marginTop: '20px' }}>
           <div className="export-info">
-            <h3>Exportar Reporte de Compras</h3>
-            <p>Descarga el registro de insumos y gastos en formato Excel (CSV).</p>
+            <h3>Exportar Reporte de Inventario</h3>
+            <p>Descarga los movimientos de inventario del día en formato Excel (CSV).</p>
           </div>
-          
+
           <div className="export-controls">
             <select className="export-select" value={mesDescarga} onChange={(e) => setMesDescarga(e.target.value)}>
-              <option value="01">Enero</option>
-              <option value="02">Febrero</option>
-              <option value="03">Marzo</option>
-              <option value="04">Abril</option>
-              <option value="05">Mayo</option>
-              <option value="06">Junio</option>
-              <option value="07">Julio</option>
-              <option value="08">Agosto</option>
-              <option value="09">Septiembre</option>
-              <option value="10">Octubre</option>
-              <option value="11">Noviembre</option>
-              <option value="12">Diciembre</option>
+              {["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"].map((m, i) => (
+                <option key={m} value={m}>{["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"][i]}</option>
+              ))}
             </select>
 
             <select className="export-select" value={diaDescarga} onChange={(e) => setDiaDescarga(e.target.value)}>
@@ -258,7 +254,6 @@ export default function EstadisticasView() {
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );

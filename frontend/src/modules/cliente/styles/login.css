@@ -23,7 +23,7 @@
 .login-columna-izquierda {
   position: relative;
   background-color: #e8e4df;
-  background-image: url("/barberia.jpg");
+  background-image: url("/imagen_fondo.png");
   background-size: cover;
   background-position: center;
   display: flex;

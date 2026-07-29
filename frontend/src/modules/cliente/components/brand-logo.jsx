@@ -16,7 +16,7 @@ export default function BrandLogo({
     >
       <img
         className={imgClassName}
-        src="/barberhublogo.jpg"
+        src="/logo.png"
         alt={alt}
       />
     </button>

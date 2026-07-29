@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CalendarDays,
   CalendarX2,
@@ -11,44 +11,198 @@ import {
   Check,
   MessageCircle,
   Scissors,
-  Repeat,
-  ShoppingBag
+  UsersRound,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../../../../lib/supabase.js";
+import { apiFetch } from "../../../../utils/api.js";
 import "../../styles/barbero/dashboard-barbero.css";
 import BarberoModal from "./barbero-modal";
 
-const metricas = [
-  { etiqueta: "Reseñas", valor: "4.9", icono: Star, tono: "gold" },
-  { etiqueta: "Nuevos Clientes", valor: "2", icono: User, tono: "ink" }, 
-  { etiqueta: "Agendadas", valor: "6", icono: CalendarDays, tono: "rose" },
-  { etiqueta: "Canceladas", valor: "0", icono: CalendarX2, tono: "gray" },
-  { etiqueta: "Atendidos", valor: "4", icono: CheckCircle2, tono: "green" },
-];
+const ESTADOS_ACTIVOS = ["pending_confirmation", "pending_payment", "confirmed", "in_progress"];
+const ESTADOS_CANCELADOS = ["cancelled", "rejected", "no_show"];
+const DIAS_SEMANA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
-// Base de datos de citas actualizada con datos comerciales prácticos
-const citas = [
-  { hora: "10:00", cliente: "Laura Martínez", servicio: "Shave & Haircut", importe: "$150", estado: "confirmada", tipo: "cita", visitas: 12, preferencias: "Corte simétrico", frecuencia: "Cada mes", ultimaCompra: "Ninguna", telefono: "+52 555 123 4567" },
-  { hora: "11:30", cliente: "Carlos Ruiz", servicio: "Corte clásico", importe: "$180", estado: "pendiente", tipo: "cita", visitas: 4, preferencias: "Fade medio, textura arriba", frecuencia: "Cada 3 semanas", ultimaCompra: "Cera Mate Texturizante", telefono: "+52 555 987 6543" },
-  { hora: "13:00", cliente: "Miguel Torres", servicio: "Corte + barba", importe: "$320", estado: "confirmada", tipo: "cita", visitas: 25, preferencias: "Barba cuadrada, rebajar volumen", frecuencia: "Cada 15 días", ultimaCompra: "Aceite para barba (Sándalo)", telefono: "+52 555 246 8135" },
-  { hora: "14:00", cliente: "Horario de Comida", servicio: "Descanso", importe: "-", estado: "bloqueado", tipo: "bloqueo" },
-  { hora: "16:00", cliente: "Andrés López", servicio: "Perfilado de barba", importe: "$220", estado: "neutral", tipo: "cita", visitas: 3, preferencias: "Solo alinear contornos", frecuencia: "Eventual", ultimaCompra: "Aftershave", telefono: "+52 555 369 2580" },
-];
+function inicioDeSemana() {
+  const hoy = new Date();
+  const diff = hoy.getDay() === 0 ? -6 : 1 - hoy.getDay();
+  const lunes = new Date(hoy);
+  lunes.setDate(hoy.getDate() + diff);
+  lunes.setHours(0, 0, 0, 0);
+  return lunes;
+}
 
-const historialCortes = [
-  { id: 1, horaFin: "09:45 AM", cliente: "Roberto Gómez", servicio: "Fade clásico", total: "$180", propina: "$20", metodo: "Tarjeta" },
-  { id: 2, horaFin: "08:30 AM", cliente: "David Silva", servicio: "Corte niño", total: "$120", propina: "$0", metodo: "Efectivo" },
-];
+function inicioDelDia(fecha) {
+  const d = new Date(fecha);
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
 
-const dias = ["Lun 26", "Mar 27", "Mié 28", "Jue 29", "Vie 30", "Sáb 01"];
+function accionesPara(cita) {
+  if (cita.status === "confirmed") return [{ tipo: "iniciar", label: "Comenzar Servicio" }, { tipo: "no-asistio", label: "No asistió" }];
+  if (cita.status === "in_progress") return [{ tipo: "completar", label: "Completar" }];
+  return [];
+}
 
 export default function DashboardBarbero() {
-  const [citaSeleccionada, setCitaSeleccionada] = useState(null);
-  const [historialSeleccionado, setHistorialSeleccionado] = useState(null);
-  const [verAgenda, setVerAgenda] = useState(false);
-  const [diaActivo, setDiaActivo] = useState(0);
-  const [filtroAbierto, setFiltroAbierto] = useState("");
+  const navigate = useNavigate();
+  const hoy = new Date();
+  const hoyIndex = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
 
-  const proximoCliente = citas[1]; 
+  const [barberiaId, setBarberiaId] = useState(null);
+  const [citasSemana, setCitasSemana] = useState([]);
+  const [promedioResenas, setPromedioResenas] = useState(null);
+  const [clientesNuevosHoy, setClientesNuevosHoy] = useState(0);
+  const [visitasPorCliente, setVisitasPorCliente] = useState(new Map());
+  const [cargando, setCargando] = useState(true);
+  const [citaSeleccionada, setCitaSeleccionada] = useState(null);
+  const [verAgenda, setVerAgenda] = useState(false);
+  const [diaActivo, setDiaActivo] = useState(hoyIndex);
+  const [procesando, setProcesando] = useState(false);
+  const [error, setError] = useState("");
+
+  const dias = Array.from({ length: 7 }, (_, i) => {
+    const fecha = new Date(inicioDeSemana());
+    fecha.setDate(fecha.getDate() + i);
+    return fecha;
+  });
+
+  const obtenerDatos = async () => {
+    const uid = (await supabase.auth.getUser()).data.user?.id;
+    const { data: membership } = await supabase
+      .from("barberia_memberships")
+      .select("barberia_id")
+      .eq("profile_id", uid)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (!membership) return null;
+
+    const inicioSemana = inicioDeSemana();
+    const finSemana = new Date(inicioSemana);
+    finSemana.setDate(finSemana.getDate() + 7);
+
+    const [{ data: citas }, { data: reviews }] = await Promise.all([
+      supabase
+        .from("appointments")
+        .select("id, scheduled_at, status, total, client_note, updated_at, client_id, profiles!client_id(full_name, phone), appointment_services(service_name), payments(status)")
+        .eq("barberia_id", membership.barberia_id)
+        .gte("scheduled_at", inicioSemana.toISOString())
+        .lt("scheduled_at", finSemana.toISOString())
+        .order("scheduled_at"),
+      supabase
+        .from("reviews")
+        .select("rating")
+        .eq("barberia_id", membership.barberia_id)
+        .eq("is_published", true),
+    ]);
+
+    const idsHoy = [...new Set((citas ?? [])
+      .filter((c) => new Date(c.scheduled_at).toDateString() === hoy.toDateString())
+      .map((c) => c.client_id))];
+
+    let clientesNuevos = 0;
+    let visitas = new Map();
+
+    if (idsHoy.length) {
+      const { data: previas } = await supabase
+        .from("appointments")
+        .select("client_id")
+        .eq("barberia_id", membership.barberia_id)
+        .in("client_id", idsHoy)
+        .lt("scheduled_at", inicioDelDia(hoy).toISOString());
+      const conHistorial = new Set((previas ?? []).map((p) => p.client_id));
+      clientesNuevos = idsHoy.filter((id) => !conHistorial.has(id)).length;
+
+      const { data: todas } = await supabase
+        .from("appointments")
+        .select("client_id")
+        .eq("barberia_id", membership.barberia_id)
+        .in("client_id", idsHoy)
+        .not("status", "in", "(cancelled,rejected)");
+      for (const a of todas ?? []) visitas.set(a.client_id, (visitas.get(a.client_id) ?? 0) + 1);
+    }
+
+    return {
+      barberiaId: membership.barberia_id,
+      citas: citas ?? [],
+      promedioResenas: reviews?.length ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : null,
+      clientesNuevos,
+      visitas,
+    };
+  };
+
+  const aplicarDatos = (datos) => {
+    if (!datos) {
+      setBarberiaId(null);
+      return;
+    }
+    setBarberiaId(datos.barberiaId);
+    setCitasSemana(datos.citas);
+    setPromedioResenas(datos.promedioResenas);
+    setClientesNuevosHoy(datos.clientesNuevos);
+    setVisitasPorCliente(datos.visitas);
+  };
+
+  const cargar = async () => {
+    setCargando(true);
+    aplicarDatos(await obtenerDatos());
+    setCargando(false);
+  };
+
+  useEffect(() => {
+    let cancelado = false;
+    (async () => {
+      const datos = await obtenerDatos();
+      if (!cancelado) {
+        aplicarDatos(datos);
+        setCargando(false);
+      }
+    })();
+    return () => { cancelado = true; };
+  }, []);
+
+  const citasHoy = citasSemana.filter((c) => new Date(c.scheduled_at).toDateString() === hoy.toDateString());
+  const citasDelDia = citasSemana.filter((c) => new Date(c.scheduled_at).toDateString() === dias[diaActivo].toDateString());
+
+  const agendadasHoy = citasHoy.filter((c) => ESTADOS_ACTIVOS.includes(c.status) || c.status === "completed").length;
+  const canceladasHoy = citasHoy.filter((c) => ESTADOS_CANCELADOS.includes(c.status)).length;
+  const atendidosHoy = citasHoy.filter((c) => c.status === "completed");
+
+  const siguienteTurno = citasHoy
+    .filter((c) => (c.status === "confirmed" || c.status === "in_progress") && new Date(c.scheduled_at) >= hoy)
+    .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))[0];
+
+  const metricas = [
+    { etiqueta: "Reseñas", valor: promedioResenas ?? "—", icono: Star, tono: "gold" },
+    { etiqueta: "Nuevos Clientes", valor: clientesNuevosHoy, icono: User, tono: "ink" },
+    { etiqueta: "Agendadas", valor: agendadasHoy, icono: CalendarDays, tono: "rose" },
+    { etiqueta: "Canceladas", valor: canceladasHoy, icono: CalendarX2, tono: "gray" },
+    { etiqueta: "Atendidos", valor: atendidosHoy.length, icono: CheckCircle2, tono: "green" },
+  ];
+
+  const ejecutarAccion = async (tipo, cita) => {
+    setProcesando(true);
+    setError("");
+    const endpoints = { iniciar: "iniciar", completar: "completar", "no-asistio": "no-asistio" };
+    try {
+      await apiFetch(`/citas/${cita.id}/${endpoints[tipo]}`, { method: "POST", body: JSON.stringify({}) });
+      setCitaSeleccionada(null);
+      await cargar();
+    } catch (err) {
+      setError(err.message || "No fue posible actualizar la cita.");
+    } finally {
+      setProcesando(false);
+    }
+  };
+
+  if (cargando) {
+    return <section className="bd-dashboard"><p>Cargando panel...</p></section>;
+  }
+
+  if (!barberiaId) {
+    return <section className="bd-dashboard"><p>No perteneces a ninguna barbería activa.</p></section>;
+  }
 
   return (
     <section className="bd-dashboard">
@@ -59,9 +213,11 @@ export default function DashboardBarbero() {
           <p>Resumen de tus turnos y clientes de hoy.</p>
         </div>
         <button className="bd-date-button" type="button" onClick={() => setVerAgenda(true)}>
-          <CalendarDays size={17} /> Lunes, 26 mayo 2026 <ChevronDown size={16} />
+          <CalendarDays size={17} /> {hoy.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" })} <ChevronDown size={16} />
         </button>
       </header>
+
+      {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
 
       {/* MÉTRICAS */}
       <div className="bd-metrics">
@@ -77,71 +233,69 @@ export default function DashboardBarbero() {
       </div>
 
       <div className="bd-overview-grid">
-        {/* NUEVO DISEÑO: PANEL DE PRÓXIMO CLIENTE */}
+        {/* PANEL DE PRÓXIMO CLIENTE */}
         <article className="bd-panel bd-sales-panel" style={{ display: 'flex', flexDirection: 'column', backgroundColor: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.05)' }}>
           <div className="bd-panel-header" style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: '15px', marginBottom: '15px' }}>
             <div>
-              <p className="bd-panel-kicker" style={{ color: '#3b82f6', fontWeight: '600' }}>En 15 minutos</p>
+              <p className="bd-panel-kicker" style={{ color: '#3b82f6', fontWeight: '600' }}>Siguiente</p>
               <h3 style={{ fontSize: '1.1rem' }}>Siguiente Turno</h3>
             </div>
-            <span style={{ backgroundColor: '#1e293b', color: '#f8fafc', padding: '6px 14px', borderRadius: '20px', fontSize: '0.9rem', fontWeight: 'bold' }}>
-              {proximoCliente.hora}
-            </span>
+            {siguienteTurno && (
+              <span style={{ backgroundColor: '#1e293b', color: '#f8fafc', padding: '6px 14px', borderRadius: '20px', fontSize: '0.9rem', fontWeight: 'bold' }}>
+                {new Date(siguienteTurno.scheduled_at).toTimeString().slice(0, 5)}
+              </span>
+            )}
           </div>
-          
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            {/* Cabecera del cliente */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
-              <div style={{ width: '55px', height: '55px', backgroundColor: '#eff6ff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
-                <User size={28} />
-              </div>
-              <div>
-                <h4 style={{ margin: 0, fontSize: '1.4rem', color: '#0f172a', fontWeight: '700' }}>{proximoCliente.cliente}</h4>
-                <span style={{ color: '#64748b', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', fontWeight: '500' }}>
-                  <Scissors size={14} /> {proximoCliente.servicio}
-                </span>
-              </div>
-            </div>
 
-            {/* Badges / Etiquetas rápidas */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
-              <span style={{ backgroundColor: '#f1f5f9', color: '#475569', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <Star size={12} /> {proximoCliente.visitas} Visitas
-              </span>
-              <span style={{ backgroundColor: '#f1f5f9', color: '#475569', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <Repeat size={12} /> {proximoCliente.frecuencia}
-              </span>
-            </div>
-
-            {/* Tarjeta de notas comerciales */}
-            <div style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '10px', border: '1px dashed #cbd5e1', flex: 1 }}>
-              <p style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: '#334155' }}>
-                <strong style={{ display: 'block', marginBottom: '4px', color: '#0f172a' }}>Notas de estilo:</strong> 
-                {proximoCliente.preferencias}
-              </p>
-              <div style={{ backgroundColor: '#fef3c7', padding: '10px', borderRadius: '6px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                <ShoppingBag size={16} style={{ color: '#d97706', marginTop: '2px' }} />
+          {!siguienteTurno ? (
+            <p style={{ color: '#64748b' }}>No tienes más turnos programados por hoy.</p>
+          ) : (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
+                <div style={{ width: '55px', height: '55px', backgroundColor: '#eff6ff', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#3b82f6' }}>
+                  <User size={28} />
+                </div>
                 <div>
-                  <strong style={{ fontSize: '0.8rem', color: '#b45309', display: 'block' }}>Oportunidad de venta:</strong>
-                  <span style={{ fontSize: '0.85rem', color: '#92400e' }}>Última compra: {proximoCliente.ultimaCompra}</span>
+                  <h4 style={{ margin: 0, fontSize: '1.4rem', color: '#0f172a', fontWeight: '700' }}>{siguienteTurno.profiles?.full_name ?? "Cliente"}</h4>
+                  <span style={{ color: '#64748b', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', fontWeight: '500' }}>
+                    <Scissors size={14} /> {siguienteTurno.appointment_services?.[0]?.service_name ?? "Servicio"}
+                  </span>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Botones de acción */}
-          <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-            <button 
-              style={{ padding: '12px', backgroundColor: '#f1f5f9', color: '#0f172a', borderRadius: '8px', border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', transition: 'all 0.2s' }}
-              onClick={() => alert(`Abriendo chat con ${proximoCliente.cliente}`)}
-              title="Contactar al cliente"
-            >
-              <MessageCircle size={20} />
-            </button>
-            <button style={{ flex: 1, padding: '12px', backgroundColor: '#0f172a', color: 'white', borderRadius: '8px', border: 'none', fontWeight: '600', cursor: 'pointer', fontSize: '0.95rem' }}>
-              Comenzar Servicio
-            </button>
-          </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
+                <span style={{ backgroundColor: '#f1f5f9', color: '#475569', padding: '6px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <UsersRound size={12} /> {visitasPorCliente.get(siguienteTurno.client_id) ?? 1} Visitas
+                </span>
+              </div>
+
+              <div style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '10px', border: '1px dashed #cbd5e1', flex: 1 }}>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: '#334155' }}>
+                  <strong style={{ display: 'block', marginBottom: '4px', color: '#0f172a' }}>Notas del cliente:</strong>
+                  {siguienteTurno.client_note || "Sin notas."}
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                {siguienteTurno.profiles?.phone && (
+                  <button
+                    style={{ padding: '12px', backgroundColor: '#f1f5f9', color: '#0f172a', borderRadius: '8px', border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}
+                    onClick={() => { window.location.href = `tel:${siguienteTurno.profiles.phone}`; }}
+                    title="Llamar al cliente"
+                  >
+                    <MessageCircle size={20} />
+                  </button>
+                )}
+                <button
+                  style={{ flex: 1, padding: '12px', backgroundColor: '#0f172a', color: 'white', borderRadius: '8px', border: 'none', fontWeight: '600', cursor: 'pointer', fontSize: '0.95rem' }}
+                  onClick={() => ejecutarAccion(siguienteTurno.status === "in_progress" ? "completar" : "iniciar", siguienteTurno)}
+                  disabled={procesando}
+                >
+                  {siguienteTurno.status === "in_progress" ? "Completar Servicio" : "Comenzar Servicio"}
+                </button>
+              </div>
+            </div>
+          )}
         </article>
 
         {/* PANEL DE AGENDA */}
@@ -151,34 +305,34 @@ export default function DashboardBarbero() {
               <p className="bd-panel-kicker">Organización</p>
               <h3>Próximos turnos</h3>
             </div>
-            <button type="button" className="bd-select" onClick={() => setFiltroAbierto("agenda")}>
+            <button type="button" className="bd-select" onClick={() => navigate("/barbero/citas")}>
               Agenda <ChevronDown size={15} />
             </button>
           </div>
           <div className="bd-days">
             {dias.map((dia, index) => (
-              <button type="button" className={index === diaActivo ? "active" : ""} onClick={() => setDiaActivo(index)} key={dia}>
-                {dia}
+              <button type="button" className={index === diaActivo ? "active" : ""} onClick={() => setDiaActivo(index)} key={dia.toISOString()}>
+                {DIAS_SEMANA[dia.getDay()]}
+                <strong>{String(dia.getDate()).padStart(2, "0")}</strong>
               </button>
             ))}
           </div>
           <div className="bd-appointments">
-            {citas.map((cita) => (
-              <div 
-                className={`bd-appointment ${cita.tipo === 'bloqueo' ? 'bd-appointment--blocked' : `bd-appointment--${cita.estado}`}`} 
-                key={`${cita.hora}-${cita.cliente}`}
-                style={cita.tipo === 'bloqueo' ? { backgroundColor: '#f8fafc', opacity: 0.7 } : {}}
+            {citasDelDia.length === 0 && <p style={{ color: '#64748b', fontSize: '13px' }}>No hay turnos para este día.</p>}
+            {citasDelDia.map((cita) => (
+              <div
+                className={`bd-appointment ${ESTADOS_CANCELADOS.includes(cita.status) ? "bd-appointment--blocked" : cita.status === "completed" ? "bd-appointment--confirmada" : cita.status === "confirmed" || cita.status === "in_progress" ? "bd-appointment--confirmada" : "bd-appointment--pendiente"}`}
+                key={cita.id}
+                style={ESTADOS_CANCELADOS.includes(cita.status) ? { backgroundColor: '#f8fafc', opacity: 0.7 } : {}}
               >
-                <time>{cita.hora}</time>
+                <time>{new Date(cita.scheduled_at).toTimeString().slice(0, 5)}</time>
                 <div>
-                  <strong>{cita.cliente} {cita.tipo !== 'bloqueo' && <span>·</span>} {cita.servicio}</strong>
-                  <small>{cita.importe}</small>
+                  <strong>{cita.profiles?.full_name ?? "Cliente"} <span>·</span> {cita.appointment_services?.[0]?.service_name ?? "Servicio"}</strong>
+                  <small>${Number(cita.total).toFixed(2)}</small>
                 </div>
-                {cita.tipo !== 'bloqueo' && (
-                  <button type="button" onClick={() => setCitaSeleccionada(cita)} aria-label={`Más opciones`}>
-                    <MoreHorizontal size={19} />
-                  </button>
-                )}
+                <button type="button" onClick={() => setCitaSeleccionada(cita)} aria-label="Más opciones">
+                  <MoreHorizontal size={19} />
+                </button>
               </div>
             ))}
           </div>
@@ -192,114 +346,99 @@ export default function DashboardBarbero() {
             <p className="bd-eyebrow">Registro de hoy</p>
             <h3>Historial de cortes terminados</h3>
           </div>
-          <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: '600' }}>{historialCortes.length} completados</span>
+          <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: '600' }}>{atendidosHoy.length} completados</span>
         </div>
-        
-        <div className="bd-promotion-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-          {historialCortes.map((registro) => (
-            <article 
-              className="bd-promotion" 
-              role="button" 
-              tabIndex="0" 
-              onClick={() => setHistorialSeleccionado(registro)} 
-              key={registro.id}
-              style={{ borderLeft: '4px solid #10b981', padding: '1rem', backgroundColor: 'white' }}
-            >
-              <div className="bd-promotion-image" style={{ width: '42px', height: '42px', backgroundColor: '#ecfdf5', color: '#059669', borderRadius: '50%' }}>
-                <Check size={20} />
-              </div>
-              <div className="bd-promotion-content" style={{ width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                  <h4 style={{ color: '#0f172a' }}>{registro.cliente}</h4>
-                  <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500' }}><Clock size={12} style={{ display: 'inline', marginRight: '4px' }}/>{registro.horaFin}</span>
+
+        {atendidosHoy.length === 0 ? (
+          <p style={{ color: '#64748b' }}>Aún no completas ningún corte hoy.</p>
+        ) : (
+          <div className="bd-promotion-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
+            {atendidosHoy.map((registro) => (
+              <article
+                className="bd-promotion"
+                key={registro.id}
+                style={{ borderLeft: '4px solid #10b981', padding: '1rem', backgroundColor: 'white' }}
+              >
+                <div className="bd-promotion-image" style={{ width: '42px', height: '42px', backgroundColor: '#ecfdf5', color: '#059669', borderRadius: '50%' }}>
+                  <Check size={20} />
                 </div>
-                <p style={{ color: '#475569' }}>{registro.servicio}</p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.85rem', color: '#64748b' }}>Propina: <strong style={{ color: '#059669' }}>{registro.propina}</strong></span>
-                  <strong style={{ color: '#0f172a' }}>{registro.total}</strong>
+                <div className="bd-promotion-content" style={{ width: '100%' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                    <h4 style={{ color: '#0f172a' }}>{registro.profiles?.full_name ?? "Cliente"}</h4>
+                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500' }}><Clock size={12} style={{ display: 'inline', marginRight: '4px' }} />{new Date(registro.updated_at).toTimeString().slice(0, 5)}</span>
+                  </div>
+                  <p style={{ color: '#475569' }}>{registro.appointment_services?.[0]?.service_name ?? "Servicio"}</p>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px', alignItems: 'center' }}>
+                    <strong style={{ color: '#0f172a' }}>${Number(registro.total).toFixed(2)}</strong>
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
-      {/* MODAL DE CITA ACTUALIZADO */}
-      <BarberoModal 
-        open={Boolean(citaSeleccionada)} 
-        title="Detalles del turno" 
-        onClose={() => setCitaSeleccionada(null)} 
+      {/* MODAL DE CITA */}
+      <BarberoModal
+        open={Boolean(citaSeleccionada)}
+        title="Detalles del turno"
+        onClose={() => setCitaSeleccionada(null)}
         footer={
-          <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
-            <button className="bm-secondary" style={{ flex: 1, backgroundColor: '#f1f5f9', color: '#0f172a', border: 'none', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }} onClick={() => setCitaSeleccionada(null)}>
-              Marcar No-Show
-            </button>
-            <button className="bm-primary" style={{ flex: 2, backgroundColor: '#0f172a', color: 'white', border: 'none', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }} onClick={() => setCitaSeleccionada(null)}>
-              Comenzar Servicio
-            </button>
-          </div>
+          citaSeleccionada && accionesPara(citaSeleccionada).length > 0 && (
+            <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+              {accionesPara(citaSeleccionada).map((a) => (
+                <button
+                  key={a.tipo}
+                  className={a.tipo === "no-asistio" ? "bm-secondary" : "bm-primary"}
+                  style={{ flex: 1, backgroundColor: a.tipo === "no-asistio" ? '#f1f5f9' : '#0f172a', color: a.tipo === "no-asistio" ? '#0f172a' : 'white', border: 'none', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+                  onClick={() => ejecutarAccion(a.tipo, citaSeleccionada)}
+                  disabled={procesando}
+                >
+                  {a.label}
+                </button>
+              ))}
+            </div>
+          )
         }
       >
         <div style={{ textAlign: 'center', margin: '10px 0 20px 0' }}>
           <div style={{ width: '60px', height: '60px', backgroundColor: '#f1f5f9', borderRadius: '50%', margin: '0 auto 10px auto', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
             <User size={30} />
           </div>
-          <h3 style={{ margin: '0 0 5px 0', fontSize: '1.3rem' }}>{citaSeleccionada?.cliente}</h3>
-          <p style={{ margin: 0, color: '#64748b', fontWeight: '500' }}>{citaSeleccionada?.servicio} — {citaSeleccionada?.hora}</p>
+          <h3 style={{ margin: '0 0 5px 0', fontSize: '1.3rem' }}>{citaSeleccionada?.profiles?.full_name ?? "Cliente"}</h3>
+          <p style={{ margin: 0, color: '#64748b', fontWeight: '500' }}>
+            {citaSeleccionada?.appointment_services?.[0]?.service_name ?? "Servicio"} — {citaSeleccionada && new Date(citaSeleccionada.scheduled_at).toTimeString().slice(0, 5)}
+          </p>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '15px' }}>
           <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
             <span style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.5px' }}>Visitas</span>
-            <strong style={{ fontSize: '1.1rem', color: '#0f172a' }}>{citaSeleccionada?.visitas}</strong>
+            <strong style={{ fontSize: '1.1rem', color: '#0f172a' }}>{citaSeleccionada ? (visitasPorCliente.get(citaSeleccionada.client_id) ?? 1) : "-"}</strong>
           </div>
           <div style={{ backgroundColor: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
-            <span style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.5px' }}>Frecuencia</span>
-            <strong style={{ fontSize: '1.1rem', color: '#0f172a' }}>{citaSeleccionada?.frecuencia}</strong>
+            <span style={{ display: 'block', fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.5px' }}>Total</span>
+            <strong style={{ fontSize: '1.1rem', color: '#0f172a' }}>${citaSeleccionada ? Number(citaSeleccionada.total).toFixed(2) : "-"}</strong>
           </div>
         </div>
 
         <div style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '8px', fontSize: '0.9rem', border: '1px solid #e2e8f0', marginBottom: '15px' }}>
-          <p style={{ margin: '0 0 8px 0', color: '#0f172a' }}><strong>Notas del corte:</strong> {citaSeleccionada?.preferencias}</p>
-          <p style={{ margin: '0 0 0 0', color: '#0f172a' }}><strong>Última compra:</strong> <span style={{ color: '#d97706', fontWeight: '500' }}>{citaSeleccionada?.ultimaCompra}</span></p>
+          <p style={{ margin: 0, color: '#0f172a' }}><strong>Notas del cliente:</strong> {citaSeleccionada?.client_note || "Sin notas."}</p>
         </div>
 
-        <button 
-          style={{ width: '100%', padding: '12px', backgroundColor: 'white', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontWeight: '600', cursor: 'pointer' }}
-          onClick={() => alert(`Llamando / Escribiendo a: ${citaSeleccionada?.telefono}`)}
-        >
-          <MessageCircle size={18} /> Enviar mensaje al cliente
-        </button>
-      </BarberoModal>
-
-      {/* MODAL DE HISTORIAL */}
-      <BarberoModal 
-        open={Boolean(historialSeleccionado)} 
-        title="Comprobante de servicio" 
-        onClose={() => setHistorialSeleccionado(null)} 
-        footer={<button className="bm-primary" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'none', backgroundColor: '#0f172a', color: 'white', fontWeight: '600', cursor: 'pointer' }} onClick={() => setHistorialSeleccionado(null)}>Cerrar comprobante</button>}
-      >
-        <div style={{ backgroundColor: '#f8fafc', padding: '20px', borderRadius: '8px', border: '1px dashed #cbd5e1' }}>
-          <p style={{ margin: '0 0 8px 0' }}><span style={{ color: '#64748b' }}>Cliente:</span> <strong style={{ float: 'right' }}>{historialSeleccionado?.cliente}</strong></p>
-          <p style={{ margin: '0 0 8px 0' }}><span style={{ color: '#64748b' }}>Servicio:</span> <strong style={{ float: 'right' }}>{historialSeleccionado?.servicio}</strong></p>
-          <p style={{ margin: '0 0 8px 0' }}><span style={{ color: '#64748b' }}>Hora de fin:</span> <strong style={{ float: 'right' }}>{historialSeleccionado?.horaFin}</strong></p>
-          <hr style={{ margin: '15px 0', borderColor: '#e2e8f0' }} />
-          <p style={{ margin: '0 0 8px 0' }}><span style={{ color: '#64748b' }}>Método:</span> <strong style={{ float: 'right' }}>{historialSeleccionado?.metodo}</strong></p>
-          <p style={{ margin: '0 0 8px 0' }}><span style={{ color: '#64748b' }}>Propina:</span> <strong style={{ float: 'right', color: '#10b981' }}>{historialSeleccionado?.propina}</strong></p>
-          <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '2px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '1.1rem', fontWeight: '600', color: '#0f172a' }}>Total cobrado</span>
-            <strong style={{ fontSize: '1.3rem', color: '#0f172a' }}>{historialSeleccionado?.total}</strong>
-          </div>
-        </div>
+        {citaSeleccionada?.profiles?.phone && (
+          <button
+            style={{ width: '100%', padding: '12px', backgroundColor: 'white', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontWeight: '600', cursor: 'pointer' }}
+            onClick={() => { window.location.href = `tel:${citaSeleccionada.profiles.phone}`; }}
+          >
+            <MessageCircle size={18} /> Llamar a {citaSeleccionada.profiles.full_name ?? "cliente"}
+          </button>
+        )}
       </BarberoModal>
 
       <BarberoModal open={verAgenda} title="Agenda del día" onClose={() => setVerAgenda(false)} footer={<button className="bm-primary" onClick={() => setVerAgenda(false)}>Volver al panel</button>}>
-        <p>Estás consultando la agenda del lunes 26 de mayo de 2026.</p>
-        <p>Tienes {citas.filter(c => c.tipo === 'cita').length} citas programadas para hoy.</p>
-      </BarberoModal>
-
-      <BarberoModal open={Boolean(filtroAbierto)} title="Configuración" onClose={() => setFiltroAbierto("")} footer={<button className="bm-primary" onClick={() => setFiltroAbierto("")}>Aplicar</button>}>
-        <p>Opciones de configuración de vista.</p>
+        <p>Estás consultando la agenda de hoy, {hoy.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}.</p>
+        <p>Tienes {agendadasHoy} turnos agendados para hoy.</p>
       </BarberoModal>
     </section>
   );

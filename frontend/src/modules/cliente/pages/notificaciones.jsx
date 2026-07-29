@@ -1,55 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "../../../lib/supabase.js";
 import "../styles/notificaciones.css";
 
-// Datos iniciales de notificaciones con tipo de alerta asignado
-const datosIniciales = [
-  {
-    id: 1,
-    tipo: "confirmada",
-    titulo: "Cita Confirmada",
-    descripcion: "Carlos Reyes confirmó tu cita del día martes 27 de junio a las 11:00 a.m.",
-    tiempo: "Hace 12 min",
-    leido: false
-  },
-  {
-    id: 2,
-    tipo: "recordatorio",
-    titulo: "Recordatorio - Mañana 11:00 a.m",
-    descripcion: "Tu cita con Carlos Reyes en Black Edge es mañana a las 11:00 a.m.",
-    tiempo: "Hace 1 hr",
-    leido: false
-  },
-  {
-    id: 3,
-    tipo: "calificacion",
-    titulo: "Califica Tu Visita",
-    descripcion: "¿Cómo fue tu experiencia con Miguel Gutierrez?",
-    tiempo: "Ayer 4 p.m",
-    leido: true
-  },
-  {
-    id: 4,
-    tipo: "denegada",
-    titulo: "Cita Denegada",
-    descripcion: "El barbero Juan Santos no pudo aceptar tu cita del día lunes a las 5:00 p.m.",
-    tiempo: "Ayer 10 a.m",
-    leido: true
-  },
-  {
-    id: 5,
-    tipo: "cupon",
-    titulo: "Nuevo Cupón Disponible",
-    descripcion: "Tienes un cupón de bienvenida del 10%.",
-    tiempo: "Hace 12 min",
-    leido: false
-  }
-];
-
-// Helper para renderizar iconos según el tipo de notificación
 const renderIcono = (tipo) => {
   switch (tipo) {
-    case "confirmada":
-    case "recordatorio":
+    case "appointment":
       return (
         <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -58,21 +13,21 @@ const renderIcono = (tipo) => {
           <line x1="3" y1="10" x2="21" y2="10" />
         </svg>
       );
-    case "calificacion":
+    case "review":
       return (
         <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
         </svg>
       );
-    case "denegada":
+    case "payment":
       return (
         <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
           <circle cx="12" cy="12" r="10" />
-          <line x1="15" y1="9" x2="9" y2="15" />
-          <line x1="9" y1="9" x2="15" y2="15" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
         </svg>
       );
-    case "cupon":
+    case "promotion":
       return (
         <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none">
           <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
@@ -89,30 +44,56 @@ const renderIcono = (tipo) => {
   }
 };
 
+function formatearFecha(fechaISO) {
+  return new Date(fechaISO).toLocaleString("es-MX", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+}
+
 export default function Notificaciones() {
-  const [notificaciones, setNotificaciones] = useState(datosIniciales);
+  const [notificaciones, setNotificaciones] = useState([]);
+  const [cargando, setCargando] = useState(true);
 
-  // Marcar notificación como leída al hacer clic
-  const handleNotificationClick = (id) => {
-    setNotificaciones((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, leido: true } : n))
-    );
+  async function obtenerNotificaciones() {
+    const { data } = await supabase
+      .from("notifications")
+      .select("id, type, title, body, read_at, created_at")
+      .order("created_at", { ascending: false });
+    return data ?? [];
+  }
+
+  useEffect(() => {
+    let cancelado = false;
+    (async () => {
+      const data = await obtenerNotificaciones();
+      if (!cancelado) {
+        setNotificaciones(data);
+        setCargando(false);
+      }
+    })();
+    return () => { cancelado = true; };
+  }, []);
+
+  const handleNotificationClick = async (id) => {
+    setNotificaciones((prev) => prev.map((n) => (n.id === id ? { ...n, read_at: n.read_at ?? new Date().toISOString() } : n)));
+    await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", id).is("read_at", null);
   };
 
-  // Marcar todas como leídas
-  const handleMarcarTodasLeidas = () => {
-    setNotificaciones((prev) => prev.map((n) => ({ ...n, leido: true })));
+  const handleMarcarTodasLeidas = async () => {
+    const ahora = new Date().toISOString();
+    setNotificaciones((prev) => prev.map((n) => ({ ...n, read_at: n.read_at ?? ahora })));
+    await supabase.from("notifications").update({ read_at: ahora }).is("read_at", null);
   };
 
-  const sinLeerContador = notificaciones.filter((n) => !n.leido).length;
+  const sinLeerContador = notificaciones.filter((n) => !n.read_at).length;
+
+  if (cargando) {
+    return <div className="nt-dashboard"><p style={{ padding: 24 }}>Cargando notificaciones...</p></div>;
+  }
 
   return (
     <div className="nt-dashboard">
       <div className="nt-main-wrapper">
         <main className="contenido">
           <div className="contenedor-cards">
-            
-            {/* Cabecera del área de notificaciones */}
             <div className="cabecera-notificaciones">
               <div className="contador-no-leidas">
                 <span className="punto-indicador" />
@@ -120,41 +101,37 @@ export default function Notificaciones() {
               </div>
 
               {sinLeerContador > 0 && (
-                <button 
-                  className="boton-limpiar" 
-                  onClick={handleMarcarTodasLeidas}
-                >
+                <button className="boton-limpiar" onClick={handleMarcarTodasLeidas}>
                   Marcar todas como leídas
                 </button>
               )}
             </div>
 
-            {/* Lista de notificaciones */}
             <div className="lista-notificaciones">
               {notificaciones.map((alerta) => (
                 <button
                   key={alerta.id}
-                  className={`tarjeta-notificacion ${!alerta.leido ? "no-leida" : ""}`}
+                  className={`tarjeta-notificacion ${!alerta.read_at ? "no-leida" : ""}`}
                   onClick={() => handleNotificationClick(alerta.id)}
-                  aria-label={`Notificación: ${alerta.titulo}`}
+                  aria-label={`Notificación: ${alerta.title}`}
                 >
-                  <div className={`icono-contenedor ${alerta.tipo}`}>
-                    {renderIcono(alerta.tipo)}
+                  <div className={`icono-contenedor ${alerta.type}`}>
+                    {renderIcono(alerta.type)}
                   </div>
 
                   <div className="info-notificacion">
-                    <h3>{alerta.titulo}</h3>
-                    <p className="descripcion-notificacion">{alerta.descripcion}</p>
+                    <h3>{alerta.title}</h3>
+                    <p className="descripcion-notificacion">{alerta.body}</p>
                   </div>
 
                   <div className="meta-notificacion">
-                    <span className="texto-tiempo">{alerta.tiempo}</span>
-                    {!alerta.leido && <span className="punto-no-leida" />}
+                    <span className="texto-tiempo">{formatearFecha(alerta.created_at)}</span>
+                    {!alerta.read_at && <span className="punto-no-leida" />}
                   </div>
                 </button>
               ))}
+              {notificaciones.length === 0 && <p style={{ padding: 16 }}>No tienes notificaciones.</p>}
             </div>
-
           </div>
         </main>
       </div>

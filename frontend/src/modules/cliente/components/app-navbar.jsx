@@ -1,9 +1,24 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../../../lib/supabase.js";
 import BrandLogo from "./brand-logo";
 import "../styles/app-navbar.css";
 
-export default function AppNavbar({ showAgendaLocal = false }) {
+export default function AppNavbar() {
   const navigate = useNavigate();
+  const [autenticado, setAutenticado] = useState(false);
+
+  useEffect(() => {
+    let cancelado = false;
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (!cancelado) setAutenticado(Boolean(data.session));
+    });
+
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
   return (
     <nav className="app-navbar">
@@ -13,15 +28,6 @@ export default function AppNavbar({ showAgendaLocal = false }) {
       />
 
       <div className="app-nav-actions">
-        {showAgendaLocal && (
-          <button
-            type="button"
-            className="app-btn-outline"
-            onClick={() => navigate("/agenda-local")}
-          >
-            Agenda en local
-          </button>
-        )}
         <button
           type="button"
           className="app-btn-outline"
@@ -29,13 +35,23 @@ export default function AppNavbar({ showAgendaLocal = false }) {
         >
           Buscar barberías
         </button>
-        <button
-          type="button"
-          className="app-btn-gold"
-          onClick={() => navigate("/login")}
-        >
-          Iniciar sesión
-        </button>
+        {autenticado ? (
+          <button
+            type="button"
+            className="app-btn-gold"
+            onClick={() => navigate("/mis-citas")}
+          >
+            Mis citas
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="app-btn-gold"
+            onClick={() => navigate("/login")}
+          >
+            Iniciar sesión
+          </button>
+        )}
       </div>
     </nav>
   );

@@ -65,15 +65,27 @@ export default function Registro() {
 
     setLoading(true);
     try {
+      // Este flujo sólo crea una cuenta y perfil de cliente. No crea citas ni pagos.
+      const fullName = `${form.nombre.trim()} ${form.apellido.trim()}`.trim();
       await apiFetch("/auth/registro", {
         method: "POST",
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          fullName,
+          email: form.email.trim(),
+          phone: form.telefono.trim(),
+          password: form.password,
+        }),
       });
-      navigate("/verificar-correo", {
-        state: { email: form.email.trim() },
+
+      navigate("/login", {
+        state: {
+          email: form.email.trim(),
+          cuentaVerificada: true,
+          mensaje: "Revisa tu correo para confirmar tu cuenta antes de iniciar sesión.",
+        },
       });
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "No fue posible crear la cuenta.");
     } finally {
       setLoading(false);
     }

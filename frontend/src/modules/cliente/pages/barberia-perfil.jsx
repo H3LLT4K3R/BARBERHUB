@@ -1,4 +1,4 @@
-import React, { useState } from "react"; 
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   IconMapPin,
@@ -6,25 +6,16 @@ import {
   IconScissors,
   IconStarFilled,
   IconUser,
-  IconMoustache,
-  IconRazor,
   IconChevronRight,
   IconHeart,
 } from "@tabler/icons-react";
 import AppNavbar from "../components/app-navbar";
-import { getBarberiaById } from "../data/barberias.js";
+import { supabase } from "../../../lib/supabase.js";
 import { getOpenStreetMapUrl } from "../../../utils/openStreetMap.js";
 import "../styles/barberia-perfil.css";
 
-/* Diccionario de iconos de servicio */
-const ICONOS_SERVICIO = {
-  moustache: IconMoustache,
-  razor: IconRazor,
-  user: IconUser,
-  scissors: IconScissors,
-};
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/* compinente de estrellas*/
 function Estrellas({ count = 5 }) {
   return (
     <span className="bp-estrellas" aria-hidden>
@@ -35,28 +26,94 @@ function Estrellas({ count = 5 }) {
   );
 }
 
-/* componente principal: perfil de barbería */
+function calcularAbierto(businessHours) {
+  if (!businessHours || businessHours.length === 0) return false;
+  const ahora = new Date();
+  const weekday = ahora.getDay();
+  const hoy = businessHours.find((h) => h.weekday === weekday);
+  if (!hoy || hoy.is_closed) return false;
+
+  const [hIni, mIni] = hoy.opens_at.split(":").map(Number);
+  const [hFin, mFin] = hoy.closes_at.split(":").map(Number);
+  const minutosAhora = ahora.getHours() * 60 + ahora.getMinutes();
+  return minutosAhora >= hIni * 60 + mIni && minutosAhora < hFin * 60 + mFin;
+}
+
 export default function BarberiaPerfil() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const barberia = getBarberiaById(id);
   const volverA = location.state?.volverA ?? "/explorar";
 
-  // VALIDACIÓN DE SESIÓN (Mock usando localStorage)
-  // Esto simula si el usuario ya inició sesión
-  const usuarioAutenticado = localStorage.getItem("token_sesion");
-  const [barberiasFavoritas, setBarberiasFavoritas] = useState(() => new Set(JSON.parse(localStorage.getItem("barberhub_favoritos_barberias") || "[]")));
-  const [barberosFavoritos, setBarberosFavoritos] = useState(() => new Set(JSON.parse(localStorage.getItem("barberhub_favoritos_barberos") || "[]")));
+  const [barberia, setBarberia] = useState(null);
+  const [servicios, setServicios] = useState([]);
+  const [barberos, setBarberos] = useState([]);
+  const [opiniones, setOpiniones] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [usuarioId, setUsuarioId] = useState(null);
+  const [esFavorita, setEsFavorita] = useState(false);
 
-  // control de errores (si no encuentra la barbería)
+  useEffect(() => {
+    let cancelado = false;
+
+    async function cargar() {
+      const { data: userData } = await supabase.auth.getUser();
+      if (cancelado) return;
+      const uid = userData?.user?.id ?? null;
+      setUsuarioId(uid);
+
+      const filtro = UUID_REGEX.test(id) ? { column: "id", value: id } : { column: "slug", value: id };
+      const { data: b } = await supabase
+        .from("barberias_public")
+        .select("*")
+        .eq(filtro.column, filtro.value)
+        .maybeSingle();
+
+      if (!b) {
+        setCargando(false);
+        return;
+      }
+
+      const [{ data: hours }, { data: servicesData }, { data: membershipsData }, { data: reviewsData }, favResult] = await Promise.all([
+        supabase.from("business_hours").select("weekday, opens_at, closes_at, is_closed").eq("barberia_id", b.id),
+        supabase.from("services").select("id, name, price, duration_minutes").eq("barberia_id", b.id).eq("is_active", true).order("sort_order").limit(4),
+        supabase.from("barberia_memberships").select("id, display_name, specialty").eq("barberia_id", b.id).eq("role", "barber").eq("is_active", true),
+        supabase.from("reviews").select("comment, rating").eq("barberia_id", b.id).eq("is_published", true).order("created_at", { ascending: false }).limit(3),
+        uid ? supabase.from("favorite_barberias").select("barberia_id").eq("profile_id", uid).eq("barberia_id", b.id).maybeSingle() : Promise.resolve({ data: null }),
+      ]);
+
+      if (cancelado) return;
+
+      setBarberia({ ...b, abierto: calcularAbierto(hours) });
+      setServicios(servicesData ?? []);
+      setBarberos(membershipsData ?? []);
+      setOpiniones((reviewsData ?? []).map((r) => r.comment).filter(Boolean));
+      setEsFavorita(Boolean(favResult?.data));
+      setCargando(false);
+    }
+
+    cargar();
+    return () => {
+      cancelado = true;
+    };
+  }, [id]);
+
+  if (cargando) {
+    return (
+      <div className="bp-pagina">
+        <AppNavbar />
+        <main className="bp-contenido"><p>Cargando...</p></main>
+      </div>
+    );
+  }
+
   if (!barberia) {
     return (
       <div className="bp-pagina">
         <AppNavbar />
         <main className="bp-contenido bp-contenido--error">
           <h2>Barbería no encontrada</h2>
-          <button onClick={() => navigate("/")}>Volver al inicio</button>
+          <button onClick={() => navigate("/explorar")}>Volver a explorar</button>
         </main>
       </div>
     );
@@ -69,92 +126,83 @@ export default function BarberiaPerfil() {
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  // Lógica de Agendar Cita (Protegida)
   const agendarCita = () => {
-    if (usuarioAutenticado) {
-      // Si ya hay sesión, lo enviamosa la ruta de agenda App.jsx
+    if (usuarioId) {
       navigate("/agenda-local", {
         state: {
           barberiaId: barberia.id,
-          volverA: `/barberia-perfil/${barberia.id}`,
+          establecimiento: barberia.name,
+          servicioIdReal: servicios[0]?.id,
+          servicioNombre: servicios[0]?.name,
+          precio: servicios[0]?.price,
+          moneda: barberia.currency_code,
+          volverA: `/barberia-perfil/${id}`,
           volverAtras: volverA,
         },
       });
     } else {
-      // Si no hay sesión, le avisamos y lo mandamos al login 
-      // con la ruta exacta de regreso para que no haya pantalla negra
       alert("Debes iniciar sesión en tu cuenta para agendar una cita.");
-      navigate("/login", { state: { redirigirA: `/barberia-perfil/${barberia.id}` } });
+      navigate("/login", { state: { redirigirA: `/barberia-perfil/${id}` } });
     }
   };
 
-  // Ver más servicios
   const verMasServicios = () => {
     navigate(`/barberia/${barberia.id}/servicios`);
   };
 
-  // Ver más opiniones
   const verMasOpiniones = () => {
-    navigate("/opinion-barberia");
+    navigate("/opinion-barberia", { state: { barberiaId: barberia.id } });
   };
 
-const regresar = () => {
-  navigate(volverA);
-};
+  const regresar = () => navigate(volverA);
 
-  const alternarFavorito = (tipo, favoritoId) => {
-    const actualizar = tipo === "barberia" ? setBarberiasFavoritas : setBarberosFavoritos;
-    const clave = tipo === "barberia" ? "barberhub_favoritos_barberias" : "barberhub_favoritos_barberos";
-    actualizar((actuales) => {
-      const nuevos = new Set(actuales);
-      if (nuevos.has(favoritoId)) nuevos.delete(favoritoId);
-      else nuevos.add(favoritoId);
-      localStorage.setItem(clave, JSON.stringify([...nuevos]));
-      return nuevos;
-    });
+  const alternarFavorito = async () => {
+    if (!usuarioId) {
+      navigate("/login", { state: { redirigirA: `/barberia-perfil/${id}` } });
+      return;
+    }
+
+    if (esFavorita) {
+      await supabase.from("favorite_barberias").delete().eq("profile_id", usuarioId).eq("barberia_id", barberia.id);
+      setEsFavorita(false);
+    } else {
+      await supabase.from("favorite_barberias").insert({ profile_id: usuarioId, barberia_id: barberia.id });
+      setEsFavorita(true);
+    }
   };
 
-
-  // Renderizado de la interfaz
   return (
     <div className="bp-pagina">
       <AppNavbar />
 
       <main className="bp-contenido">
-        
-        {/* SECCIÓN 1: Tarjeta principal (Hero) */}
-        <section className="bp-hero" aria-label={`Perfil de ${barberia.nombre}`}>
+        <section className="bp-hero" aria-label={`Perfil de ${barberia.name}`}>
           <div className="bp-hero-izquierda">
-            <img className="bp-logo" src={barberia.imagen} alt="Logo de barbería" />
-            
             <div className="bp-info">
               <div className="bp-titulo-fila">
-                <h1 className="bp-titulo">{barberia.nombre}</h1>
+                <h1 className="bp-titulo">{barberia.name}</h1>
                 <button
                   type="button"
-                  className={`bp-boton-favorito ${barberiasFavoritas.has(barberia.id) ? "activo" : ""}`}
-                  onClick={() => alternarFavorito("barberia", barberia.id)}
-                  aria-label={`${barberiasFavoritas.has(barberia.id) ? "Quitar" : "Añadir"} ${barberia.nombre} de favoritos`}
-                  title={barberiasFavoritas.has(barberia.id) ? "Quitar de favoritos" : "Añadir a favoritos"}
+                  className={`bp-boton-favorito ${esFavorita ? "activo" : ""}`}
+                  onClick={alternarFavorito}
+                  aria-label={esFavorita ? "Quitar de favoritos" : "Añadir a favoritos"}
+                  title={esFavorita ? "Quitar de favoritos" : "Añadir a favoritos"}
                 >
-                  <IconHeart size={22} fill={barberiasFavoritas.has(barberia.id) ? "currentColor" : "none"} />
+                  <IconHeart size={22} fill={esFavorita ? "currentColor" : "none"} />
                 </button>
               </div>
               <div className="bp-rating">
                 <Estrellas />
                 <span>
-                  {barberia.rating.toFixed(1)} ({barberia.totalOpiniones} opiniones)
+                  {Number(barberia.rating).toFixed(1)} ({barberia.total_opiniones} opiniones)
                 </span>
               </div>
               <p className="bp-direccion">
                 <IconMapPin size={16} stroke={2} />
-                {barberia.direccion}
+                {barberia.address_line1}, {barberia.city}
               </p>
               <p className="bp-estado">
-                <span
-                  className={`bp-estado-dot ${barberia.abierto ? "abierto" : ""}`}
-                  aria-hidden
-                />
+                <span className={`bp-estado-dot ${barberia.abierto ? "abierto" : ""}`} aria-hidden />
                 {barberia.abierto ? "Abierto ahora" : "Cerrado"}
               </p>
             </div>
@@ -172,85 +220,65 @@ const regresar = () => {
           </div>
         </section>
 
-        {/* SECCIÓN 2: Grid de 3 columnas */}
         <div className="bp-grid">
-
-          {/* Columna: Servicios */}
           <section className="bp-panel">
             <header className="bp-panel-encabezado">
               <IconScissors size={22} stroke={1.8} className="bp-icono-panel dorado" />
               <h2>Servicios</h2>
             </header>
             <ul className="bp-lista-servicios">
-              {barberia.servicios.map((s) => {
-                const Icon = ICONOS_SERVICIO[s.icono] ?? IconScissors;
-                return (
-                  <li key={s.id} className="bp-item-servicio">
-                    <span className="bp-servicio-izquierda">
-                      <Icon size={22} stroke={1.5} />
-                      {s.nombre}
-                    </span>
-                    <span className="bp-precio-servicio">${s.precio}</span>
-                  </li>
-                );
-              })}
+              {servicios.map((s) => (
+                <li key={s.id} className="bp-item-servicio">
+                  <span className="bp-servicio-izquierda">
+                    <IconScissors size={22} stroke={1.5} />
+                    {s.name}
+                  </span>
+                  <span className="bp-precio-servicio">${s.price}</span>
+                </li>
+              ))}
+              {servicios.length === 0 && <li>Aún no hay servicios publicados.</li>}
             </ul>
             <button type="button" className="bp-boton-ver-mas" onClick={verMasServicios}>
               Ver más servicios
             </button>
           </section>
 
-          {/* Columna: Barberos */}
           <section className="bp-panel">
             <header className="bp-panel-encabezado">
               <IconUser size={22} stroke={1.8} className="bp-icono-panel" />
               <h2>Barberos</h2>
             </header>
             <ul className="bp-lista-barberos">
-              {barberia.barberos.map((b) => (
+              {barberos.map((b) => (
                 <li key={b.id} className="bp-item-barbero">
-                  <img className="bp-foto-barbero" src={b.foto} alt={b.nombre} loading="lazy" />
                   <div>
-                    <div className="bp-nombre-barbero">{b.nombre}</div>
-                    <div className="bp-rating-barbero">
-                      <IconStarFilled size={14} />
-                      {b.rating.toFixed(1)}{" "}
-                      <span className="bp-opiniones-barbero">({b.opiniones})</span>
-                    </div>
+                    <div className="bp-nombre-barbero">{b.display_name ?? "Barbero"}</div>
+                    {b.specialty && <div className="bp-opiniones-barbero">{b.specialty}</div>}
                   </div>
-                  <button
-                    type="button"
-                    className={`bp-boton-favorito bp-boton-favorito--barbero ${barberosFavoritos.has(`${barberia.id}:${b.id}`) ? "activo" : ""}`}
-                    onClick={() => alternarFavorito("barbero", `${barberia.id}:${b.id}`)}
-                    aria-label={`${barberosFavoritos.has(`${barberia.id}:${b.id}`) ? "Quitar" : "Añadir"} a ${b.nombre} de favoritos`}
-                    title={barberosFavoritos.has(`${barberia.id}:${b.id}`) ? "Quitar de favoritos" : "Añadir a favoritos"}
-                  >
-                    <IconHeart size={18} fill={barberosFavoritos.has(`${barberia.id}:${b.id}`) ? "currentColor" : "none"} />
-                  </button>
                 </li>
               ))}
+              {barberos.length === 0 && <li>Sin barberos registrados.</li>}
             </ul>
           </section>
 
-          {/* Columna: Opiniones */}
           <section className="bp-panel">
             <header className="bp-panel-encabezado">
               <IconStarFilled size={24} className="bp-icono-panel dorado" />
               <h2>Opiniones</h2>
             </header>
             <ul className="bp-lista-opiniones">
-              {barberia.opiniones.slice(0, 3).map((texto, i) => (
+              {opiniones.map((texto, i) => (
                 <li key={i} className="bp-item-opinion">
                   <IconChevronRight size={16} className="bp-chevron-opinion" />
                   <p>{texto}</p>
                 </li>
               ))}
+              {opiniones.length === 0 && <li>Aún no hay opiniones.</li>}
             </ul>
             <button type="button" className="bp-boton-ver-mas" onClick={verMasOpiniones}>
               Ver más opiniones
             </button>
           </section>
-
         </div>
 
         <div className="bp-accion-regresar">

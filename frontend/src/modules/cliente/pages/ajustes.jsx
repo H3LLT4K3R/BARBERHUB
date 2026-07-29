@@ -1,148 +1,225 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "../../../lib/supabase.js";
 import "../styles/ajustes.css";
 
 export default function Ajustes() {
-  // Estados de las opciones de configuración
+  const [perfil, setPerfil] = useState(null);
+  const [email, setEmail] = useState("");
+  const [nombreEditable, setNombreEditable] = useState("");
+  const [editandoNombre, setEditandoNombre] = useState(false);
+  const [stats, setStats] = useState({ visitas: 0, puntos: 0, calificacion: 0 });
+  const [cargando, setCargando] = useState(true);
+
   const [recordatorio, setRecordatorio] = useState(true);
   const [citaConfirmada, setCitaConfirmada] = useState(true);
   const [nuevosCupones, setNuevosCupones] = useState(false);
-  const [verificacion2Pasos, setVerificacion2Pasos] = useState(true);
+  const [errorPreferencias, setErrorPreferencias] = useState("");
 
-  // Funciones lógicas de los botones
-  const handleStatClick = (statType) => {
-    console.log(`Redirigiendo a detalles de: ${statType}. Conexión lista para backend.`);
+  const [cambiandoPassword, setCambiandoPassword] = useState(false);
+  const [nuevaPassword, setNuevaPassword] = useState("");
+  const [confirmarPassword, setConfirmarPassword] = useState("");
+  const [mensajePassword, setMensajePassword] = useState("");
+
+  useEffect(() => {
+    async function cargar() {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData?.user?.id;
+      if (!uid) {
+        setCargando(false);
+        return;
+      }
+      setEmail(userData.user.email);
+
+      const [{ data: profileData }, { count: totalCompletadas }, { data: loyalty }, { data: misResenas }, { data: preferencias }] = await Promise.all([
+        supabase.from("profiles").select("full_name, phone").eq("id", uid).maybeSingle(),
+        supabase.from("appointments").select("id", { count: "exact", head: true }).eq("client_id", uid).eq("status", "completed"),
+        supabase.from("loyalty_accounts").select("points_balance").eq("profile_id", uid),
+        supabase.from("reviews").select("rating").eq("client_id", uid),
+        supabase.from("client_notification_preferences").select("*").eq("profile_id", uid).maybeSingle(),
+      ]);
+
+      setPerfil(profileData);
+      setNombreEditable(profileData?.full_name ?? "");
+
+      const puntos = (loyalty ?? []).reduce((acc, l) => acc + l.points_balance, 0);
+      const calificaciones = misResenas ?? [];
+      const calificacion = calificaciones.length ? calificaciones.reduce((acc, r) => acc + r.rating, 0) / calificaciones.length : 0;
+
+      setStats({ visitas: totalCompletadas ?? 0, puntos, calificacion });
+
+      if (preferencias) {
+        setRecordatorio(preferencias.appointment_reminders);
+        setCitaConfirmada(preferencias.appointment_confirmed_alerts);
+        setNuevosCupones(preferencias.new_coupon_alerts);
+      }
+
+      setCargando(false);
+    }
+
+    cargar();
+  }, []);
+
+  const actualizarPreferencia = async (campoDb, valorAnterior, valorNuevo, aplicarLocal) => {
+    aplicarLocal(valorNuevo);
+    const { data: userData } = await supabase.auth.getUser();
+    const uid = userData?.user?.id;
+    if (!uid) return;
+    const { error } = await supabase.from("client_notification_preferences").update({ [campoDb]: valorNuevo }).eq("profile_id", uid);
+    if (error) {
+      aplicarLocal(valorAnterior);
+      setErrorPreferencias("No fue posible guardar el cambio.");
+    }
   };
 
-  const handlePasswordChange = () => {
-    console.log("Abrir modal para cambiar contraseña.");
+  const guardarNombre = async () => {
+    const { data: userData } = await supabase.auth.getUser();
+    const uid = userData?.user?.id;
+    if (!uid || !nombreEditable.trim()) return;
+
+    await supabase.from("profiles").update({ full_name: nombreEditable.trim() }).eq("id", uid);
+    setPerfil((prev) => ({ ...prev, full_name: nombreEditable.trim() }));
+    setEditandoNombre(false);
   };
 
-  const handleDeleteAccount = () => {
-    console.log("Confirmación de borrado de cuenta iniciada.");
+  const cambiarPassword = async (e) => {
+    e.preventDefault();
+    setMensajePassword("");
+
+    if (nuevaPassword !== confirmarPassword) {
+      setMensajePassword("Las contraseñas no coinciden.");
+      return;
+    }
+    if (nuevaPassword.length < 8) {
+      setMensajePassword("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+
+    const { error } = await supabase.auth.updateUser({ password: nuevaPassword });
+    if (error) {
+      setMensajePassword("No fue posible cambiar la contraseña.");
+    } else {
+      setMensajePassword("Contraseña actualizada correctamente.");
+      setNuevaPassword("");
+      setConfirmarPassword("");
+      setCambiandoPassword(false);
+    }
   };
+
+  const iniciales = (perfil?.full_name ?? email)
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  if (cargando) {
+    return <div className="ajt-contenido"><p>Cargando ajustes...</p></div>;
+  }
 
   return (
     <div className="ajt-contenido">
       <div className="ajt-grid">
-
-        {/* Columna Izquierda: Tarjeta de Perfil y Estadísticas */}
         <div className="ajt-columna-izquierda">
           <div className="ajt-tarjeta-perfil">
-            <div className="ajt-avatar">LM</div>
-            <h3>Luis Méndez</h3>
-            <p>luis.mendez@gmail.com</p>
+            <div className="ajt-avatar">{iniciales}</div>
+            <h3>{perfil?.full_name ?? "Cliente"}</h3>
+            <p>{email}</p>
           </div>
 
-          <button className="ajt-boton-cambiar-foto">
-            <span>Cambiar foto de perfil</span>
-          </button>
-
           <div className="ajt-grid-estadisticas">
-            <button className="ajt-boton-estadistica" onClick={() => handleStatClick("visitas")}>
-              <strong>6</strong>
+            <button className="ajt-boton-estadistica" type="button">
+              <strong>{stats.visitas}</strong>
               <span>Visitas</span>
             </button>
-            <button className="ajt-boton-estadistica" onClick={() => handleStatClick("puntos")}>
-              <strong>50</strong>
+            <button className="ajt-boton-estadistica" type="button">
+              <strong>{stats.puntos}</strong>
               <span>Puntos</span>
             </button>
-            <button className="ajt-boton-estadistica" onClick={() => handleStatClick("calificacion")}>
-              <strong>4.8</strong>
+            <button className="ajt-boton-estadistica" type="button">
+              <strong>{stats.calificacion.toFixed(1)}</strong>
               <span>Calificación</span>
             </button>
           </div>
         </div>
 
-        {/* Columna Derecha: Secciones de Configuración */}
         <div className="ajt-columna-derecha">
-
-          {/* Sección Notificaciones */}
           <section className="ajt-seccion">
             <h2>Notificaciones</h2>
+            {errorPreferencias && <p style={{ color: "#b91c1c" }}>{errorPreferencias}</p>}
 
             <div className="ajt-fila-ajuste">
-              <div className="ajt-etiqueta">
-                <span>Recordatorio de cita</span>
-              </div>
+              <div className="ajt-etiqueta"><span>Recordatorio de cita</span></div>
               <label className="ajt-switch">
-                <input type="checkbox" checked={recordatorio} onChange={() => setRecordatorio(!recordatorio)} />
+                <input type="checkbox" checked={recordatorio} onChange={() => actualizarPreferencia("appointment_reminders", recordatorio, !recordatorio, setRecordatorio)} />
                 <span className="ajt-slider"></span>
               </label>
             </div>
 
             <div className="ajt-fila-ajuste">
-              <div className="ajt-etiqueta">
-                <span>Cita confirmada</span>
-              </div>
+              <div className="ajt-etiqueta"><span>Cita confirmada</span></div>
               <label className="ajt-switch">
-                <input type="checkbox" checked={citaConfirmada} onChange={() => setCitaConfirmada(!citaConfirmada)} />
+                <input type="checkbox" checked={citaConfirmada} onChange={() => actualizarPreferencia("appointment_confirmed_alerts", citaConfirmada, !citaConfirmada, setCitaConfirmada)} />
                 <span className="ajt-slider"></span>
               </label>
             </div>
 
             <div className="ajt-fila-ajuste">
-              <div className="ajt-etiqueta">
-                <span>Nuevos cupones</span>
-              </div>
+              <div className="ajt-etiqueta"><span>Nuevos cupones</span></div>
               <label className="ajt-switch">
-                <input type="checkbox" checked={nuevosCupones} onChange={() => setNuevosCupones(!nuevosCupones)} />
+                <input type="checkbox" checked={nuevosCupones} onChange={() => actualizarPreferencia("new_coupon_alerts", nuevosCupones, !nuevosCupones, setNuevosCupones)} />
                 <span className="ajt-slider"></span>
               </label>
             </div>
           </section>
 
-          {/* Sección Seguridad */}
           <section className="ajt-seccion">
             <h2>Seguridad</h2>
 
             <div className="ajt-fila-ajuste">
-              <div className="ajt-etiqueta">
-                <span>Contraseña</span>
-              </div>
+              <div className="ajt-etiqueta"><span>Contraseña</span></div>
               <div className="ajt-acciones-password">
                 <span className="ajt-dots-password">..........</span>
-                <button className="ajt-boton-editar-inline" onClick={handlePasswordChange}>Editar</button>
+                <button className="ajt-boton-editar-inline" onClick={() => setCambiandoPassword((v) => !v)}>
+                  {cambiandoPassword ? "Cancelar" : "Editar"}
+                </button>
               </div>
             </div>
 
-            <div className="ajt-fila-ajuste">
-              <div className="ajt-etiqueta">
-                <span>Verificación de 2 pasos</span>
-              </div>
-              <label className="ajt-switch">
-                <input type="checkbox" checked={verificacion2Pasos} onChange={() => setVerificacion2Pasos(!verificacion2Pasos)} />
-                <span className="ajt-slider"></span>
-              </label>
-            </div>
+            {cambiandoPassword && (
+              <form onSubmit={cambiarPassword} className="ajt-fila-ajuste" style={{ flexDirection: "column", alignItems: "stretch", gap: 8 }}>
+                <input type="password" placeholder="Nueva contraseña" value={nuevaPassword} onChange={(e) => setNuevaPassword(e.target.value)} required />
+                <input type="password" placeholder="Confirmar contraseña" value={confirmarPassword} onChange={(e) => setConfirmarPassword(e.target.value)} required />
+                {mensajePassword && <p style={{ margin: 0 }}>{mensajePassword}</p>}
+                <button type="submit" className="ajt-boton-editar-inline">Guardar contraseña</button>
+              </form>
+            )}
+            {!cambiandoPassword && mensajePassword && <p>{mensajePassword}</p>}
           </section>
 
-          {/* Sección Datos Personales */}
           <section className="ajt-seccion">
             <h2>Datos personales</h2>
 
             <div className="ajt-fila-info">
-              <div className="ajt-etiqueta">
-                <span>Nombre</span>
-              </div>
-              <span className="ajt-valor-info">Luis Méndez</span>
+              <div className="ajt-etiqueta"><span>Nombre</span></div>
+              {editandoNombre ? (
+                <div className="ajt-acciones-password">
+                  <input value={nombreEditable} onChange={(e) => setNombreEditable(e.target.value)} />
+                  <button className="ajt-boton-editar-inline" onClick={guardarNombre}>Guardar</button>
+                </div>
+              ) : (
+                <div className="ajt-acciones-password">
+                  <span className="ajt-valor-info">{perfil?.full_name}</span>
+                  <button className="ajt-boton-editar-inline" onClick={() => setEditandoNombre(true)}>Editar</button>
+                </div>
+              )}
             </div>
 
             <div className="ajt-fila-info">
-              <div className="ajt-etiqueta">
-                <span>Correo</span>
-              </div>
-              <span className="ajt-valor-info">luis.mendez@gmail.com</span>
+              <div className="ajt-etiqueta"><span>Correo</span></div>
+              <span className="ajt-valor-info">{email}</span>
             </div>
           </section>
-
-          {/* Zona Peligrosa */}
-          <div className="ajt-zona-eliminar">
-            <span className="ajt-texto-eliminar">Eliminar cuenta</span>
-            <button className="ajt-boton-eliminar" onClick={handleDeleteAccount}>Eliminar</button>
-          </div>
-
         </div>
-
       </div>
     </div>
   );
