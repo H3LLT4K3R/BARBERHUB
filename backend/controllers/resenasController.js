@@ -105,7 +105,8 @@ export const moderarResena = async (req, res) => {
     }
 };
 
-// El dueño/admin marca una reseña como destacada para mostrarla en el landing público.
+// El super admin marca una reseña como destacada para mostrarla en el landing público
+// (curaduría centralizada: los dueños ya no pueden destacar sus propias reseñas).
 export const destacarResena = async (req, res) => {
     const { destacar } = req.body;
     if (typeof destacar !== 'boolean') {
@@ -120,9 +121,6 @@ export const destacarResena = async (req, res) => {
             .maybeSingle();
         if (fetchError) throw fetchError;
         if (!review) return res.status(404).json({ error: 'Reseña no encontrada.' });
-
-        const membership = await esOwnerOAdmin(req.user.id, review.barberia_id);
-        if (!membership) return res.status(403).json({ error: 'No tienes permiso sobre esta barbería.' });
 
         const { error: updateError } = await supabaseAdmin
             .from('reviews')

@@ -48,6 +48,24 @@ export const listarBarberias = async (req, res) => {
     }
 };
 
+// Lista todas las reseñas de la plataforma (de cualquier barbería) para que el super admin
+// elija cuáles destacar en el landing page, ordenadas de peor a mejor calificación.
+export const listarResenas = async (req, res) => {
+    try {
+        const { data: resenas, error } = await supabaseAdmin
+            .from('reviews')
+            .select('id, rating, comment, owner_response, is_published, is_featured, created_at, barberia_id, barberias(name), profiles!client_id(full_name)')
+            .order('rating', { ascending: true })
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+
+        res.json({ resenas: resenas ?? [] });
+    } catch (error) {
+        console.error('Error al listar reseñas:', error);
+        res.status(500).json({ error: 'No fue posible cargar las reseñas.' });
+    }
+};
+
 // Borra por completo una barbería (por ejemplo, por falta de pago prolongada): todos sus
 // datos y las cuentas de su dueño/equipo. Es irreversible, por eso es acción exclusiva del
 // super admin y el frontend debe pedir confirmación explícita antes de llamarla.
