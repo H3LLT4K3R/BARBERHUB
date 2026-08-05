@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "../../../lib/supabase.js";
 import "../styles/ajustes.css";
 
@@ -19,6 +20,8 @@ export default function Ajustes() {
   const [nuevaPassword, setNuevaPassword] = useState("");
   const [confirmarPassword, setConfirmarPassword] = useState("");
   const [mensajePassword, setMensajePassword] = useState("");
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [mostrarConfirm, setMostrarConfirm] = useState(false);
 
   useEffect(() => {
     async function cargar() {
@@ -187,8 +190,18 @@ export default function Ajustes() {
 
             {cambiandoPassword && (
               <form onSubmit={cambiarPassword} className="ajt-fila-ajuste" style={{ flexDirection: "column", alignItems: "stretch", gap: 8 }}>
-                <input type="password" placeholder="Nueva contraseña" value={nuevaPassword} onChange={(e) => setNuevaPassword(e.target.value)} required />
-                <input type="password" placeholder="Confirmar contraseña" value={confirmarPassword} onChange={(e) => setConfirmarPassword(e.target.value)} required />
+                <div style={{ position: "relative" }}>
+                  <input type={mostrarPassword ? "text" : "password"} style={{ width: "100%", paddingRight: 36 }} placeholder="Nueva contraseña" value={nuevaPassword} onChange={(e) => setNuevaPassword(e.target.value)} required />
+                  <button type="button" onClick={() => setMostrarPassword((v) => !v)} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex" }}>
+                    {mostrarPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                <div style={{ position: "relative" }}>
+                  <input type={mostrarConfirm ? "text" : "password"} style={{ width: "100%", paddingRight: 36 }} placeholder="Confirmar contraseña" value={confirmarPassword} onChange={(e) => setConfirmarPassword(e.target.value)} required />
+                  <button type="button" onClick={() => setMostrarConfirm((v) => !v)} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex" }}>
+                    {mostrarConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
                 {mensajePassword && <p style={{ margin: 0 }}>{mensajePassword}</p>}
                 <button type="submit" className="ajt-boton-editar-inline">Guardar contraseña</button>
               </form>

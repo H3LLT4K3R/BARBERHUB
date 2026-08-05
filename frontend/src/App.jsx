@@ -29,6 +29,7 @@ import ComentarioEnviado from "./modules/cliente/pages/comentario-enviado";
 import PagoAnticipo from "./modules/cliente/pages/pago-anticipo";
 import MisCitas from "./modules/cliente/pages/mis-citas";
 import BarberiaPerfilComponent from "./modules/cliente/pages/barberia-perfil";
+import PerfilBarberoCliente from "./modules/cliente/pages/perfil-barbero-cliente";
 
 import SidebarLayout from "./modules/cliente/components/sidebar-layout";
 
@@ -325,6 +326,11 @@ element={
 <Route
 path="/barberia-perfil/:id"
 element={<BarberiaPerfilComponent />}
+/>
+
+<Route
+path="/perfil-barbero/:membershipId"
+element={<PerfilBarberoCliente />}
 />
 
 

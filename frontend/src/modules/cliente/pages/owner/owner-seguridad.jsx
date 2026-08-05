@@ -1,10 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../../../lib/supabase.js';
 import '../../styles/owner/owner-seguridad.css';
 
 export default function SeguridadView() {
   const [cargando, setCargando] = useState(true);
-  const [adminMembership, setAdminMembership] = useState(null);
+  const [barberiaId, setBarberiaId] = useState(null);
+  const [vista, setVista] = useState('admin');
+  const [administradores, setAdministradores] = useState([]);
+  const [barberos, setBarberos] = useState([]);
+  const [seleccionadoId, setSeleccionadoId] = useState(null);
   const [modulos, setModulos] = useState([]);
   const [permisos, setPermisos] = useState(new Map());
 
@@ -23,43 +27,64 @@ export default function SeguridadView() {
         setCargando(false);
         return;
       }
+      setBarberiaId(ownerMembership.barberia_id);
 
-      const [{ data: admin }, { data: allModulos }] = await Promise.all([
+      const [{ data: equipo }, { data: allModulos }] = await Promise.all([
         supabase
           .from('barberia_memberships')
-          .select('id, display_name, profiles!profile_id(full_name)')
+          .select('id, role, display_name, profiles!profile_id(full_name)')
           .eq('barberia_id', ownerMembership.barberia_id)
-          .eq('role', 'admin')
+          .in('role', ['admin', 'barber'])
           .eq('is_active', true)
-          .limit(1)
-          .maybeSingle(),
+          .order('joined_at'),
         supabase.from('platform_modules').select('id, code, name, description').order('name'),
       ]);
 
       setModulos(allModulos ?? []);
-
-      if (admin) {
-        setAdminMembership(admin);
-        const { data: existentes } = await supabase
-          .from('membership_module_permissions')
-          .select('module_id, can_view, can_manage')
-          .eq('membership_id', admin.id);
-        setPermisos(new Map((existentes ?? []).map((p) => [p.module_id, p])));
-      }
-
+      setAdministradores((equipo ?? []).filter((m) => m.role === 'admin'));
+      setBarberos((equipo ?? []).filter((m) => m.role === 'barber'));
       setCargando(false);
     }
 
     cargar();
   }, []);
 
+  const listaActual = vista === 'admin' ? administradores : barberos;
+
+  useEffect(() => {
+    // Al cambiar de vista (o cargar por primera vez), selecciona el primer perfil disponible.
+    setSeleccionadoId(listaActual[0]?.id ?? null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vista, administradores, barberos]);
+
+  const membershipSeleccionada = useMemo(
+    () => listaActual.find((m) => m.id === seleccionadoId) ?? null,
+    [listaActual, seleccionadoId]
+  );
+
+  useEffect(() => {
+    async function cargarPermisos() {
+      if (!membershipSeleccionada) {
+        setPermisos(new Map());
+        return;
+      }
+      const { data: existentes } = await supabase
+        .from('membership_module_permissions')
+        .select('module_id, can_view, can_manage')
+        .eq('membership_id', membershipSeleccionada.id);
+      setPermisos(new Map((existentes ?? []).map((p) => [p.module_id, p])));
+    }
+
+    cargarPermisos();
+  }, [membershipSeleccionada]);
+
   const togglePermiso = async (moduleId) => {
-    if (!adminMembership) return;
+    if (!membershipSeleccionada) return;
     const actual = permisos.get(moduleId);
     const activar = !(actual?.can_view);
 
     await supabase.from('membership_module_permissions').upsert(
-      { membership_id: adminMembership.id, module_id: moduleId, can_view: activar, can_manage: activar },
+      { membership_id: membershipSeleccionada.id, module_id: moduleId, can_view: activar, can_manage: activar },
       { onConflict: 'membership_id,module_id' }
     );
 
@@ -74,18 +99,17 @@ export default function SeguridadView() {
     return <div className="seguridad-wrapper"><p>Cargando seguridad...</p></div>;
   }
 
-  if (!adminMembership) {
+  if (!barberiaId) {
     return (
       <div className="seguridad-wrapper fade-in">
         <div className="seguridad-header">
           <h2>Seguridad de la Plataforma</h2>
-          <p>No hay un administrador activo en tu barbería. Crea uno desde Gestión de Usuarios para configurar sus permisos.</p>
         </div>
       </div>
     );
   }
 
-  const iniciales = (adminMembership.display_name ?? adminMembership.profiles?.full_name ?? "AD")
+  const iniciales = (membershipSeleccionada?.display_name ?? membershipSeleccionada?.profiles?.full_name ?? "?")
     .split(" ")
     .map((p) => p[0])
     .slice(0, 2)
@@ -96,40 +120,81 @@ export default function SeguridadView() {
     <div className="seguridad-wrapper fade-in">
       <div className="seguridad-header">
         <h2>Seguridad de la Plataforma</h2>
-        <p>Habilita o restringe los accesos que tendrá tu Administrador en el Dashboard Espejo.</p>
+        <p>Habilita o restringe los accesos que tendrán tus Administradores y Barberos en el Dashboard Espejo.</p>
       </div>
 
-      <div className="security-panel">
-        <div className="profile-banner">
-          <div className="profile-avatar">{iniciales}</div>
-          <div className="profile-info">
-            <h3>Perfil: {adminMembership.display_name ?? adminMembership.profiles?.full_name ?? "Administrador"}</h3>
-            <p>Mapeo de accesos de la sucursal</p>
+      <div className="role-toggle-group">
+        <button
+          type="button"
+          className={`role-toggle-btn ${vista === 'admin' ? 'is-selected' : ''}`}
+          onClick={() => setVista('admin')}
+        >
+          Administradores
+        </button>
+        <button
+          type="button"
+          className={`role-toggle-btn ${vista === 'barbero' ? 'is-selected' : ''}`}
+          onClick={() => setVista('barbero')}
+        >
+          Barberos
+        </button>
+      </div>
+
+      {listaActual.length === 0 ? (
+        <div className="security-panel">
+          <p>
+            {vista === 'admin'
+              ? 'No hay un administrador activo en tu barbería. Crea uno desde Gestión de Usuarios para configurar sus permisos.'
+              : 'No hay barberos activos en tu barbería. Crea uno desde Gestión de Usuarios para configurar sus permisos.'}
+          </p>
+        </div>
+      ) : (
+        <div className="security-panel">
+          <div className="profile-banner">
+            <div className="profile-avatar">{iniciales}</div>
+            <div className="profile-info">
+              {listaActual.length > 1 ? (
+                <select
+                  className="profile-select"
+                  value={seleccionadoId ?? ''}
+                  onChange={(e) => setSeleccionadoId(e.target.value)}
+                >
+                  {listaActual.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.display_name ?? m.profiles?.full_name ?? 'Sin nombre'}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <h3>Perfil: {membershipSeleccionada?.display_name ?? membershipSeleccionada?.profiles?.full_name ?? "Sin nombre"}</h3>
+              )}
+              <p>Mapeo de accesos de la sucursal</p>
+            </div>
+          </div>
+
+          <div className="permissions-list">
+            {modulos.map((modulo) => {
+              const activo = Boolean(permisos.get(modulo.id)?.can_view);
+              return (
+                <div key={modulo.id} className={`permission-card ${activo ? 'is-active' : 'is-inactive'}`}>
+                  <div className="permission-text">
+                    <h4>{modulo.name}</h4>
+                    <p>{modulo.description}</p>
+                  </div>
+
+                  <button
+                    onClick={() => togglePermiso(modulo.id)}
+                    className={`toggle-switch ${activo ? 'toggle-on' : 'toggle-off'}`}
+                    aria-pressed={activo}
+                  >
+                    <div className="toggle-circle"></div>
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </div>
-
-        <div className="permissions-list">
-          {modulos.map((modulo) => {
-            const activo = Boolean(permisos.get(modulo.id)?.can_view);
-            return (
-              <div key={modulo.id} className={`permission-card ${activo ? 'is-active' : 'is-inactive'}`}>
-                <div className="permission-text">
-                  <h4>{modulo.name}</h4>
-                  <p>{modulo.description}</p>
-                </div>
-
-                <button
-                  onClick={() => togglePermiso(modulo.id)}
-                  className={`toggle-switch ${activo ? 'toggle-on' : 'toggle-off'}`}
-                  aria-pressed={activo}
-                >
-                  <div className="toggle-circle"></div>
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      )}
     </div>
   );
 }

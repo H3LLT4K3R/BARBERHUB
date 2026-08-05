@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { clearSession } from "../../../../utils/api.js";
+import { useSuspensionGuard } from "../../../../hooks/useSuspensionGuard.js";
 import "../../styles/barbero/barbero-layout.css";
 
 const NAV_ITEMS = [
@@ -30,6 +31,8 @@ export default function BarberoLayout({ children, titulo = "" }) {
   const location  = useLocation();
   const [open, setOpen]       = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useSuspensionGuard();
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 768);

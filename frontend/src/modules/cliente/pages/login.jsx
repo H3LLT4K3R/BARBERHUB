@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { saveSession } from "../../../utils/api.js";
 import { supabase } from "../../../lib/supabase.js";
 import BrandLogo from "../components/brand-logo";
@@ -18,7 +19,8 @@ export default function Login() {
   const rutaDestino = state?.redirigirA || state?.from;
   const [form, setForm] = useState({ email: state?.email ?? "", password: "" });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(state?.error ?? "");
+  const [mostrarPassword, setMostrarPassword] = useState(false);
   const mensajeExito = state?.mensaje || null;
 
   const handleChange = (event) => {
@@ -42,7 +44,7 @@ export default function Login() {
         supabase.from("profiles").select("full_name, is_super_admin").eq("id", data.user.id).maybeSingle(),
         supabase
           .from("barberia_memberships")
-          .select("role")
+          .select("role, barberias(name, is_suspended)")
           .eq("profile_id", data.user.id)
           .eq("is_active", true),
       ]);
@@ -52,6 +54,13 @@ export default function Login() {
         saveSession({ token: data.session.access_token, user: { id: data.user.id, email: data.user.email, nombre: profile.full_name, role: "super_admin" } });
         localStorage.setItem("token_sesion", data.session.access_token);
         navigate("/admin", { replace: true });
+        return;
+      }
+
+      const membresiaSuspendida = memberships?.find((m) => m.barberias?.is_suspended);
+      if (membresiaSuspendida) {
+        await supabase.auth.signOut();
+        setError(`La barbería "${membresiaSuspendida.barberias.name}" está temporalmente suspendida por falta de pago. Contacta a soporte para reactivarla.`);
         return;
       }
 
@@ -107,7 +116,25 @@ export default function Login() {
 
           <form className="login-formulario" onSubmit={handleSubmit}>
             <input className="login-input" type="email" name="email" placeholder="Correo electrónico" value={form.email} onChange={handleChange} required />
-            <input className="login-input" type="password" name="password" placeholder="Contraseña" value={form.password} onChange={handleChange} required />
+            <div style={{ position: "relative" }}>
+              <input
+                className="login-input"
+                style={{ paddingRight: 40, width: "100%" }}
+                type={mostrarPassword ? "text" : "password"}
+                name="password"
+                placeholder="Contraseña"
+                value={form.password}
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarPassword((v) => !v)}
+                style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex" }}
+              >
+                {mostrarPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
             {error && <p className="login-error">{error}</p>}
             <div className="login-recuperar">
               <button type="button" className="login-enlace-dorado" onClick={() => navigate("/recuperar-password")}>¿Olvidaste tu contraseña?</button>

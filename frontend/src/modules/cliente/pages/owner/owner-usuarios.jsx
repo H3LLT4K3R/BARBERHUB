@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { UserPlus, Shield, Scissors, KeyRound, Eye, EyeOff } from "lucide-react";
 import { supabase } from "../../../../lib/supabase.js";
 import { apiFetch } from "../../../../utils/api.js";
+import { evaluarPassword } from "../../../../utils/passwordStrength.js";
+import PasswordStrength from "../../components/password-strength.jsx";
 import '../../styles/owner/owner-usuarios.css';
 
 export default function OwnerUsuarios() {
@@ -62,6 +64,13 @@ export default function OwnerUsuarios() {
 
   const handleCrearCuenta = async () => {
     if (!nuevoUsuario.nombre || !nuevoUsuario.email || !nuevoUsuario.password || !barberiaId) return;
+
+    const { valida } = evaluarPassword(nuevoUsuario.password);
+    if (!valida) {
+      setError("La contraseña debe tener al menos 8 caracteres, una letra, un número y un símbolo.");
+      return;
+    }
+
     setEnviando(true);
     setError("");
 
@@ -92,10 +101,14 @@ export default function OwnerUsuarios() {
   };
 
   const restablecerPassword = async () => {
-    if (!membershipPassword || nuevaPassword.length < 8) {
-      setError("La contraseña debe tener al menos 8 caracteres.");
+    if (!membershipPassword) return;
+
+    const { valida } = evaluarPassword(nuevaPassword);
+    if (!valida) {
+      setError("La contraseña debe tener al menos 8 caracteres, una letra, un número y un símbolo.");
       return;
     }
+
     setEnviando(true);
     setError("");
     try {
@@ -193,6 +206,7 @@ export default function OwnerUsuarios() {
                 {mostrarPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
+            <PasswordStrength password={nuevoUsuario.password} />
           </div>
 
           <div>
@@ -269,6 +283,7 @@ export default function OwnerUsuarios() {
               {mostrarEditPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
+          <PasswordStrength password={nuevaPassword} />
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
             <button className="owner-usuarios-submit-btn" onClick={restablecerPassword} disabled={enviando}>Guardar</button>
             <button className="owner-usuarios-submit-btn" onClick={() => setMembershipPassword(null)} style={{ background: "#e5e7eb", color: "#111" }}>Cancelar</button>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IconLock } from "@tabler/icons-react";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "../../../lib/supabase.js";
 import { evaluarPassword } from "../../../utils/passwordStrength";
 import PasswordStrength from "../components/password-strength";
@@ -12,6 +13,8 @@ export default function RestablecerPassword() {
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [mostrarConfirm, setMostrarConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [validando, setValidando] = useState(true);
   const [tokenValido, setTokenValido] = useState(false);
@@ -113,7 +116,7 @@ export default function RestablecerPassword() {
                   </div>
                   <input
                     className="rpw-input"
-                    type="password"
+                    type={mostrarPassword ? "text" : "password"}
                     name="password"
                     placeholder="Nueva contraseña"
                     value={password}
@@ -124,6 +127,13 @@ export default function RestablecerPassword() {
                     required
                     autoComplete="new-password"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setMostrarPassword((v) => !v)}
+                    style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex", paddingRight: 14 }}
+                  >
+                    {mostrarPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
                 </div>
                 <PasswordStrength password={password} />
               </div>
@@ -134,7 +144,7 @@ export default function RestablecerPassword() {
                 </div>
                 <input
                   className="rpw-input"
-                  type="password"
+                  type={mostrarConfirm ? "text" : "password"}
                   name="confirmPassword"
                   placeholder="Confirmar contraseña"
                   value={confirmPassword}
@@ -145,6 +155,13 @@ export default function RestablecerPassword() {
                   required
                   autoComplete="new-password"
                 />
+                <button
+                  type="button"
+                  onClick={() => setMostrarConfirm((v) => !v)}
+                  style={{ background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex", paddingRight: 14 }}
+                >
+                  {mostrarConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
 
               {error && <p className="rpw-error">{error}</p>}

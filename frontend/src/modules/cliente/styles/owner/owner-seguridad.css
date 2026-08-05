@@ -49,6 +49,56 @@
 }
 
 /*=============================================
+  TOGGLE DE ROL (ADMINISTRADORES / BARBEROS)
+=============================================*/
+.role-toggle-group {
+  display: inline-flex;
+  padding: 4px;
+  background-color: var(--color-gray-light);
+  border-radius: 999px;
+  margin-bottom: 24px;
+  gap: 4px;
+}
+
+.role-toggle-btn {
+  border: none;
+  background: transparent;
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-gray);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.role-toggle-btn:hover {
+  color: var(--color-black);
+}
+
+.role-toggle-btn.is-selected {
+  background-color: var(--color-black);
+  color: var(--color-gold);
+}
+
+/*=============================================
+  SELECTOR DE PERFIL (cuando hay varios)
+=============================================*/
+.profile-select {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--color-black);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  background-color: #ffffff;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
+/*=============================================
   PANEL CENTRAL
 =============================================*/
 .security-panel {

@@ -16,6 +16,11 @@ import "../styles/barberia-perfil.css";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+function urlAvatarBarbero(path) {
+  if (!path) return null;
+  return supabase.storage.from("perfiles").getPublicUrl(path).data.publicUrl;
+}
+
 function Estrellas({ count = 5 }) {
   return (
     <span className="bp-estrellas" aria-hidden>
@@ -77,7 +82,7 @@ export default function BarberiaPerfil() {
       const [{ data: hours }, { data: servicesData }, { data: membershipsData }, { data: reviewsData }, favResult] = await Promise.all([
         supabase.from("business_hours").select("weekday, opens_at, closes_at, is_closed").eq("barberia_id", b.id),
         supabase.from("services").select("id, name, price, duration_minutes").eq("barberia_id", b.id).eq("is_active", true).order("sort_order").limit(4),
-        supabase.from("barberia_memberships").select("id, display_name, specialty").eq("barberia_id", b.id).eq("role", "barber").eq("is_active", true),
+        supabase.from("barberia_memberships").select("id, display_name, specialty, profiles!profile_id(avatar_path)").eq("barberia_id", b.id).eq("role", "barber").eq("is_active", true),
         supabase.from("reviews").select("comment, rating").eq("barberia_id", b.id).eq("is_published", true).order("created_at", { ascending: false }).limit(3),
         uid ? supabase.from("favorite_barberias").select("barberia_id").eq("profile_id", uid).eq("barberia_id", b.id).maybeSingle() : Promise.resolve({ data: null }),
       ]);
@@ -249,14 +254,29 @@ export default function BarberiaPerfil() {
               <h2>Barberos</h2>
             </header>
             <ul className="bp-lista-barberos">
-              {barberos.map((b) => (
-                <li key={b.id} className="bp-item-barbero">
-                  <div>
-                    <div className="bp-nombre-barbero">{b.display_name ?? "Barbero"}</div>
-                    {b.specialty && <div className="bp-opiniones-barbero">{b.specialty}</div>}
-                  </div>
-                </li>
-              ))}
+              {barberos.map((b) => {
+                const avatarUrl = urlAvatarBarbero(b.profiles?.avatar_path);
+                return (
+                  <li key={b.id} className="bp-item-barbero">
+                    <button
+                      type="button"
+                      className="bp-boton-barbero"
+                      onClick={() => navigate(`/perfil-barbero/${b.id}`, { state: { volverA: `/barberia-perfil/${id}` } })}
+                    >
+                      {avatarUrl ? (
+                        <img className="bp-foto-barbero" src={avatarUrl} alt={b.display_name ?? "Barbero"} />
+                      ) : (
+                        <span className="bp-foto-barbero bp-foto-barbero-placeholder"><IconUser size={20} /></span>
+                      )}
+                      <span>
+                        <div className="bp-nombre-barbero">{b.display_name ?? "Barbero"}</div>
+                        {b.specialty && <div className="bp-opiniones-barbero">{b.specialty}</div>}
+                      </span>
+                      <IconChevronRight size={16} className="bp-chevron-barbero" />
+                    </button>
+                  </li>
+                );
+              })}
               {barberos.length === 0 && <li>Sin barberos registrados.</li>}
             </ul>
           </section>
