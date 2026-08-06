@@ -317,6 +317,37 @@
   flex-shrink: 0;
 }
 
+.bp-foto-barbero-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f0e8;
+  color: #b8911e;
+}
+
+.bp-boton-barbero {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.bp-boton-barbero:hover .bp-nombre-barbero {
+  color: #b8911e;
+}
+
+.bp-chevron-barbero {
+  margin-left: auto;
+  color: #b8911e;
+  flex-shrink: 0;
+}
+
 .bp-nombre-barbero {
   font-size: 15px;
   font-weight: 600;

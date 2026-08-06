@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, Building2, Eye, EyeOff, CreditCard, Ban, CheckCircle2, Trash2 } from "lucide-react";
+import { ShieldCheck, Building2, Eye, EyeOff, CreditCard, Ban, CheckCircle2, Trash2, Star } from "lucide-react";
 import { supabase } from "../../../../lib/supabase.js";
 import { apiFetch, clearSession } from "../../../../utils/api.js";
 import { ESTADOS, ciudadesDe, zonasDe } from "../../data/ubicaciones.js";
+import { evaluarPassword } from "../../../../utils/passwordStrength.js";
+import PasswordStrength from "../../components/password-strength.jsx";
+import SuperAdminOpiniones from "./super-admin-opiniones.jsx";
 import "../../styles/owner/owner-usuarios.css";
+import "../../styles/owner/owner-seguridad.css";
 
 const FORM_INICIAL = {
   nombreBarberia: "", telefono: "", descripcion: "", direccion: "",
@@ -28,6 +32,7 @@ export default function SuperAdminPanel() {
   const [enviandoCobro, setEnviandoCobro] = useState(false);
   const [linkGenerado, setLinkGenerado] = useState(null);
   const [eliminandoId, setEliminandoId] = useState(null);
+  const [vista, setVista] = useState("barberias");
 
   const cargarBarberias = async () => {
     setCargandoLista(true);
@@ -78,6 +83,11 @@ export default function SuperAdminPanel() {
     }
     if (!form.nombreDuenio.trim() || !form.emailDuenio.trim() || !form.passwordDuenio) {
       setError("Completa nombre, correo y contraseña del dueño.");
+      return;
+    }
+    const { valida } = evaluarPassword(form.passwordDuenio);
+    if (!valida) {
+      setError("La contraseña debe tener al menos 8 caracteres, una letra, un número y un símbolo.");
       return;
     }
 
@@ -194,6 +204,19 @@ export default function SuperAdminPanel() {
       {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
       {mensaje && <p style={{ color: "#15803d" }}>{mensaje}</p>}
 
+      <div className="role-toggle-group" style={{ marginBottom: "1.5rem" }}>
+        <button type="button" className={`role-toggle-btn ${vista === "barberias" ? "is-selected" : ""}`} onClick={() => setVista("barberias")}>
+          <Building2 size={14} style={{ display: "inline", marginRight: 6, verticalAlign: "text-bottom" }} /> Barberías
+        </button>
+        <button type="button" className={`role-toggle-btn ${vista === "opiniones" ? "is-selected" : ""}`} onClick={() => setVista("opiniones")}>
+          <Star size={14} style={{ display: "inline", marginRight: 6, verticalAlign: "text-bottom" }} /> Opiniones
+        </button>
+      </div>
+
+      {vista === "opiniones" && <SuperAdminOpiniones />}
+
+      {vista === "barberias" && (
+      <>
       <div className="owner-usuarios-card" style={{ marginBottom: "2rem" }}>
         <div className="owner-usuarios-card-header">
           <Building2 size={24} color="#D4AF37" />
@@ -268,6 +291,7 @@ export default function SuperAdminPanel() {
                 {mostrarPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
+            <PasswordStrength password={form.passwordDuenio} />
           </div>
 
           <button type="submit" className="owner-usuarios-submit-btn" disabled={enviando}>
@@ -324,11 +348,11 @@ export default function SuperAdminPanel() {
                   )}
 
                   {b.is_suspended ? (
-                    <button type="button" className="action-icon-btn edit" onClick={() => handleSuspension(b.id, false)} title="Reactivar barbería">
+                    <button type="button" className="action-icon-btn edit" onClick={() => handleSuspension(b.id, false)} title="Reactivar barbería y restaurar el acceso del dueño y su equipo">
                       <CheckCircle2 size={16} />
                     </button>
                   ) : (
-                    <button type="button" className="action-icon-btn edit" onClick={() => handleSuspension(b.id, true)} title="Suspender barbería">
+                    <button type="button" className="action-icon-btn edit" onClick={() => handleSuspension(b.id, true)} title="Suspender barbería: bloquea temporalmente el acceso del dueño y su equipo (p. ej. por falta de pago)">
                       <Ban size={16} />
                     </button>
                   )}
@@ -360,6 +384,8 @@ export default function SuperAdminPanel() {
           )}
         </div>
       </div>
+      </>
+      )}
     </div>
     </div>
   );

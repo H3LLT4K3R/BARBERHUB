@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import { apiFetch } from "../../../utils/api.js";
 import { evaluarPassword } from "../../../utils/passwordStrength.js";
 import PasswordStrength from "../components/password-strength";
@@ -42,6 +43,8 @@ export default function Registro() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [mostrarConfirm, setMostrarConfirm] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -177,27 +180,47 @@ export default function Registro() {
 
             {/* Contraseña */}
             <div className="reg-bloque-password">
-              <input
-                className="reg-input"
-                type="password"
-                name="password"
-                placeholder="Contraseña"
-                value={form.password}
-                onChange={handleChange}
-                required
-              />
+              <div style={{ position: "relative" }}>
+                <input
+                  className="reg-input"
+                  style={{ paddingRight: 40 }}
+                  type={mostrarPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Contraseña"
+                  value={form.password}
+                  onChange={handleChange}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setMostrarPassword((v) => !v)}
+                  style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex" }}
+                >
+                  {mostrarPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
               <PasswordStrength password={form.password} />
             </div>
 
-            <input
-              className="reg-input"
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirmar contraseña"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              required
-            />
+            <div style={{ position: "relative" }}>
+              <input
+                className="reg-input"
+                style={{ paddingRight: 40 }}
+                type={mostrarConfirm ? "text" : "password"}
+                name="confirmPassword"
+                placeholder="Confirmar contraseña"
+                value={form.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setMostrarConfirm((v) => !v)}
+                style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex" }}
+              >
+                {mostrarConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
 
             {/* Error mensaje */}
             {error && <p className="reg-error">{error}</p>}

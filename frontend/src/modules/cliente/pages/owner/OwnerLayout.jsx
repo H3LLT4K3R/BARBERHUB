@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { clearSession } from "../../../../utils/api.js";
+import { useSuspensionGuard } from "../../../../hooks/useSuspensionGuard.js";
 import "../../styles/owner/owner-layout.css";
 
 const NAV_ITEMS = [
@@ -36,6 +37,8 @@ export default function OwnerLayout({ children }) {
   const location  = useLocation();
   const [open, setOpen]         = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useSuspensionGuard();
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 768);
@@ -120,9 +123,6 @@ export default function OwnerLayout({ children }) {
             {paginaActual && <h1 className="ow-page-title">{paginaActual.label}</h1>}
           </div>
           <div className="ow-navbar-right">
-            <button className="ow-navbar-link" onClick={() => navigate("/explorar")}>
-              Explorar locales
-            </button>
             <span className="ow-navbar-role">Owner</span>
             <div className="ow-navbar-avatar">O</div>
           </div>

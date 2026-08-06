@@ -3,6 +3,8 @@ import {
   Bell,
   Check,
   Clock3,
+  Eye,
+  EyeOff,
   KeyRound,
   Save,
   ShieldCheck,
@@ -31,6 +33,8 @@ export default function AjustesBarbero() {
   const [notice, setNotice] = useState("");
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [passwords, setPasswords] = useState({ password: "", confirm: "" });
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [mostrarConfirm, setMostrarConfirm] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   useEffect(() => {
@@ -235,8 +239,22 @@ export default function AjustesBarbero() {
             <button type="button" className="ba-modal-close" onClick={() => setPasswordOpen(false)} aria-label="Cerrar"><X size={18} /></button>
             <KeyRound size={24} />
             <h3>Cambiar contraseña</h3>
-            <label>Nueva contraseña<input type="password" value={passwords.password} onChange={(e) => setPasswords({ ...passwords, password: e.target.value })} required /></label>
-            <label>Confirmar contraseña<input type="password" value={passwords.confirm} onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })} required /></label>
+            <label>Nueva contraseña
+              <span style={{ position: "relative", display: "block" }}>
+                <input type={mostrarPassword ? "text" : "password"} style={{ width: "100%", paddingRight: 32 }} value={passwords.password} onChange={(e) => setPasswords({ ...passwords, password: e.target.value })} required />
+                <button type="button" onClick={() => setMostrarPassword((v) => !v)} style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex" }}>
+                  {mostrarPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </span>
+            </label>
+            <label>Confirmar contraseña
+              <span style={{ position: "relative", display: "block" }}>
+                <input type={mostrarConfirm ? "text" : "password"} style={{ width: "100%", paddingRight: 32 }} value={passwords.confirm} onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })} required />
+                <button type="button" onClick={() => setMostrarConfirm((v) => !v)} style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex" }}>
+                  {mostrarConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </span>
+            </label>
             <button className="ba-primary-button" type="submit">Guardar contraseña</button>
           </form>
         </div>

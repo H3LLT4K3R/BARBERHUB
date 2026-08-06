@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Eye, EyeOff, Search, Sparkles, Star } from "lucide-react";
+import { Eye, EyeOff, Search, Star } from "lucide-react";
 import { supabase } from "../../../../lib/supabase.js";
 import { apiFetch } from "../../../../utils/api.js";
 import "../../styles/barbero/opiniones-barbero.css";
@@ -96,23 +96,6 @@ export default function OpinionesBarbero() {
     }
   };
 
-  const alternarDestacada = async (opinion) => {
-    setProcesando(true);
-    setError("");
-    try {
-      await apiFetch(`/resenas/${opinion.id}/destacar`, {
-        method: "POST",
-        body: JSON.stringify({ destacar: !opinion.is_featured }),
-      });
-      await cargar();
-      setSeleccionada((prev) => (prev?.id === opinion.id ? { ...prev, is_featured: !opinion.is_featured } : prev));
-    } catch (err) {
-      setError(err.message || "No fue posible actualizar la reseña.");
-    } finally {
-      setProcesando(false);
-    }
-  };
-
   if (cargando) {
     return <section className="bo-page"><p>Cargando opiniones...</p></section>;
   }
@@ -122,7 +105,7 @@ export default function OpinionesBarbero() {
       <header className="bo-heading">
         <div>
           <h2>Opiniones</h2>
-          <span>Conoce la experiencia de tus clientes, gestiona sus reseñas y elige cuáles mostrar en tu página principal.</span>
+          <span>Conoce la experiencia de tus clientes y gestiona sus reseñas.</span>
         </div>
       </header>
 
@@ -151,10 +134,9 @@ export default function OpinionesBarbero() {
                     {seleccionada.is_published ? <EyeOff size={14} /> : <Eye size={14} />}
                     {seleccionada.is_published ? "Ocultar" : "Publicar"}
                   </button>
-                  <button onClick={() => alternarDestacada(seleccionada)} disabled={procesando || !seleccionada.is_published}>
-                    <Sparkles size={14} />
-                    {seleccionada.is_featured ? "Quitar de landing" : "Destacar en landing"}
-                  </button>
+                  {seleccionada.is_featured && (
+                    <span style={{ fontSize: 13, color: "#92660c", fontWeight: 600 }}>✨ Destacada en landing por Barber Hub</span>
+                  )}
                 </div>
               </article>
               <article className="bo-review-detail">
