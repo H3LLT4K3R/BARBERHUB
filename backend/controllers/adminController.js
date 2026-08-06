@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../config/supabase.js';
+import { obtenerEmailsPorId } from '../utils/usuarios.js';
 
 function slugify(texto) {
     return texto
@@ -26,8 +27,7 @@ export const listarBarberias = async (req, res) => {
             .eq('role', 'owner')
             .in('barberia_id', (barberias ?? []).map((b) => b.id));
 
-        const { data: usuarios } = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
-        const emailPorId = new Map((usuarios?.users ?? []).map((u) => [u.id, u.email]));
+        const emailPorId = await obtenerEmailsPorId((memberships ?? []).map((m) => m.profile_id));
 
         const duenioPorBarberia = new Map((memberships ?? []).map((m) => [m.barberia_id, m]));
 
