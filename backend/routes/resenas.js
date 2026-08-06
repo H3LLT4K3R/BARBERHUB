@@ -1,11 +1,13 @@
 import express from 'express';
 import { responderResena, moderarResena, destacarResena } from '../controllers/resenasController.js';
 import { requireUser } from '../middleware/auth.js';
+import { requireSuperAdmin } from '../middleware/superAdmin.js';
 
 const router = express.Router();
 
 router.post('/:id/responder', requireUser, responderResena); // owner/admin
 router.post('/:id/moderar', requireUser, moderarResena); // owner/admin: ocultar/mostrar
-router.post('/:id/destacar', requireUser, destacarResena); // owner/admin: mostrar/quitar del landing
+// Curaduría del landing page: exclusiva del super admin (los dueños ya no deciden esto).
+router.post('/:id/destacar', requireUser, requireSuperAdmin, destacarResena);
 
 export default router;
