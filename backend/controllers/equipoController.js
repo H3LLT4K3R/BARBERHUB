@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '../config/supabase.js';
 import { registrarAuditoria } from '../utils/auditoria.js';
+import { obtenerEmailsPorId } from '../utils/usuarios.js';
 
 async function esOwner(userId, barberiaId) {
     const { data, error } = await supabaseAdmin
@@ -32,8 +33,7 @@ export const listarEquipo = async (req, res) => {
             .order('joined_at');
         if (fetchError) throw fetchError;
 
-        const { data: usuarios } = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
-        const emailPorId = new Map((usuarios?.users ?? []).map((u) => [u.id, u.email]));
+        const emailPorId = await obtenerEmailsPorId((miembros ?? []).map((m) => m.profile_id));
 
         res.json({
             miembros: (miembros ?? []).map((m) => ({ ...m, email: emailPorId.get(m.profile_id) ?? null })),
