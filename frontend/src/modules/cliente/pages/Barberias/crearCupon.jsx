@@ -3,6 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../../lib/supabase.js';
 import '../../styles/Barberias/crearCupon.css';
 
+const DIAS_SEMANA = [
+  { valor: 1, etiqueta: 'Lun' },
+  { valor: 2, etiqueta: 'Mar' },
+  { valor: 3, etiqueta: 'Mié' },
+  { valor: 4, etiqueta: 'Jue' },
+  { valor: 5, etiqueta: 'Vie' },
+  { valor: 6, etiqueta: 'Sáb' },
+  { valor: 0, etiqueta: 'Dom' },
+];
+
 export default function CrearCupon() {
   const navigate = useNavigate();
   const [barberiaId, setBarberiaId] = useState(null);
@@ -15,6 +25,19 @@ export default function CrearCupon() {
   const [usoMaximo, setUsoMaximo] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState('');
+
+  // Reglas de segmentación (todas opcionales)
+  const [servicios, setServicios] = useState([]);
+  const [barberos, setBarberos] = useState([]);
+  const [servicioId, setServicioId] = useState('');
+  const [barberoId, setBarberoId] = useState('');
+  const [minimoVisitas, setMinimoVisitas] = useState('');
+  const [maximoVisitas, setMaximoVisitas] = useState('');
+  const [gastoMinimo, setGastoMinimo] = useState('');
+  const [diasValidos, setDiasValidos] = useState([]);
+  const [horaInicio, setHoraInicio] = useState('');
+  const [horaFin, setHoraFin] = useState('');
+  const [mostrarSegmentacion, setMostrarSegmentacion] = useState(false);
 
   useEffect(() => {
     async function cargar() {
@@ -30,10 +53,21 @@ export default function CrearCupon() {
       if (membership) {
         setBarberiaId(membership.barberia_id);
         setNombreBarberia(membership.barberias?.name ?? '');
+
+        const [{ data: serviciosData }, { data: barberosData }] = await Promise.all([
+          supabase.from('services').select('id, name').eq('barberia_id', membership.barberia_id).eq('is_active', true).order('name'),
+          supabase.from('barberia_memberships').select('id, display_name').eq('barberia_id', membership.barberia_id).eq('role', 'barber').eq('is_active', true),
+        ]);
+        setServicios(serviciosData ?? []);
+        setBarberos(barberosData ?? []);
       }
     }
     cargar();
   }, []);
+
+  const alternarDia = (dia) => {
+    setDiasValidos((prev) => (prev.includes(dia) ? prev.filter((d) => d !== dia) : [...prev, dia]));
+  };
 
   const generarCodigo = () => {
     const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -71,6 +105,14 @@ export default function CrearCupon() {
         starts_at: new Date().toISOString(),
         ends_at: `${fecha}T23:59:59`,
         usage_limit: usoMaximo ? Number(usoMaximo) : null,
+        service_id: servicioId || null,
+        barber_membership_id: barberoId || null,
+        minimum_visits: minimoVisitas ? Number(minimoVisitas) : null,
+        maximum_visits: maximoVisitas ? Number(maximoVisitas) : null,
+        minimum_spent: gastoMinimo ? Number(gastoMinimo) : null,
+        valid_weekdays: diasValidos.length ? diasValidos : null,
+        valid_time_start: horaInicio || null,
+        valid_time_end: horaFin || null,
       });
       if (insertError) throw insertError;
 
@@ -87,7 +129,7 @@ export default function CrearCupon() {
   };
 
   return (
-    <main className="content-wrapper">
+    <main className="cc-wrapper">
       <div className="grid-card">
         <form onSubmit={handleSubmit} className="form-side">
           <div>
@@ -171,6 +213,97 @@ export default function CrearCupon() {
                 />
               </div>
             </div>
+          </div>
+
+          <div className="form-section">
+            <button
+              type="button"
+              className="btn-toggle-segmentacion"
+              onClick={() => setMostrarSegmentacion((v) => !v)}
+            >
+              {mostrarSegmentacion ? '− Ocultar' : '+ Agregar'} reglas de segmentación (opcional)
+            </button>
+
+            {mostrarSegmentacion && (
+              <div className="segmentacion-panel">
+                <div className="inputs-grid">
+                  <div className="input-group">
+                    <label className="label-style">Solo para este servicio</label>
+                    <select value={servicioId} onChange={(e) => setServicioId(e.target.value)} className="input-field">
+                      <option value="">Cualquier servicio</option>
+                      {servicios.map((s) => (
+                        <option key={s.id} value={s.id}>{s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="input-group">
+                    <label className="label-style">Solo con este barbero</label>
+                    <select value={barberoId} onChange={(e) => setBarberoId(e.target.value)} className="input-field">
+                      <option value="">Cualquier barbero</option>
+                      {barberos.map((b) => (
+                        <option key={b.id} value={b.id}>{b.display_name || 'Barbero'}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="input-group">
+                    <label className="label-style">Mínimo de visitas (cliente frecuente)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={minimoVisitas}
+                      onChange={(e) => setMinimoVisitas(e.target.value)}
+                      className="input-field"
+                      placeholder="Ej. 5"
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label className="label-style">Máximo de visitas (solo clientes nuevos)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={maximoVisitas}
+                      onChange={(e) => setMaximoVisitas(e.target.value)}
+                      className="input-field"
+                      placeholder="Ej. 0"
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label className="label-style">Gasto mínimo acumulado ($)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={gastoMinimo}
+                      onChange={(e) => setGastoMinimo(e.target.value)}
+                      className="input-field"
+                      placeholder="Sin mínimo"
+                    />
+                  </div>
+                  <div className="input-group">
+                    <label className="label-style">Horario válido</label>
+                    <div className="flex-row-gap">
+                      <input type="time" value={horaInicio} onChange={(e) => setHoraInicio(e.target.value)} className="input-field" />
+                      <input type="time" value={horaFin} onChange={(e) => setHoraFin(e.target.value)} className="input-field" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="input-group" style={{ marginTop: 16 }}>
+                  <label className="label-style">Días válidos</label>
+                  <div className="days-container">
+                    {DIAS_SEMANA.map((d) => (
+                      <label key={d.valor} className="day-checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={diasValidos.includes(d.valor)}
+                          onChange={() => alternarDia(d.valor)}
+                        />
+                        {d.etiqueta}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {error && <p style={{ color: '#b91c1c' }}>{error}</p>}

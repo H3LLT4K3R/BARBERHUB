@@ -83,6 +83,12 @@ export default function Notificaciones() {
     await supabase.from("notifications").update({ read_at: ahora }).is("read_at", null);
   };
 
+  const handleEliminar = async (e, id) => {
+    e.stopPropagation();
+    setNotificaciones((prev) => prev.filter((n) => n.id !== id));
+    await supabase.from("notifications").delete().eq("id", id);
+  };
+
   const sinLeerContador = notificaciones.filter((n) => !n.read_at).length;
 
   if (cargando) {
@@ -109,10 +115,13 @@ export default function Notificaciones() {
 
             <div className="lista-notificaciones">
               {notificaciones.map((alerta) => (
-                <button
+                <div
                   key={alerta.id}
+                  role="button"
+                  tabIndex={0}
                   className={`tarjeta-notificacion ${!alerta.read_at ? "no-leida" : ""}`}
                   onClick={() => handleNotificationClick(alerta.id)}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleNotificationClick(alerta.id)}
                   aria-label={`Notificación: ${alerta.title}`}
                 >
                   <div className={`icono-contenedor ${alerta.type}`}>
@@ -127,8 +136,23 @@ export default function Notificaciones() {
                   <div className="meta-notificacion">
                     <span className="texto-tiempo">{formatearFecha(alerta.created_at)}</span>
                     {!alerta.read_at && <span className="punto-no-leida" />}
+                    <button
+                      type="button"
+                      className="boton-eliminar-notificacion"
+                      onClick={(e) => handleEliminar(e, alerta.id)}
+                      aria-label="Eliminar notificación"
+                      title="Eliminar notificación"
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                        <path d="M10 11v6" />
+                        <path d="M14 11v6" />
+                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                      </svg>
+                    </button>
                   </div>
-                </button>
+                </div>
               ))}
               {notificaciones.length === 0 && <p style={{ padding: 16 }}>No tienes notificaciones.</p>}
             </div>

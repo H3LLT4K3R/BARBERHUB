@@ -8,6 +8,7 @@ import {
   IconUser,
   IconChevronRight,
   IconHeart,
+  IconTicket,
 } from "@tabler/icons-react";
 import AppNavbar from "../components/app-navbar";
 import { supabase } from "../../../lib/supabase.js";
@@ -29,6 +30,14 @@ function Estrellas({ count = 5 }) {
       ))}
     </span>
   );
+}
+
+function formatDescuento(cupon) {
+  return cupon.discount_type === "percent" ? `${cupon.discount_value}% OFF` : `$${cupon.discount_value} OFF`;
+}
+
+function formatFechaExpira(fechaIso) {
+  return new Date(fechaIso).toLocaleDateString("es-MX", { day: "2-digit", month: "short" });
 }
 
 function calcularAbierto(businessHours) {
@@ -54,6 +63,7 @@ export default function BarberiaPerfil() {
   const [servicios, setServicios] = useState([]);
   const [barberos, setBarberos] = useState([]);
   const [opiniones, setOpiniones] = useState([]);
+  const [cupones, setCupones] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [usuarioId, setUsuarioId] = useState(null);
   const [esFavorita, setEsFavorita] = useState(false);
@@ -79,21 +89,47 @@ export default function BarberiaPerfil() {
         return;
       }
 
-      const [{ data: hours }, { data: servicesData }, { data: membershipsData }, { data: reviewsData }, favResult] = await Promise.all([
+      const nowIso = new Date().toISOString();
+      const [{ data: hours }, { data: servicesData }, { data: membershipsData }, { data: reviewsData }, favResult, { data: couponsData }] = await Promise.all([
         supabase.from("business_hours").select("weekday, opens_at, closes_at, is_closed").eq("barberia_id", b.id),
         supabase.from("services").select("id, name, price, duration_minutes").eq("barberia_id", b.id).eq("is_active", true).order("sort_order").limit(4),
-        supabase.from("barberia_memberships").select("id, display_name, specialty, profiles!profile_id(avatar_path)").eq("barberia_id", b.id).eq("role", "barber").eq("is_active", true),
+        supabase.from("barberia_memberships").select("id, profile_id, display_name, specialty").eq("barberia_id", b.id).eq("role", "barber").eq("is_active", true),
         supabase.from("reviews").select("comment, rating").eq("barberia_id", b.id).eq("is_published", true).order("created_at", { ascending: false }).limit(3),
         uid ? supabase.from("favorite_barberias").select("barberia_id").eq("profile_id", uid).eq("barberia_id", b.id).maybeSingle() : Promise.resolve({ data: null }),
+        // Solo cupones abiertos a cualquiera: los de "cliente frecuente" (minimum_visits)
+        // se avisan directo al cliente por notificación cuando ya califica, no se listan aquí.
+        supabase
+          .from("coupons")
+          .select("id, code, description, discount_type, discount_value, ends_at")
+          .eq("barberia_id", b.id)
+          .eq("is_active", true)
+          .is("minimum_visits", null)
+          .lte("starts_at", nowIso)
+          .gte("ends_at", nowIso)
+          .order("created_at", { ascending: false }),
       ]);
 
       if (cancelado) return;
 
+      // Las fotos de los barberos viven en profiles, pero un cliente no puede leer el
+      // perfil de otra persona directo (RLS): se consulta la vista profiles_public,
+      // que solo expone nombre/foto, no la fila completa.
+      const idsBarberos = [...new Set((membershipsData ?? []).map((m) => m.profile_id).filter(Boolean))];
+      const { data: avatarsData } = idsBarberos.length
+        ? await supabase.from("profiles_public").select("id, avatar_path").in("id", idsBarberos)
+        : { data: [] };
+      const avatarPorId = new Map((avatarsData ?? []).map((p) => [p.id, p.avatar_path]));
+      const barberosConAvatar = (membershipsData ?? []).map((m) => ({
+        ...m,
+        profiles: { avatar_path: avatarPorId.get(m.profile_id) ?? null },
+      }));
+
       setBarberia({ ...b, abierto: calcularAbierto(hours) });
       setServicios(servicesData ?? []);
-      setBarberos(membershipsData ?? []);
+      setBarberos(barberosConAvatar);
       setOpiniones((reviewsData ?? []).map((r) => r.comment).filter(Boolean));
       setEsFavorita(Boolean(favResult?.data));
+      setCupones(couponsData ?? []);
       setCargando(false);
     }
 
@@ -224,6 +260,27 @@ export default function BarberiaPerfil() {
             </button>
           </div>
         </section>
+
+        {cupones.length > 0 && (
+          <section className="bp-panel bp-panel-cupones">
+            <header className="bp-panel-encabezado">
+              <IconTicket size={22} stroke={1.8} className="bp-icono-panel dorado" />
+              <h2>Cupones disponibles</h2>
+            </header>
+            <ul className="bp-lista-cupones">
+              {cupones.map((c) => (
+                <li key={c.id} className="bp-item-cupon">
+                  <div className="bp-cupon-descuento">{formatDescuento(c)}</div>
+                  <div className="bp-cupon-info">
+                    <span className="bp-cupon-codigo">{c.code}</span>
+                    {c.description && <span className="bp-cupon-descripcion">{c.description}</span>}
+                  </div>
+                  <span className="bp-cupon-expira">Válido hasta {formatFechaExpira(c.ends_at)}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <div className="bp-grid">
           <section className="bp-panel">

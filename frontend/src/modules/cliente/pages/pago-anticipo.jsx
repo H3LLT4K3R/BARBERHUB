@@ -13,6 +13,11 @@ export default function PagoAnticipo() {
   const [enviada, setEnviada] = useState(false);
   const [error, setError] = useState("");
 
+  const [codigoCupon, setCodigoCupon] = useState("");
+  const [validandoCupon, setValidandoCupon] = useState(false);
+  const [cupon, setCupon] = useState(null);
+  const [errorCupon, setErrorCupon] = useState("");
+
   if (!state?.barberiaId || !state?.fecha || !state?.hora) {
     return (
       <div className="pa-container-page">
@@ -30,8 +35,41 @@ export default function PagoAnticipo() {
     establecimiento: state.establecimiento,
     horario: state.horario,
     servicio: state.servicio,
+    barbero: state.barberoNombre ?? "Sin preferencia",
     total: `$${state.precio} ${state.moneda}`,
     anticipo: `$${ANTICIPO_FIJO_MXN} ${state.moneda}`,
+  };
+
+  const scheduledAt = new Date(`${state.fecha}T${state.hora}:00`).toISOString();
+
+  const aplicarCupon = async () => {
+    if (!codigoCupon.trim()) return;
+    setValidandoCupon(true);
+    setErrorCupon("");
+    try {
+      const resultado = await apiFetch("/citas/validar-cupon", {
+        method: "POST",
+        body: JSON.stringify({
+          couponCode: codigoCupon.trim().toUpperCase(),
+          barberiaId: state.barberiaId,
+          barberMembershipId: state.barberMembershipId ?? undefined,
+          serviceIds: [state.servicioIdReal],
+          scheduledAt,
+        }),
+      });
+      setCupon(resultado);
+    } catch (err) {
+      setCupon(null);
+      setErrorCupon(err.message || "No fue posible validar el cupón.");
+    } finally {
+      setValidandoCupon(false);
+    }
+  };
+
+  const quitarCupon = () => {
+    setCupon(null);
+    setCodigoCupon("");
+    setErrorCupon("");
   };
 
   const handleConfirmar = async (e) => {
@@ -40,7 +78,6 @@ export default function PagoAnticipo() {
     setError("");
 
     try {
-      const scheduledAt = new Date(`${state.fecha}T${state.hora}:00`).toISOString();
       const clientNote = state.nombreContacto
         ? `Contacto: ${state.nombreContacto} (${state.telefonoContacto})`
         : undefined;
@@ -49,9 +86,11 @@ export default function PagoAnticipo() {
         method: "POST",
         body: JSON.stringify({
           barberiaId: state.barberiaId,
+          barberMembershipId: state.barberMembershipId ?? undefined,
           serviceIds: [state.servicioIdReal],
           scheduledAt,
           clientNote,
+          couponCode: cupon?.codigo,
         }),
       });
 
@@ -121,6 +160,34 @@ export default function PagoAnticipo() {
           </p>
 
           <form onSubmit={handleConfirmar} className="pa-form">
+            <div className="pa-cupon-box">
+              {cupon ? (
+                <div className="pa-cupon-aplicado">
+                  <span>✅ Cupón <strong>{cupon.codigo}</strong> aplicado {cupon.descripcion ? `— ${cupon.descripcion}` : ""}</span>
+                  <button type="button" className="pa-cupon-quitar" onClick={quitarCupon}>Quitar</button>
+                </div>
+              ) : (
+                <div className="pa-cupon-input-row">
+                  <input
+                    type="text"
+                    className="pa-cupon-input"
+                    placeholder="¿Tienes un cupón? (opcional)"
+                    value={codigoCupon}
+                    onChange={(e) => { setCodigoCupon(e.target.value); setErrorCupon(""); }}
+                  />
+                  <button
+                    type="button"
+                    className="pa-cupon-aplicar"
+                    onClick={aplicarCupon}
+                    disabled={validandoCupon || !codigoCupon.trim()}
+                  >
+                    {validandoCupon ? "Validando..." : "Aplicar"}
+                  </button>
+                </div>
+              )}
+              {errorCupon && <p className="pa-cupon-error">{errorCupon}</p>}
+            </div>
+
             <div className="pa-summary-box">
               <div className="pa-summary-item">
                 <span className="pa-label">ESTABLECIMIENTO</span>
@@ -135,9 +202,29 @@ export default function PagoAnticipo() {
                 <span className="pa-value">{resumen.servicio}</span>
               </div>
               <div className="pa-summary-item">
-                <span className="pa-label">TOTAL DEL SERVICIO (se paga en el local)</span>
-                <span className="pa-value">{resumen.total}</span>
+                <span className="pa-label">BARBERO</span>
+                <span className="pa-value">{resumen.barbero}</span>
               </div>
+              <div className="pa-summary-item">
+                <span className="pa-label">TOTAL DEL SERVICIO (se paga en el local)</span>
+                <span className="pa-value" style={cupon ? { textDecoration: "line-through", color: "#8e8e93" } : undefined}>
+                  {resumen.total}
+                </span>
+              </div>
+              {cupon && (
+                <div className="pa-summary-item">
+                  <span className="pa-label">DESCUENTO</span>
+                  <span className="pa-value" style={{ color: "#1a7f37" }}>
+                    -${cupon.descuento} {state.moneda}
+                  </span>
+                </div>
+              )}
+              {cupon && (
+                <div className="pa-summary-item">
+                  <span className="pa-label">NUEVO TOTAL (se paga en el local)</span>
+                  <span className="pa-value font-bold">${cupon.total} {state.moneda}</span>
+                </div>
+              )}
               <div className="pa-summary-item pa-highlight-row">
                 <span className="pa-label">ANTICIPO A PAGAR (cuando se acepte)</span>
                 <span className="pa-value font-bold">{resumen.anticipo}</span>

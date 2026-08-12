@@ -115,9 +115,13 @@ path="/restablecer-password-exito"
 element={<RestablecerPasswordExito />}
 />
 
-<Route 
+<Route
 path="/crearCupon"
-element={<CrearCupon />}
+element={
+<OwnerLayout>
+<CrearCupon />
+</OwnerLayout>
+}
 />
 
 
