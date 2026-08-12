@@ -1,145 +1,23 @@
 /* Fuentes y estilos base */
-body {
+/* Antes vivía en `body`, lo que dejaba el fondo oscuro y el texto claro
+   pegados a toda la SPA al navegar a otras páginas (el CSS de un componente
+   no se descarga al desmontarlo). Se limita al wrapper propio de esta página. */
+
+/* ==========================================================================
+   LAYOUT PRINCIPAL (vive dentro de OwnerLayout, que ya trae su propio
+   header + sidebar reales — esta página solo aporta el contenido)
+   ========================================================================== */
+
+.cc-wrapper {
+  padding: 40px 20px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  box-sizing: border-box;
   background-color: #121212;
   color: #e0e0e0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* ==========================================================================
-   LAYOUT PRINCIPAL (HEADER Y SIDEBAR COPIADOS DE BARBER HUB)
-   ========================================================================== */
-
-/* Header Superior */
-.main-header {
-  height: 60px;
-  background-color: #000000;
-  border-bottom: 1px solid #2a2a2a;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* Contenedor del Logo Intercambiable */
-.brand-logo {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  object-fit: cover;
-  background-color: #2a2a2a;
-}
-
-.brand-title {
-  color: #ffffff;
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-/* Botón Hamburguesa para Móviles */
-.menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  color: #ffffff;
-  font-size: 24px;
-  cursor: pointer;
-}
-
-/* Estructura Inferior (Sidebar + Contenido) */
-.layout-body {
-  display: flex;
-  margin-top: 60px; /* Espacio para el header */
-  min-height: calc(100vh - 60px);
-}
-
-/* Barra Lateral Oscura */
-.sidebar {
-  width: 240px;
-  background-color: #000000;
-  border-right: 1px solid #2a2a2a;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 20px 0;
-  position: fixed;
-  top: 60px;
-  bottom: 0;
-  left: 0;
-  transition: transform 0.3s ease;
-  z-index: 90;
-}
-
-.sidebar-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 0 12px;
-}
-
-/* Botón Activo Estilo Dorado Opaco de tu imagen */
-.sidebar-btn-active {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background-color: #e5c158;
-  color: #000000;
-  border: none;
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
-  text-align: left;
-  cursor: pointer;
-  width: 100%;
-}
-
-.sidebar-footer {
-  padding: 0 12px;
-}
-
-.btn-logout {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: none;
-  border: none;
-  color: #a0a0a0;
-  padding: 12px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  width: 100%;
-  text-align: left;
-}
-
-.btn-logout:hover {
-  color: #ffffff;
-}
-
-/* Contenedor del Contenido Central */
-.content-wrapper {
-  flex-grow: 1;
-  margin-left: 240px; /* Desplazamiento por la barra lateral fija */
-  padding: 40px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center; /* Centra perfectamente el formulario */
-  background-color: #121212;
+  min-height: 100%;
 }
 
 /* ==========================================================================
@@ -342,6 +220,30 @@ body {
   accent-color: #d4af37;
 }
 
+.btn-toggle-segmentacion {
+  background: none;
+  border: 1px dashed #3a3a3a;
+  border-radius: 6px;
+  padding: 10px 14px;
+  color: #d4af37;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.btn-toggle-segmentacion:hover {
+  border-color: #d4af37;
+  background-color: rgba(212, 175, 55, 0.06);
+}
+
+.segmentacion-panel {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #2a2a2a;
+}
+
 /* Tarjeta Cupón Vista Previa */
 .preview-title {
   font-size: 12px;
@@ -392,23 +294,10 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 /* ==========================================================================
-   RESPONSIVIDAD DE LA BARRA LATERAL (MEDIA QUERIES)
+   RESPONSIVIDAD
    ========================================================================== */
 @media (max-width: 768px) {
-  .menu-toggle {
-    display: block; /* Muestra el botón de menú en móviles */
-  }
-
-  .sidebar {
-    transform: translateX(-100%); /* Oculta la barra lateral por defecto en móviles */
-  }
-
-  .sidebar.open {
-    transform: translateX(0); /* Abre la barra cuando tiene la clase '.open' */
-  }
-
-  .content-wrapper {
-    margin-left: 0; /* Ocupa toda la pantalla en móviles */
+  .cc-wrapper {
     padding: 20px 10px;
   }
 }

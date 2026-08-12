@@ -143,6 +143,75 @@
   line-height: 1.4;
 }
 
+/* Cupón */
+.pa-cupon-box {
+  width: 100%;
+}
+
+.pa-cupon-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.pa-cupon-input {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #d9d9de;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.pa-cupon-input:focus {
+  border-color: var(--pa-gold-border);
+}
+
+.pa-cupon-aplicar {
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 1.5px solid var(--pa-bg-dark);
+  background-color: var(--pa-bg-dark);
+  color: var(--pa-gold);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pa-cupon-aplicar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pa-cupon-aplicado {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  background-color: #eafbea;
+  border: 1.5px solid #b6e6b6;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  color: #1a7f37;
+}
+
+.pa-cupon-quitar {
+  background: none;
+  border: none;
+  color: #6e6e73;
+  text-decoration: underline;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pa-cupon-error {
+  color: #b91c1c;
+  font-size: 0.85rem;
+  margin-top: 8px;
+}
+
 /* Resumen de costos */
 .pa-summary-box {
   width: 100%;

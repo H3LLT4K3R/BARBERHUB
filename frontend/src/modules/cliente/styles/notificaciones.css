@@ -180,3 +180,22 @@
   background-color: var(--color-dorado);
   border-radius: 50%;
 }
+
+.boton-eliminar-notificacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--texto-muted);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.boton-eliminar-notificacion:hover {
+  background-color: var(--rojo-suave);
+  color: var(--rojo-texto);
+}
