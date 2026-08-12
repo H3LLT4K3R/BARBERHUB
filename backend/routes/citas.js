@@ -10,12 +10,15 @@ import {
     completarCita,
     marcarNoShow,
 } from '../controllers/citasController.js';
+import { validarCuponPreview } from '../controllers/cuponesController.js';
 import { requireUser } from '../middleware/auth.js';
+import { limiterSensible } from '../middleware/rateLimit.js';
 
 const router = express.Router();
 
 router.get('/disponibilidad', obtenerDisponibilidad); // pública: se puede explorar sin sesión
-router.post('/', requireUser, crearCita);
+router.post('/validar-cupon', limiterSensible, requireUser, validarCuponPreview); // limita fuerza bruta de códigos
+router.post('/', limiterSensible, requireUser, crearCita); // limita fuerza bruta de cupones y saturación de horarios
 router.post('/:id/cancelar', requireUser, cancelarCita); // cliente: cancela su cita (reembolsa si ya pagó)
 router.post('/:id/aceptar', requireUser, aceptarCita); // barbero/admin: aprueba la solicitud, aún sin pago
 router.post('/:id/rechazar', requireUser, rechazarCita); // barbero/admin: rechaza la solicitud o cancela antes de confirmar
