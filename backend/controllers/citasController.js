@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '../config/supabase.js';
 import { reembolsarPago } from './mercadoPagoController.js';
 import { registrarAuditoria } from '../utils/auditoria.js';
+import { validarCupon, otorgarCuponesElegibles } from '../utils/cupones.js';
 
 const SLOT_MINUTES = 30;
 const BLOCKING_STATUSES = ['pending_confirmation', 'confirmed', 'in_progress'];
@@ -232,51 +233,21 @@ export const crearCita = async (req, res) => {
         let discountTotal = 0;
         let coupon = null;
         if (couponCode) {
-            const nowIso = new Date().toISOString();
-            const { data: foundCoupon, error: couponError } = await supabaseAdmin
-                .from('coupons')
-                .select('*')
-                .eq('barberia_id', barberiaId)
-                .eq('code', couponCode)
-                .eq('is_active', true)
-                .lte('starts_at', nowIso)
-                .gte('ends_at', nowIso)
-                .maybeSingle();
-            if (couponError) throw couponError;
-            if (!foundCoupon) {
-                return res.status(400).json({ error: 'Cupón inválido o expirado.' });
+            try {
+                const resultado = await validarCupon({
+                    couponCode,
+                    barberiaId,
+                    clientId: req.user.id,
+                    subtotal,
+                    serviceIds: uniqueServiceIds,
+                    barberMembershipId: barberMembershipId || null,
+                    scheduledAt,
+                });
+                coupon = resultado.coupon;
+                discountTotal = resultado.discountTotal;
+            } catch (err) {
+                return res.status(err.status || 500).json({ error: err.message });
             }
-            if (subtotal < Number(foundCoupon.minimum_subtotal)) {
-                return res.status(400).json({ error: `Este cupón requiere un mínimo de $${foundCoupon.minimum_subtotal}.` });
-            }
-            if (foundCoupon.usage_limit) {
-                const { count, error: usageError } = await supabaseAdmin
-                    .from('coupon_redemptions')
-                    .select('id', { count: 'exact', head: true })
-                    .eq('coupon_id', foundCoupon.id);
-                if (usageError) throw usageError;
-                if (count >= foundCoupon.usage_limit) {
-                    return res.status(400).json({ error: 'Este cupón ya alcanzó su límite de usos.' });
-                }
-            }
-            const { count: clientUsage, error: clientUsageError } = await supabaseAdmin
-                .from('coupon_redemptions')
-                .select('id', { count: 'exact', head: true })
-                .eq('coupon_id', foundCoupon.id)
-                .eq('client_id', req.user.id);
-            if (clientUsageError) throw clientUsageError;
-            if (clientUsage >= foundCoupon.per_client_limit) {
-                return res.status(400).json({ error: 'Ya usaste este cupón el máximo de veces permitido.' });
-            }
-
-            const rawDiscount = foundCoupon.discount_type === 'percent'
-                ? subtotal * (Number(foundCoupon.discount_value) / 100)
-                : Number(foundCoupon.discount_value);
-            const cappedDiscount = foundCoupon.maximum_discount
-                ? Math.min(rawDiscount, Number(foundCoupon.maximum_discount))
-                : rawDiscount;
-            discountTotal = round2(Math.min(cappedDiscount, subtotal));
-            coupon = foundCoupon;
         }
 
         const total = round2(subtotal - discountTotal);
@@ -701,6 +672,7 @@ export const completarCita = async (req, res) => {
         if (updateError) throw updateError;
 
         await otorgarPuntosFidelidad(appointment.barberia_id, appointment.client_id, appointment.id, appointment.total);
+        await otorgarCuponesElegibles(appointment.barberia_id, appointment.client_id);
 
         await notificar([{
             profile_id: appointment.client_id,
