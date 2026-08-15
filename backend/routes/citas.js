@@ -9,6 +9,10 @@ import {
     iniciarServicio,
     completarCita,
     marcarNoShow,
+    ocultarCita,
+    subirComprobante,
+    confirmarPagoManual,
+    rechazarComprobante,
 } from '../controllers/citasController.js';
 import { validarCuponPreview } from '../controllers/cuponesController.js';
 import { requireUser } from '../middleware/auth.js';
@@ -26,5 +30,9 @@ router.post('/:id/confirmar', requireUser, confirmarCitaFinal); // barbero/admin
 router.post('/:id/iniciar', requireUser, iniciarServicio); // barbero: el cliente llegó
 router.post('/:id/completar', requireUser, completarCita); // barbero: servicio terminado, otorga puntos
 router.post('/:id/no-asistio', requireUser, marcarNoShow); // barbero: el cliente no llegó
+router.post('/:id/ocultar', requireUser, ocultarCita); // barbero/admin: oculta una cita terminal de su agenda (no la borra)
+router.post('/:id/comprobante', requireUser, subirComprobante); // cliente: registra el comprobante del pago manual
+router.post('/:id/confirmar-pago', requireUser, confirmarPagoManual); // barbero/admin: revisó el comprobante, confirma el pago
+router.post('/:id/rechazar-comprobante', requireUser, rechazarComprobante); // barbero/admin: el comprobante no sirve, pide uno nuevo
 
 export default router;

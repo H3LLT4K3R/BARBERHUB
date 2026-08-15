@@ -119,7 +119,7 @@ export const eliminarBarberia = async (req, res) => {
         await supabaseAdmin.from('loyalty_ledger').delete().eq('barberia_id', barberiaId);
         await supabaseAdmin.from('loyalty_accounts').delete().eq('barberia_id', barberiaId);
         await supabaseAdmin.from('payment_provider_accounts').delete().eq('barberia_id', barberiaId);
-        await supabaseAdmin.from('audit_logs').delete().eq('barberia_id', barberiaId);
+        await supabaseAdmin.from('audit_log').delete().eq('barberia_id', barberiaId);
 
         if (membershipIds.length) {
             await supabaseAdmin.from('barber_portfolio_images').delete().in('membership_id', membershipIds);
