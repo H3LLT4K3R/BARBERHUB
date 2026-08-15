@@ -1,10 +1,15 @@
 import { supabaseAdmin } from '../config/supabase.js';
 import { reembolsarPago } from './mercadoPagoController.js';
+import { registrarIngresoPorPago } from './operacionController.js';
 import { registrarAuditoria } from '../utils/auditoria.js';
 import { validarCupon, otorgarCuponesElegibles } from '../utils/cupones.js';
 
 const SLOT_MINUTES = 30;
 const BLOCKING_STATUSES = ['pending_confirmation', 'confirmed', 'in_progress'];
+// Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
+// Duplica la constante de mercadoPagoController.js — el flujo manual no depende del
+// flujo automático de Mercado Pago, que se deja intacto pero sin usarse.
+const ANTICIPO_FIJO_MXN = 100;
 
 const timeToMinutes = (time) => {
     const [h, m] = time.split(':').map(Number);
@@ -38,17 +43,35 @@ async function notificar(filas) {
     if (error) console.error('No se pudieron crear notificaciones:', error.message);
 }
 
-// Confirma que el usuario autenticado es owner/admin/barbero activo de la barbería.
+// Confirma que el usuario autenticado es owner/admin/barbero activo de la barbería,
+// y de paso trae si la barbería está suspendida — control redundante: el login y
+// useSuspensionGuard ya bloquean la sesión, pero una sesión ya abierta antes de la
+// suspensión no debe poder seguir actuando sobre la API mientras tanto.
 async function esStaffDeLaBarberia(userId, barberiaId) {
     const { data, error } = await supabaseAdmin
         .from('barberia_memberships')
-        .select('id, role')
+        .select('id, role, barberias(is_suspended)')
         .eq('barberia_id', barberiaId)
         .eq('profile_id', userId)
         .eq('is_active', true)
         .maybeSingle();
     if (error) throw error;
     return data;
+}
+
+// El dueño desde Seguridad de la Plataforma puede apagarle a un admin/barbero el
+// acceso a un módulo (ver DB/add_module_permissions_enforcement.sql); esto lo hace
+// valer también en el backend, no solo en RLS. El dueño nunca se restringe a sí
+// mismo, y si a alguien aún no se le configuró ningún permiso tiene acceso completo.
+async function tieneAccesoModulo(userId, barberiaId, moduleCode, needManage = true) {
+    const { data, error } = await supabaseAdmin.rpc('has_module_access', {
+        p_barberia_id: barberiaId,
+        p_module_code: moduleCode,
+        p_need_manage: needManage,
+        p_profile_id: userId,
+    });
+    if (error) throw error;
+    return data === true;
 }
 
 // -------------------- DISPONIBILIDAD --------------------
@@ -163,14 +186,30 @@ export const crearCita = async (req, res) => {
     }
 
     try {
+        // Una cuenta anonimizada/eliminada (profiles.is_active = false) puede seguir
+        // teniendo una sesión válida hasta que expire; esto bloquea que la use para
+        // seguir agendando aunque el guard del frontend no la haya cerrado todavía.
+        const { data: perfilCliente, error: perfilError } = await supabaseAdmin
+            .from('profiles')
+            .select('is_active')
+            .eq('id', req.user.id)
+            .maybeSingle();
+        if (perfilError) throw perfilError;
+        if (!perfilCliente || perfilCliente.is_active === false) {
+            return res.status(403).json({ error: 'Tu cuenta fue eliminada. Contacta a soporte si crees que se trata de un error.' });
+        }
+
         const { data: barberia, error: barberiaError } = await supabaseAdmin
             .from('barberias')
-            .select('id, is_published, currency_code')
+            .select('id, is_published, is_suspended, currency_code')
             .eq('id', barberiaId)
             .maybeSingle();
         if (barberiaError) throw barberiaError;
         if (!barberia || !barberia.is_published) {
             return res.status(404).json({ error: 'Barbería no encontrada.' });
+        }
+        if (barberia.is_suspended) {
+            return res.status(403).json({ error: 'Esta barbería está temporalmente suspendida y no puede recibir citas nuevas.' });
         }
 
         if (barberMembershipId) {
@@ -295,15 +334,21 @@ export const crearCita = async (req, res) => {
         }
 
         if (coupon) {
-            const { error: redemptionError } = await supabaseAdmin.from('coupon_redemptions').insert({
-                coupon_id: coupon.id,
-                appointment_id: appointment.id,
-                client_id: req.user.id,
-                discount_amount: discountTotal,
+            // redimir_cupon revalida los límites de uso Y hace el insert en una sola
+            // transacción con bloqueo de fila (ver DB/add_redimir_cupon_atomico.sql) —
+            // cierra la ventana de carrera que dejaba el conteo aparte de validarCupon.
+            const { error: redemptionError } = await supabaseAdmin.rpc('redimir_cupon', {
+                p_coupon_id: coupon.id,
+                p_client_id: req.user.id,
+                p_appointment_id: appointment.id,
+                p_discount_amount: discountTotal,
             });
             if (redemptionError) {
                 await supabaseAdmin.from('appointment_services').delete().eq('appointment_id', appointment.id);
                 await supabaseAdmin.from('appointments').delete().eq('id', appointment.id);
+                if (redemptionError.message?.includes('coupon_usage_limit_reached') || redemptionError.message?.includes('coupon_client_limit_reached')) {
+                    return res.status(409).json({ error: 'Este cupón ya alcanzó su límite de usos.' });
+                }
                 throw redemptionError;
             }
         }
@@ -355,24 +400,37 @@ export const cancelarCita = async (req, res) => {
 
         const { data: payment, error: paymentError } = await supabaseAdmin
             .from('payments')
-            .select('id, provider_payment_id, amount')
+            .select('id, provider, provider_payment_id, amount')
             .eq('appointment_id', appointment.id)
             .eq('status', 'approved')
             .maybeSingle();
         if (paymentError) throw paymentError;
 
+        let reembolsoManual = false;
         if (payment) {
-            try {
-                await reembolsarPago({
-                    paymentId: payment.id,
-                    providerPaymentId: payment.provider_payment_id,
-                    amount: payment.amount,
-                    reason: motivo || 'Cancelada por el cliente',
-                    requestedBy: req.user.id,
-                });
-            } catch (refundError) {
-                console.error('Error al reembolsar el pago al cancelar:', refundError.message);
-                return res.status(502).json({ error: 'No fue posible procesar el reembolso. Intenta de nuevo o contacta a soporte.' });
+            if (payment.provider === 'manual_link') {
+                // Se pagó con el link manual del owner: no hay API para reembolsar solo,
+                // se marca reembolsado y el owner debe hacerlo aparte desde su cuenta de
+                // Mercado Pago.
+                const { error: manualRefundError } = await supabaseAdmin
+                    .from('payments')
+                    .update({ status: 'refunded' })
+                    .eq('id', payment.id);
+                if (manualRefundError) throw manualRefundError;
+                reembolsoManual = true;
+            } else {
+                try {
+                    await reembolsarPago({
+                        paymentId: payment.id,
+                        providerPaymentId: payment.provider_payment_id,
+                        amount: payment.amount,
+                        reason: motivo || 'Cancelada por el cliente',
+                        requestedBy: req.user.id,
+                    });
+                } catch (refundError) {
+                    console.error('Error al reembolsar el pago al cancelar:', refundError.message);
+                    return res.status(502).json({ error: 'No fue posible procesar el reembolso. Intenta de nuevo o contacta a soporte.' });
+                }
             }
         }
 
@@ -393,7 +451,9 @@ export const cancelarCita = async (req, res) => {
                 profile_id: profileId,
                 type: 'appointment',
                 title: 'Cita cancelada por el cliente',
-                body: payment
+                body: reembolsoManual
+                    ? 'El cliente canceló su cita. Ya pagó el anticipo por el link manual — recuerda reembolsarlo tú mismo desde tu cuenta de Mercado Pago.'
+                    : payment
                     ? 'El cliente canceló su cita. Ya se procesó el reembolso de su anticipo.'
                     : 'El cliente canceló su cita.',
                 action_url: '/barbero/citas',
@@ -418,6 +478,228 @@ export const cancelarCita = async (req, res) => {
     }
 };
 
+// -------------------- PAGO MANUAL (link de la barbería + comprobante) --------------------
+// Mientras no haya credenciales de la API de Mercado Pago, el anticipo se paga con el
+// link que cada barbería configura en su perfil; el cliente sube un comprobante y el
+// barbero/owner lo revisa a mano. El flujo automático (crearPreferencia + webhook en
+// mercadoPagoController.js) se deja intacto y sin usarse, listo para el día que sí den
+// las credenciales.
+
+// El cliente ya pagó con el link manual y sube su comprobante (la imagen ya se subió a
+// Storage desde el frontend; aquí solo se registra la ruta y se avisa al staff).
+export const subirComprobante = async (req, res) => {
+    const { proofPath } = req.body;
+    if (!proofPath) {
+        return res.status(400).json({ error: 'Falta proofPath.' });
+    }
+
+    try {
+        const { data: appointment, error: fetchError } = await supabaseAdmin
+            .from('appointments')
+            .select('id, barberia_id, client_id, status, barberia:barberias(currency_code)')
+            .eq('id', req.params.id)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!appointment) return res.status(404).json({ error: 'Cita no encontrada.' });
+        if (appointment.client_id !== req.user.id) {
+            return res.status(403).json({ error: 'Esta cita no te pertenece.' });
+        }
+        if (appointment.status !== 'pending_payment') {
+            return res.status(409).json({ error: 'Esta cita no está esperando un pago.' });
+        }
+        // El path debe vivir dentro de la carpeta de ESTA cita (comprobantes/{id}/...). Sin
+        // este chequeo, el cliente podría mandar el proofPath de un comprobante real de OTRA
+        // cita suya ya pagada (RLS solo exige que sea su propio client_id) y reusar ese mismo
+        // comprobante para "pagar" varias citas sin volver a pagar de verdad.
+        if (!proofPath.startsWith(`${appointment.id}/`)) {
+            return res.status(400).json({ error: 'El comprobante no corresponde a esta cita.' });
+        }
+
+        const { data: existente, error: existenteError } = await supabaseAdmin
+            .from('payments')
+            .select('id, status')
+            .eq('appointment_id', appointment.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+        if (existenteError) throw existenteError;
+
+        if (existente && existente.status !== 'rejected') {
+            return res.status(409).json({ error: 'Ya hay un comprobante en revisión para esta cita.' });
+        }
+
+        if (existente) {
+            const { error: updateError } = await supabaseAdmin
+                .from('payments')
+                .update({ proof_image_path: proofPath, status: 'pending_review' })
+                .eq('id', existente.id);
+            if (updateError) throw updateError;
+        } else {
+            const { error: insertError } = await supabaseAdmin.from('payments').insert({
+                appointment_id: appointment.id,
+                payer_id: req.user.id,
+                provider: 'manual_link',
+                amount: ANTICIPO_FIJO_MXN,
+                currency_code: appointment.barberia?.currency_code || 'MXN',
+                status: 'pending_review',
+                proof_image_path: proofPath,
+            });
+            if (insertError) throw insertError;
+        }
+
+        const staffIds = await obtenerStaffActivo(appointment.barberia_id);
+        await notificar(
+            staffIds.map((profileId) => ({
+                profile_id: profileId,
+                type: 'payment',
+                title: 'Comprobante de pago recibido',
+                body: 'Un cliente subió su comprobante de anticipo. Revísalo para confirmar la cita.',
+                action_url: '/barbero/citas',
+                data: { appointmentId: appointment.id },
+            }))
+        );
+
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al registrar el comprobante:', error);
+        res.status(500).json({ error: 'No fue posible registrar el comprobante.' });
+    }
+};
+
+// El barbero/admin revisó el comprobante y confirma que el pago sí llegó.
+export const confirmarPagoManual = async (req, res) => {
+    try {
+        const { data: appointment, error: fetchError } = await supabaseAdmin
+            .from('appointments')
+            .select('id, barberia_id, client_id, status')
+            .eq('id', req.params.id)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!appointment) return res.status(404).json({ error: 'Cita no encontrada.' });
+
+        const staffMembership = await esStaffDeLaBarberia(req.user.id, appointment.barberia_id);
+        if (!staffMembership) return res.status(403).json({ error: 'No perteneces a esta barbería.' });
+        if (staffMembership.barberias?.is_suspended) {
+            return res.status(403).json({ error: 'Esta barbería está temporalmente suspendida por falta de pago.' });
+        }
+        if (!(await tieneAccesoModulo(req.user.id, appointment.barberia_id, 'pagos'))) {
+            return res.status(403).json({ error: 'No tienes acceso al módulo de Pagos.' });
+        }
+        if (appointment.status !== 'pending_payment') {
+            return res.status(409).json({ error: 'Esta cita no está esperando un pago.' });
+        }
+
+        const { data: payment, error: paymentError } = await supabaseAdmin
+            .from('payments')
+            .select('id, amount')
+            .eq('appointment_id', appointment.id)
+            .eq('status', 'pending_review')
+            .maybeSingle();
+        if (paymentError) throw paymentError;
+        if (!payment) return res.status(409).json({ error: 'No hay ningún comprobante pendiente de revisión.' });
+
+        const { error: paymentUpdateError } = await supabaseAdmin
+            .from('payments')
+            .update({ status: 'approved', paid_at: new Date().toISOString() })
+            .eq('id', payment.id);
+        if (paymentUpdateError) throw paymentUpdateError;
+
+        const { error: updateError } = await supabaseAdmin
+            .from('appointments')
+            .update({ status: 'pending_confirmation' })
+            .eq('id', appointment.id)
+            .eq('status', 'pending_payment');
+        if (updateError) throw updateError;
+
+        await registrarIngresoPorPago({
+            barberiaId: appointment.barberia_id,
+            paymentId: payment.id,
+            amount: payment.amount,
+            appointmentId: appointment.id,
+        });
+
+        const staffIds = await obtenerStaffActivo(appointment.barberia_id);
+        await notificar(
+            staffIds.filter((id) => id !== req.user.id).map((profileId) => ({
+                profile_id: profileId,
+                type: 'payment',
+                title: 'Anticipo confirmado',
+                body: 'El pago ya se verificó. Confírmale la cita al 100% para dejarla lista.',
+                action_url: '/barbero/citas',
+                data: { appointmentId: appointment.id },
+            }))
+        );
+
+        await registrarAuditoria({
+            barberiaId: appointment.barberia_id,
+            actorId: req.user.id,
+            action: 'payment.confirm_manual',
+            entityType: 'payment',
+            entityId: payment.id,
+            newData: { status: 'approved' },
+        });
+
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al confirmar el pago manual:', error);
+        res.status(500).json({ error: 'No fue posible confirmar el pago.' });
+    }
+};
+
+// El barbero/admin rechaza el comprobante (no se ve claro, monto incorrecto, etc.);
+// el cliente puede subir uno nuevo para la misma cita.
+export const rechazarComprobante = async (req, res) => {
+    const { motivo } = req.body;
+
+    try {
+        const { data: appointment, error: fetchError } = await supabaseAdmin
+            .from('appointments')
+            .select('id, barberia_id, client_id, status')
+            .eq('id', req.params.id)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!appointment) return res.status(404).json({ error: 'Cita no encontrada.' });
+
+        const staffMembership = await esStaffDeLaBarberia(req.user.id, appointment.barberia_id);
+        if (!staffMembership) return res.status(403).json({ error: 'No perteneces a esta barbería.' });
+        if (staffMembership.barberias?.is_suspended) {
+            return res.status(403).json({ error: 'Esta barbería está temporalmente suspendida por falta de pago.' });
+        }
+        if (!(await tieneAccesoModulo(req.user.id, appointment.barberia_id, 'pagos'))) {
+            return res.status(403).json({ error: 'No tienes acceso al módulo de Pagos.' });
+        }
+
+        const { data: payment, error: paymentError } = await supabaseAdmin
+            .from('payments')
+            .select('id')
+            .eq('appointment_id', appointment.id)
+            .eq('status', 'pending_review')
+            .maybeSingle();
+        if (paymentError) throw paymentError;
+        if (!payment) return res.status(409).json({ error: 'No hay ningún comprobante pendiente de revisión.' });
+
+        const { error: updateError } = await supabaseAdmin
+            .from('payments')
+            .update({ status: 'rejected' })
+            .eq('id', payment.id);
+        if (updateError) throw updateError;
+
+        await notificar([{
+            profile_id: appointment.client_id,
+            type: 'payment',
+            title: 'Tu comprobante no pudo verificarse',
+            body: motivo || 'Revisa que la imagen sea clara y el monto correcto, y súbelo de nuevo.',
+            action_url: '/mis-citas',
+            data: { appointmentId: appointment.id },
+        }]);
+
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al rechazar el comprobante:', error);
+        res.status(500).json({ error: 'No fue posible rechazar el comprobante.' });
+    }
+};
+
 // -------------------- REVISIÓN DEL BARBERO/ADMIN --------------------
 
 // Paso 1: el barbero/admin aprueba la solicitud (todavía sin pago) y el cliente
@@ -434,6 +716,12 @@ export const aceptarCita = async (req, res) => {
 
         const staffMembership = await esStaffDeLaBarberia(req.user.id, appointment.barberia_id);
         if (!staffMembership) return res.status(403).json({ error: 'No perteneces a esta barbería.' });
+        if (staffMembership.barberias?.is_suspended) {
+            return res.status(403).json({ error: 'Esta barbería está temporalmente suspendida por falta de pago.' });
+        }
+        if (!(await tieneAccesoModulo(req.user.id, appointment.barberia_id, 'agenda'))) {
+            return res.status(403).json({ error: 'No tienes acceso al módulo de Agenda.' });
+        }
         if (appointment.status !== 'pending_confirmation') {
             return res.status(409).json({ error: 'Esta solicitud ya no está pendiente de revisión.' });
         }
@@ -487,6 +775,12 @@ export const rechazarCita = async (req, res) => {
 
         const staffMembership = await esStaffDeLaBarberia(req.user.id, appointment.barberia_id);
         if (!staffMembership) return res.status(403).json({ error: 'No perteneces a esta barbería.' });
+        if (staffMembership.barberias?.is_suspended) {
+            return res.status(403).json({ error: 'Esta barbería está temporalmente suspendida por falta de pago.' });
+        }
+        if (!(await tieneAccesoModulo(req.user.id, appointment.barberia_id, 'agenda'))) {
+            return res.status(403).json({ error: 'No tienes acceso al módulo de Agenda.' });
+        }
         if (!['pending_confirmation', 'pending_payment'].includes(appointment.status)) {
             return res.status(409).json({ error: 'Esta cita ya no se puede rechazar.' });
         }
@@ -541,6 +835,12 @@ export const confirmarCitaFinal = async (req, res) => {
 
         const staffMembership = await esStaffDeLaBarberia(req.user.id, appointment.barberia_id);
         if (!staffMembership) return res.status(403).json({ error: 'No perteneces a esta barbería.' });
+        if (staffMembership.barberias?.is_suspended) {
+            return res.status(403).json({ error: 'Esta barbería está temporalmente suspendida por falta de pago.' });
+        }
+        if (!(await tieneAccesoModulo(req.user.id, appointment.barberia_id, 'agenda'))) {
+            return res.status(403).json({ error: 'No tienes acceso al módulo de Agenda.' });
+        }
         if (appointment.status !== 'pending_confirmation') {
             return res.status(409).json({ error: 'Esta cita no está lista para la confirmación final (falta el pago).' });
         }
@@ -604,6 +904,12 @@ export const iniciarServicio = async (req, res) => {
 
         const staffMembership = await esStaffDeLaBarberia(req.user.id, appointment.barberia_id);
         if (!staffMembership) return res.status(403).json({ error: 'No perteneces a esta barbería.' });
+        if (staffMembership.barberias?.is_suspended) {
+            return res.status(403).json({ error: 'Esta barbería está temporalmente suspendida por falta de pago.' });
+        }
+        if (!(await tieneAccesoModulo(req.user.id, appointment.barberia_id, 'agenda'))) {
+            return res.status(403).json({ error: 'No tienes acceso al módulo de Agenda.' });
+        }
         if (appointment.status !== 'confirmed') {
             return res.status(409).json({ error: 'Solo se puede iniciar una cita ya confirmada.' });
         }
@@ -660,6 +966,12 @@ export const completarCita = async (req, res) => {
 
         const staffMembership = await esStaffDeLaBarberia(req.user.id, appointment.barberia_id);
         if (!staffMembership) return res.status(403).json({ error: 'No perteneces a esta barbería.' });
+        if (staffMembership.barberias?.is_suspended) {
+            return res.status(403).json({ error: 'Esta barbería está temporalmente suspendida por falta de pago.' });
+        }
+        if (!(await tieneAccesoModulo(req.user.id, appointment.barberia_id, 'agenda'))) {
+            return res.status(403).json({ error: 'No tienes acceso al módulo de Agenda.' });
+        }
         if (!['confirmed', 'in_progress'].includes(appointment.status)) {
             return res.status(409).json({ error: 'Solo se puede completar una cita confirmada o en curso.' });
         }
@@ -679,7 +991,7 @@ export const completarCita = async (req, res) => {
             type: 'appointment',
             title: '¡Gracias por tu visita!',
             body: 'Tu cita fue completada. Cuéntanos cómo te fue dejando una reseña.',
-            action_url: '/opinion-barberia',
+            action_url: '/historial-citas',
             data: { appointmentId: appointment.id },
         }]);
 
@@ -700,6 +1012,46 @@ export const completarCita = async (req, res) => {
     }
 };
 
+// El barbero/admin oculta de su agenda una cita ya terminal (cancelada, rechazada,
+// no asistida o completada). No borra el registro: pagos, reseñas y reportes del
+// owner siguen intactos, solo deja de listarse en la agenda del barbero.
+const ESTADOS_OCULTABLES = ['cancelled', 'rejected', 'no_show', 'completed'];
+
+export const ocultarCita = async (req, res) => {
+    try {
+        const { data: appointment, error: fetchError } = await supabaseAdmin
+            .from('appointments')
+            .select('id, barberia_id, status')
+            .eq('id', req.params.id)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!appointment) return res.status(404).json({ error: 'Cita no encontrada.' });
+
+        const staffMembership = await esStaffDeLaBarberia(req.user.id, appointment.barberia_id);
+        if (!staffMembership) return res.status(403).json({ error: 'No perteneces a esta barbería.' });
+        if (staffMembership.barberias?.is_suspended) {
+            return res.status(403).json({ error: 'Esta barbería está temporalmente suspendida por falta de pago.' });
+        }
+        if (!(await tieneAccesoModulo(req.user.id, appointment.barberia_id, 'agenda'))) {
+            return res.status(403).json({ error: 'No tienes acceso al módulo de Agenda.' });
+        }
+        if (!ESTADOS_OCULTABLES.includes(appointment.status)) {
+            return res.status(409).json({ error: 'Solo se pueden ocultar citas canceladas, rechazadas, no asistidas o completadas.' });
+        }
+
+        const { error: updateError } = await supabaseAdmin
+            .from('appointments')
+            .update({ hidden_by_barber_at: new Date().toISOString() })
+            .eq('id', appointment.id);
+        if (updateError) throw updateError;
+
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al ocultar la cita:', error);
+        res.status(500).json({ error: 'No fue posible ocultar la cita.' });
+    }
+};
+
 // El cliente no se presentó.
 export const marcarNoShow = async (req, res) => {
     try {
@@ -713,6 +1065,12 @@ export const marcarNoShow = async (req, res) => {
 
         const staffMembership = await esStaffDeLaBarberia(req.user.id, appointment.barberia_id);
         if (!staffMembership) return res.status(403).json({ error: 'No perteneces a esta barbería.' });
+        if (staffMembership.barberias?.is_suspended) {
+            return res.status(403).json({ error: 'Esta barbería está temporalmente suspendida por falta de pago.' });
+        }
+        if (!(await tieneAccesoModulo(req.user.id, appointment.barberia_id, 'agenda'))) {
+            return res.status(403).json({ error: 'No tienes acceso al módulo de Agenda.' });
+        }
         if (appointment.status !== 'confirmed') {
             return res.status(409).json({ error: 'Solo se puede marcar como no asistida una cita confirmada.' });
         }

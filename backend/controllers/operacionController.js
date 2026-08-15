@@ -1,5 +1,20 @@
 import { supabaseAdmin } from '../config/supabase.js';
 
+// El dueño desde Seguridad de la Plataforma puede apagarle a un admin el acceso a un
+// módulo (ver DB/add_module_permissions_enforcement.sql); esto lo hace valer también
+// en el backend. El dueño nunca se restringe a sí mismo, y si a alguien aún no se le
+// configuró ningún permiso tiene acceso completo.
+async function tieneAccesoModulo(userId, barberiaId, moduleCode) {
+    const { data, error } = await supabaseAdmin.rpc('has_module_access', {
+        p_barberia_id: barberiaId,
+        p_module_code: moduleCode,
+        p_need_manage: true,
+        p_profile_id: userId,
+    });
+    if (error) throw error;
+    return data === true;
+}
+
 const TIPOS_MOVIMIENTO = ['purchase', 'adjustment_in', 'adjustment_out', 'consumption', 'waste', 'return'];
 const TIPOS_TRANSACCION = ['income', 'expense', 'refund', 'adjustment'];
 
@@ -43,6 +58,9 @@ export const registrarMovimientoInventario = async (req, res) => {
 
         const membership = await esOwnerOAdmin(req.user.id, item.barberia_id);
         if (!membership) return res.status(403).json({ error: 'No tienes permiso sobre el inventario de esta barbería.' });
+        if (!(await tieneAccesoModulo(req.user.id, item.barberia_id, 'inventario'))) {
+            return res.status(403).json({ error: 'No tienes acceso al módulo de Inventario.' });
+        }
 
         // Las salidas (consumo, merma, ajuste negativo) se guardan como cantidad negativa;
         // el trigger de la base de datos suma esto directo al stock, así que el signo importa.
@@ -100,6 +118,9 @@ export const registrarTransaccionFinanciera = async (req, res) => {
     try {
         const membership = await esOwnerOAdmin(req.user.id, barberiaId);
         if (!membership) return res.status(403).json({ error: 'No tienes permiso sobre las finanzas de esta barbería.' });
+        if (!(await tieneAccesoModulo(req.user.id, barberiaId, 'finanzas'))) {
+            return res.status(403).json({ error: 'No tienes acceso al módulo de Finanzas.' });
+        }
 
         const { data: transaccion, error: insertError } = await supabaseAdmin
             .from('financial_transactions')

@@ -1,0 +1,25 @@
+-- "appointments_client_create" dejaba insertar una fila de appointments directo
+-- (con check(client_id = auth.uid()) como única restricción): cualquier cliente
+-- autenticado podía, desde la consola del navegador, fabricar una cita completa sin
+-- pasar por crearCita — eligiendo su propio barbero/barbería/horario y, más grave,
+-- su propio subtotal/discount_total/total (ej. total=1) y su propio status inicial
+-- (ej. 'confirmed', saltándose pending_payment/pending_confirmation), sin ningún
+-- cálculo de precio, validación de cupón, chequeo de suspensión de la barbería ni
+-- verificación de cuenta activa.
+--
+-- Se probó en vivo con datos descartables y el insert directo SÍ fue bloqueado, pero
+-- por una razón incidental: el trigger "appointment_status_log" (after insert or
+-- update of status, sin security definer) intenta loguear el cambio en
+-- appointment_status_history, tabla que no tiene policy de insert para
+-- "authenticated" — eso hace fallar la transacción completa hoy. Es una protección
+-- real pero frágil: si en el futuro alguien agrega una policy de insert a
+-- appointment_status_history por otra razón (ej. dejar que el staff anote algo a
+-- mano), este hueco de fraude se reabriría en silencio.
+--
+-- Igual que con appointments_client_cancel y appointments_staff_update (ver
+-- add_prevent_business_tampering.sql): todo el ciclo de creación de citas ya pasa
+-- por el backend (pago-anticipo.jsx -> POST /citas -> citasController.crearCita, con
+-- la llave de servicio) — no hay ni un solo ".from('appointments').insert(...)"
+-- directo en el frontend. Se elimina la policy por completo en vez de depender de
+-- una protección lateral.
+drop policy if exists appointments_client_create on public.appointments;
