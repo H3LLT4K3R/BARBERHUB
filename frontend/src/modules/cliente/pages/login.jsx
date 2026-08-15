@@ -41,7 +41,7 @@ export default function Login() {
       if (authError) throw authError;
 
       const [{ data: profile }, { data: memberships, error: membershipError }] = await Promise.all([
-        supabase.from("profiles").select("full_name, is_super_admin").eq("id", data.user.id).maybeSingle(),
+        supabase.from("profiles").select("full_name, is_super_admin, is_active").eq("id", data.user.id).maybeSingle(),
         supabase
           .from("barberia_memberships")
           .select("role, barberias(name, is_suspended)")
@@ -49,6 +49,12 @@ export default function Login() {
           .eq("is_active", true),
       ]);
       if (membershipError) throw membershipError;
+
+      if (profile && profile.is_active === false) {
+        await supabase.auth.signOut();
+        setError("Esta cuenta fue eliminada. Contacta a soporte si crees que se trata de un error.");
+        return;
+      }
 
       if (profile?.is_super_admin) {
         saveSession({ token: data.session.access_token, user: { id: data.user.id, email: data.user.email, nombre: profile.full_name, role: "super_admin" } });
@@ -102,7 +108,7 @@ export default function Login() {
           <BrandLogo className="login-logo-boton" imgClassName="login-logo" />
           <div className="login-texto-hero">
             <h2>Encuentra tu barbería ideal <span className="login-acento">en segundos</span></h2>
-            <p>Reserva citas, conviértete en cliente VIP y descubre las mejores barberías cerca de ti.</p>
+            <p>Reserva citas, guarda tus barberías favoritas y descubre las mejores cerca de ti.</p>
           </div>
           <div className="login-footer-izquierdo">© 2026 Barber Hub · Todos los derechos reservados</div>
         </div>

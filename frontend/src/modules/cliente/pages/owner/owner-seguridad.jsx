@@ -2,6 +2,27 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../../../lib/supabase.js';
 import '../../styles/owner/owner-seguridad.css';
 
+// platform_modules trae los 10 módulos del panel de Administrador (usa las mismas
+// etiquetas que OwnerLayout.jsx), pero el panel de Barbero (barbero-layout.jsx) solo
+// tiene pantallas reales para 3 de ellos — el resto (Catálogo, Clientes, Estadísticas,
+// Fidelidad, Finanzas, Inventario, Pagos) ni siquiera existen ahí. Mostrárselos como
+// switches al dueño es confuso: parece que puede bloquear algo que el barbero nunca
+// tuvo. Para la vista de Barberos se filtra a solo estos 3, con el nombre real que
+// usa su propio menú.
+const NOMBRES_MODULO_BARBERO = {
+  agenda: 'Gestión de citas',
+  cupones: 'Cupones',
+  opiniones: 'Opiniones',
+};
+const CODIGOS_MODULO_BARBERO = Object.keys(NOMBRES_MODULO_BARBERO);
+
+// Mismo criterio para Administradores: solo los 6 módulos con ítem propio en la
+// barra lateral de OwnerLayout.jsx (Finanzas, Gestión de Agenda, Inventario (Stock),
+// Estadísticas, Fidelidad, Opiniones). Catálogo, Clientes, Cupones y Pagos no tienen
+// su propia pantalla ahí, así que no se muestran como bloqueables.
+const NOMBRES_MODULO_ADMIN = {};
+const CODIGOS_MODULO_ADMIN = ['agenda', 'estadisticas', 'fidelidad', 'finanzas', 'inventario', 'opiniones'];
+
 export default function SeguridadView() {
   const [cargando, setCargando] = useState(true);
   const [barberiaId, setBarberiaId] = useState(null);
@@ -78,19 +99,26 @@ export default function SeguridadView() {
     cargarPermisos();
   }, [membershipSeleccionada]);
 
+  // Sin fila guardada, un módulo está abierto por defecto (así aparecen todos los
+  // módulos hasta que el dueño decida bloquear alguno en particular). El switch de
+  // un módulo solo bloquea/desbloquea ESE módulo — no afecta a los demás.
+  const estaActivo = (moduleId) => {
+    const fila = permisos.get(moduleId);
+    return fila ? Boolean(fila.can_view) : true;
+  };
+
   const togglePermiso = async (moduleId) => {
     if (!membershipSeleccionada) return;
-    const actual = permisos.get(moduleId);
-    const activar = !(actual?.can_view);
+    const nuevoValor = !estaActivo(moduleId);
 
     await supabase.from('membership_module_permissions').upsert(
-      { membership_id: membershipSeleccionada.id, module_id: moduleId, can_view: activar, can_manage: activar },
+      { membership_id: membershipSeleccionada.id, module_id: moduleId, can_view: nuevoValor, can_manage: nuevoValor },
       { onConflict: 'membership_id,module_id' }
     );
 
     setPermisos((prev) => {
       const next = new Map(prev);
-      next.set(moduleId, { module_id: moduleId, can_view: activar, can_manage: activar });
+      next.set(moduleId, { module_id: moduleId, can_view: nuevoValor, can_manage: nuevoValor });
       return next;
     });
   };
@@ -173,12 +201,16 @@ export default function SeguridadView() {
           </div>
 
           <div className="permissions-list">
-            {modulos.map((modulo) => {
-              const activo = Boolean(permisos.get(modulo.id)?.can_view);
+            {modulos
+              .filter((m) => (vista === 'barbero' ? CODIGOS_MODULO_BARBERO : CODIGOS_MODULO_ADMIN).includes(m.code))
+              .map((modulo) => {
+              const nombresVista = vista === 'barbero' ? NOMBRES_MODULO_BARBERO : NOMBRES_MODULO_ADMIN;
+              const activo = estaActivo(modulo.id);
+              const nombreModulo = nombresVista[modulo.code] ?? modulo.name;
               return (
                 <div key={modulo.id} className={`permission-card ${activo ? 'is-active' : 'is-inactive'}`}>
                   <div className="permission-text">
-                    <h4>{modulo.name}</h4>
+                    <h4>{nombreModulo}</h4>
                     <p>{modulo.description}</p>
                   </div>
 

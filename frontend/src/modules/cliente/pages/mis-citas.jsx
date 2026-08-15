@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   IconScissors,
   IconClock,
@@ -15,7 +15,10 @@ const ESTADOS_ACTIVOS = ["pending_payment", "pending_confirmation", "confirmed",
 const ANTICIPO_FIJO_MXN = 100;
 
 function infoEstado(cita) {
-  const pagoAprobado = (cita.payments ?? []).some((p) => p.status === "approved");
+  const pagos = cita.payments ?? [];
+  const pagoAprobado = pagos.some((p) => p.status === "approved");
+  const pagoEnRevision = pagos.some((p) => p.status === "pending_review");
+  const pagoRechazado = pagos.some((p) => p.status === "rejected") && !pagoEnRevision;
 
   switch (cita.status) {
     case "pending_confirmation":
@@ -23,6 +26,8 @@ function infoEstado(cita) {
         ? { texto: "Pago recibido - falta confirmación final", tipo: "aceptada", paso: 2 }
         : { texto: "Esperando respuesta del barbero", tipo: "esperando", paso: 1 };
     case "pending_payment":
+      if (pagoEnRevision) return { texto: "Comprobante en revisión", tipo: "esperando", paso: 2 };
+      if (pagoRechazado) return { texto: "Tu comprobante no se pudo verificar - sube uno nuevo", tipo: "esperando", paso: 2 };
       return { texto: "Aceptada - realiza tu pago", tipo: "esperando", paso: 2 };
     case "confirmed":
       return { texto: "Cita confirmada", tipo: "aceptada", paso: 3 };
@@ -41,18 +46,23 @@ export default function MisCitas() {
   const [citaDetalle, setCitaDetalle] = useState(null);
   const [citaCancelar, setCitaCancelar] = useState(null);
   const [motivoCancelacion, setMotivoCancelacion] = useState("");
+  const [citaPagar, setCitaPagar] = useState(null);
+  const [comprobanteEnviado, setComprobanteEnviado] = useState(false);
+  const [errorComprobante, setErrorComprobante] = useState("");
   const [procesando, setProcesando] = useState(false);
   const [error, setError] = useState("");
+  const [nombreArchivoComprobante, setNombreArchivoComprobante] = useState("");
+  const comprobanteInputRef = useRef(null);
 
   async function obtenerCitas() {
     const { data } = await supabase
       .from("appointments")
       .select(`
         id, scheduled_at, status, total,
-        barberias(name),
+        barberias(name, payment_link_url),
         barberia_memberships(display_name),
         appointment_services(service_name),
-        payments(status)
+        payments(status, proof_image_path)
       `)
       .in("status", ESTADOS_ACTIVOS)
       .order("scheduled_at");
@@ -78,18 +88,51 @@ export default function MisCitas() {
     return () => { cancelado = true; };
   }, []);
 
-  const handlePagar = async (cita) => {
+  const abrirModalPago = (cita) => {
+    setCitaPagar(cita);
+    setComprobanteEnviado(false);
+    setErrorComprobante("");
+    setNombreArchivoComprobante("");
+  };
+
+  const handleSubirComprobante = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file || !citaPagar) return;
+    setNombreArchivoComprobante(file.name);
+
+    const tiposPermitidos = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!tiposPermitidos.includes(file.type)) {
+      setErrorComprobante("Solo se aceptan imágenes JPG, PNG, WEBP o GIF.");
+      setNombreArchivoComprobante("");
+      event.target.value = "";
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorComprobante("La imagen no puede pesar más de 5 MB.");
+      setNombreArchivoComprobante("");
+      event.target.value = "";
+      return;
+    }
+
     setProcesando(true);
-    setError("");
+    setErrorComprobante("");
     try {
-      const { checkoutUrl } = await apiFetch("/pagos/mp/crear-preferencia", {
+      const path = `${citaPagar.id}/${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage.from("comprobantes").upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      await apiFetch(`/citas/${citaPagar.id}/comprobante`, {
         method: "POST",
-        body: JSON.stringify({ appointmentId: cita.id }),
+        body: JSON.stringify({ proofPath: path }),
       });
-      window.location.href = checkoutUrl;
+
+      setComprobanteEnviado(true);
+      await cargarCitas();
     } catch (err) {
-      setError(err.message || "No fue posible iniciar el pago.");
+      setErrorComprobante(err.message || "No fue posible enviar el comprobante.");
+    } finally {
       setProcesando(false);
+      event.target.value = "";
     }
   };
 
@@ -194,11 +237,19 @@ export default function MisCitas() {
                         Ver detalles
                       </button>
 
-                      {cita.status === "pending_payment" && (
-                        <button type="button" className="boton-accion boton-comentario-gris" onClick={() => handlePagar(cita)} disabled={procesando}>
-                          Pagar ahora
-                        </button>
-                      )}
+                      {cita.status === "pending_payment" && (() => {
+                        const enRevision = (cita.payments ?? []).some((p) => p.status === "pending_review");
+                        return (
+                          <button
+                            type="button"
+                            className="boton-accion boton-comentario-gris"
+                            onClick={() => abrirModalPago(cita)}
+                            disabled={procesando || enRevision}
+                          >
+                            {enRevision ? "Comprobante en revisión" : "Pagar ahora"}
+                          </button>
+                        );
+                      })()}
 
                       {cita.status !== "in_progress" && (
                         <button
@@ -232,7 +283,7 @@ export default function MisCitas() {
               <p><strong>Barbero:</strong> {citaDetalle.barbero}</p>
               <p><strong>Barbería:</strong> {citaDetalle.barberia}</p>
               <p><strong>Horario:</strong> {citaDetalle.horario}</p>
-              <p><strong>Total del servicio (se paga en el local):</strong> ${Number(citaDetalle.total).toFixed(2)}</p>
+              <p><strong>Total del servicio (se paga en el local):</strong> ${Math.max(0, Number(citaDetalle.total) - ANTICIPO_FIJO_MXN).toFixed(2)}</p>
               <p><strong>Anticipo por Mercado Pago:</strong> ${ANTICIPO_FIJO_MXN}.00</p>
               <p><strong>Estado:</strong> {citaDetalle.estado.texto}</p>
             </div>
@@ -269,6 +320,74 @@ export default function MisCitas() {
               </button>
               <button className="btn-confirmar-cancelar" onClick={handleConfirmarCancelacion} disabled={!motivoCancelacion.trim() || procesando}>
                 {procesando ? "Cancelando..." : "Sí, cancelar cita"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {citaPagar && (
+        <div className="modal-overlay" onClick={() => setCitaPagar(null)}>
+          <div className="modal-contenido" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Pagar anticipo</h3>
+              <button className="btn-cerrar-modal" onClick={() => setCitaPagar(null)}>
+                <IconX size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              {comprobanteEnviado ? (
+                <p>✅ Comprobante enviado. La barbería lo revisará y confirmará tu cita en cuanto lo verifique.</p>
+              ) : (
+                <>
+                  <p>
+                    1. Paga el anticipo de <strong>${ANTICIPO_FIJO_MXN} MXN</strong> con el link de pago de{" "}
+                    <strong>{citaPagar.barberias?.name ?? "la barbería"}</strong>:
+                  </p>
+                  {citaPagar.barberias?.payment_link_url ? (
+                    <>
+                      <a
+                        href={citaPagar.barberias.payment_link_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="boton-accion boton-comentario-gris"
+                        style={{ display: "inline-block", marginBottom: 16, textDecoration: "none", textAlign: "center" }}
+                      >
+                        Abrir link de pago
+                      </a>
+                      <p>2. Ya que hayas pagado, sube tu comprobante:</p>
+                      <input
+                        ref={comprobanteInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleSubirComprobante}
+                        disabled={procesando}
+                        style={{ display: "none" }}
+                      />
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          className="boton-accion boton-comentario-gris"
+                          onClick={() => comprobanteInputRef.current?.click()}
+                          disabled={procesando}
+                        >
+                          {procesando ? "Subiendo..." : "Elegir archivo"}
+                        </button>
+                        <span style={{ fontSize: 13, color: "#6b7280" }}>
+                          {nombreArchivoComprobante || "Ninguna imagen seleccionada"}
+                        </span>
+                      </div>
+                      {errorComprobante && <p style={{ color: "#b91c1c", marginTop: 8 }}>{errorComprobante}</p>}
+                    </>
+                  ) : (
+                    <p style={{ color: "#b91c1c" }}>Esta barbería todavía no configuró su link de pago. Contáctala directamente.</p>
+                  )}
+                </>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn-cerrar" onClick={() => setCitaPagar(null)}>
+                {comprobanteEnviado ? "Cerrar" : "Cancelar"}
               </button>
             </div>
           </div>

@@ -8,6 +8,7 @@ import {
 } from "@tabler/icons-react";
 import AppNavbar from "../components/app-navbar";
 import { supabase } from "../../../lib/supabase.js";
+import { useActiveAccountGuard } from "../../../hooks/useActiveAccountGuard";
 import "../styles/mas-servicios.css";
 
 function Estrellas({ count = 5 }) {
@@ -21,6 +22,7 @@ function Estrellas({ count = 5 }) {
 }
 
 export default function MasServicios() {
+  useActiveAccountGuard();
   const navigate = useNavigate();
   const { id } = useParams();
   const [barberia, setBarberia] = useState(null);

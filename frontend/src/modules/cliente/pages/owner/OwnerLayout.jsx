@@ -17,19 +17,27 @@ import {
 } from "lucide-react";
 import { clearSession } from "../../../../utils/api.js";
 import { useSuspensionGuard } from "../../../../hooks/useSuspensionGuard.js";
+import { supabase } from "../../../../lib/supabase.js";
+import { obtenerModulosBloqueados } from "../../../../utils/modulePermissions.js";
 import "../../styles/owner/owner-layout.css";
 
+// "module" liga el ítem al code de platform_modules (ver Seguridad de la Plataforma).
+// Los ítems sin "module" (Control de Negocio, Gestión de Usuarios) no son parte del
+// sistema de permisos por módulo y siempre quedan visibles para cualquier admin
+// activo. "Perfil Barbería" y "Seguridad" son exclusivas del dueño: ahí edita
+// horarios, foto, servicios y su link de pago — un administrador no debe tocar esos
+// datos del negocio.
 const NAV_ITEMS = [
-  { href: "/perfilBarberia",    label: "Perfil Barbería",     icon: Store       },
-  { href: "/owner-finanzas",    label: "Finanzas",             icon: Wallet      },
-  { href: "/owner-agenda",      label: "Gestión de Agenda",    icon: CalendarDays},
-  { href: "/owner-inventario",  label: "Inventario (Stock)",   icon: Package     },
-  { href: "/owner-estadisticas",label: "Estadísticas",         icon: BarChart3   },
-  { href: "/owner-seguridad",   label: "Seguridad",            icon: ShieldCheck },
-  { href: "/owner-control",     label: "Control de Negocio",   icon: Settings2   },
-  { href: "/owner-usuarios",    label: "Gestión de Usuarios",  icon: Users       },
-  { href: "/owner-fidelidad",   label: "Fidelidad",            icon: Gift        },
-  { href: "/owner-opiniones",   label: "Opiniones",            icon: Star        },
+  { href: "/perfilBarberia",    label: "Perfil Barbería",     icon: Store,        module: null, soloOwner: true },
+  { href: "/owner-finanzas",    label: "Finanzas",             icon: Wallet,       module: "finanzas"     },
+  { href: "/owner-agenda",      label: "Gestión de Agenda",    icon: CalendarDays, module: "agenda"       },
+  { href: "/owner-inventario",  label: "Inventario (Stock)",   icon: Package,      module: "inventario"   },
+  { href: "/owner-estadisticas",label: "Estadísticas",         icon: BarChart3,    module: "estadisticas" },
+  { href: "/owner-seguridad",   label: "Seguridad",            icon: ShieldCheck,  module: null, soloOwner: true },
+  { href: "/owner-control",     label: "Control de Negocio",   icon: Settings2,    module: null           },
+  { href: "/owner-usuarios",    label: "Gestión de Usuarios",  icon: Users,        module: null           },
+  { href: "/owner-fidelidad",   label: "Fidelidad",            icon: Gift,         module: "fidelidad"    },
+  { href: "/owner-opiniones",   label: "Opiniones",            icon: Star,         module: "opiniones"    },
 ];
 
 export default function OwnerLayout({ children }) {
@@ -37,6 +45,8 @@ export default function OwnerLayout({ children }) {
   const location  = useLocation();
   const [open, setOpen]         = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [esOwner, setEsOwner]   = useState(true);
+  const [modulosBloqueados, setModulosBloqueados] = useState(new Set());
 
   useSuspensionGuard();
 
@@ -46,8 +56,33 @@ export default function OwnerLayout({ children }) {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  useEffect(() => {
+    async function cargarPermisosNav() {
+      const uid = (await supabase.auth.getUser()).data.user?.id;
+      if (!uid) return;
+      const { data: membership } = await supabase
+        .from("barberia_memberships")
+        .select("id, role")
+        .eq("profile_id", uid)
+        .eq("is_active", true)
+        .in("role", ["owner", "admin"])
+        .maybeSingle();
+      if (!membership) return;
+
+      setEsOwner(membership.role === "owner");
+      setModulosBloqueados(await obtenerModulosBloqueados(membership.id, membership.role));
+    }
+    cargarPermisosNav();
+  }, []);
+
+  const navItems = NAV_ITEMS.filter((item) => {
+    if (item.soloOwner) return esOwner;
+    if (!item.module) return true;
+    return !modulosBloqueados.has(item.module);
+  });
+
   const isActive = (href) => location.pathname.startsWith(href);
-  const paginaActual = NAV_ITEMS.find((item) => isActive(item.href));
+  const paginaActual = navItems.find((item) => isActive(item.href));
 
   const handleLogout = async () => {
     await clearSession();
@@ -81,7 +116,7 @@ export default function OwnerLayout({ children }) {
 
         {/* Nav */}
         <nav className="ow-nav">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const Icon   = item.icon;
             const active = isActive(item.href);
             return (

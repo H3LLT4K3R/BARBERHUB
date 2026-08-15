@@ -3,7 +3,8 @@ import {
   User, MapPin, Trash2, Camera, Edit2, Check, Star, Image as ImageIcon,
 } from "lucide-react";
 import { supabase } from "../../../../lib/supabase.js";
-import "../../styles/Barberias/perfilbarberia.css";
+import ImageLightbox from "../../components/image-lightbox";
+import "../../styles/barbero/perfil-barberia-barbero.css";
 
 const DIAS_SEMANA = [
   { weekday: 1, label: "Lunes" },
@@ -16,6 +17,22 @@ const DIAS_SEMANA = [
 ];
 
 const HORARIO_DEFAULT = { trabaja: false, starts_at: "09:00", ends_at: "20:00" };
+
+const TIPOS_IMAGEN_PERMITIDOS = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const TAMANO_MAXIMO_BYTES = 5 * 1024 * 1024;
+
+// Valida antes de intentar subir, para que el error salga al instante en vez de
+// esperar a que el bucket la rechace. El bucket "perfiles" también valida esto del
+// lado del servidor (tipo y tamaño), así que esto es solo para mejor UX.
+function validarImagen(file) {
+  if (!TIPOS_IMAGEN_PERMITIDOS.includes(file.type)) {
+    return "Solo se aceptan imágenes JPG, PNG, WEBP o GIF.";
+  }
+  if (file.size > TAMANO_MAXIMO_BYTES) {
+    return "La imagen no puede pesar más de 5 MB.";
+  }
+  return null;
+}
 
 function urlPublica(path) {
   if (!path) return null;
@@ -38,6 +55,7 @@ export default function PerfilBarberiaBarbero() {
   const [guardando, setGuardando] = useState(false);
   const [subiendoFoto, setSubiendoFoto] = useState(false);
   const [mensaje, setMensaje] = useState("");
+  const [imagenAmpliada, setImagenAmpliada] = useState(null);
 
   const avatarInputRef = useRef(null);
   const fotoInputRef = useRef(null);
@@ -110,9 +128,31 @@ export default function PerfilBarberiaBarbero() {
     setHorarios((prev) => prev.map((h) => (h.weekday === weekday ? { ...h, [campo]: valor } : h)));
   };
 
+  const eliminarAvatar = async () => {
+    if (!avatarPath || !uid) return;
+    setGuardando(true);
+    setMensaje("");
+    try {
+      await supabase.storage.from("perfiles").remove([avatarPath]);
+      const { error: updateError } = await supabase.from("profiles").update({ avatar_path: null }).eq("id", uid);
+      if (updateError) throw updateError;
+      setAvatarPath(null);
+    } catch (err) {
+      setMensaje(err.message || "No fue posible eliminar la foto.");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
   const subirAvatar = async (event) => {
     const file = event.target.files?.[0];
     if (!file || !uid) return;
+    const errorValidacion = validarImagen(file);
+    if (errorValidacion) {
+      setMensaje(errorValidacion);
+      event.target.value = "";
+      return;
+    }
     setGuardando(true);
     setMensaje("");
     try {
@@ -135,6 +175,12 @@ export default function PerfilBarberiaBarbero() {
   const subirFotoPortafolio = async (event) => {
     const file = event.target.files?.[0];
     if (!file || !membershipId) return;
+    const errorValidacion = validarImagen(file);
+    if (errorValidacion) {
+      setMensaje(errorValidacion);
+      event.target.value = "";
+      return;
+    }
     setSubiendoFoto(true);
     setMensaje("");
     try {
@@ -214,13 +260,39 @@ export default function PerfilBarberiaBarbero() {
           {/* COLUMNA 1: Avatar + nombre */}
           <div className="layout-column">
             <div className="card-profile-black">
-              <div className="interactive-avatar" onClick={() => avatarInputRef.current?.click()}>
-                {avatarPath ? (
-                  <img src={urlPublica(avatarPath)} alt={nombre} className="avatar-img-preview" />
-                ) : (
-                  <User className="avatar-placeholder-icon" />
+              <div className="profile-avatar-circle-wrap">
+                <div className="profile-avatar-circle">
+                  {avatarPath ? (
+                    <img
+                      src={urlPublica(avatarPath)}
+                      alt={nombre}
+                      className="avatar-img-preview"
+                      onClick={() => setImagenAmpliada(urlPublica(avatarPath))}
+                      title="Ver foto"
+                    />
+                  ) : (
+                    <User className="avatar-placeholder-icon" onClick={() => avatarInputRef.current?.click()} />
+                  )}
+                </div>
+                <button type="button" className="avatar-camera-badge" onClick={() => avatarInputRef.current?.click()} title="Cambiar foto">
+                  <Camera size={15} color="#fff" />
+                </button>
+                {avatarPath && (
+                  <button
+                    type="button"
+                    onClick={eliminarAvatar}
+                    disabled={guardando}
+                    title="Eliminar foto"
+                    style={{
+                      position: "absolute", left: -2, bottom: 0, width: 30, height: 30, borderRadius: "50%",
+                      background: "#fff", color: "#b90043", border: "3px solid #fff",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: guardando ? "wait" : "pointer", boxShadow: "0 0 0 1px #e5e7eb",
+                    }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 )}
-                <div className="avatar-hover-overlay"><Camera size={20} color="#fff" /></div>
               </div>
               <input ref={avatarInputRef} type="file" accept="image/*" className="hidden-file-input" onChange={subirAvatar} />
 
@@ -291,7 +363,13 @@ export default function PerfilBarberiaBarbero() {
                 {fotos.map((foto) => (
                   <div key={foto.id} className="skill-photo-card">
                     <div className="skill-image-wrapper">
-                      <img src={urlPublica(foto.image_path)} alt="Trabajo realizado" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <img
+                        src={urlPublica(foto.image_path)}
+                        alt="Trabajo realizado"
+                        style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "pointer" }}
+                        onClick={() => setImagenAmpliada(urlPublica(foto.image_path))}
+                        title="Ver foto"
+                      />
                     </div>
                     <div className="skill-card-footer-info">
                       <button type="button" className="delete-service-row-btn" onClick={() => eliminarFoto(foto)}><Trash2 size={14} /></button>
@@ -313,6 +391,8 @@ export default function PerfilBarberiaBarbero() {
 
         </div>
       </div>
+
+      {imagenAmpliada && <ImageLightbox src={imagenAmpliada} alt="Foto" onClose={() => setImagenAmpliada(null)} />}
     </div>
   );
 }

@@ -1,65 +1,36 @@
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { IconArrowLeft } from "@tabler/icons-react";
+import { supabase } from "../../../lib/supabase.js";
+import { useActiveAccountGuard } from "../../../hooks/useActiveAccountGuard";
 import "../styles/opinion-barberia.css";
 
-const opinionesBarberia = [
-  {
-    id: 1,
-    nombre: "Alexis Duran",
-    avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-    rating: 5,
-    tiempo: "Hace 1 hora",
-    fechaTimestamp: 3,
-    comentario: "Alexis siempre me deja el corte perfecto. ¡Muy recomendado el lugar!",
-  },
-  {
-    id: 2,
-    nombre: "Marco Pedraza",
-    avatar: "https://randomuser.me/api/portraits/men/45.jpg",
-    rating: 4,
-    tiempo: "Hace 2 días",
-    fechaTimestamp: 2,
-    comentario: "Servicio excelente, siempre quedo muy satisfecho con las instalaciones.",
-  },
-  {
-    id: 3,
-    nombre: "Yahir Hernandez",
-    avatar: "https://randomuser.me/api/portraits/men/12.jpg",
-    rating: 5,
-    tiempo: "12 de mayo",
-    fechaTimestamp: 1,
-    comentario: "El lugar es genial y los barberos son sumamente profesionales.",
-  },
-];
+function urlAvatar(path) {
+  if (!path) return null;
+  return supabase.storage.from("perfiles").getPublicUrl(path).data.publicUrl;
+}
 
-const opinionesBarberos = [
-  {
-    id: 1,
-    barberoId: "carlos-reyes",
-    nombre: "Carlos Reyes",
-    avatar: "https://randomuser.me/api/portraits/men/22.jpg",
-    rating: 5,
-    tiempo: "Hace 3 horas",
-    fechaTimestamp: 2,
-    comentario: "Carlos es un barbero increíble, siempre atento a los detalles que le pido."
-  },
-  {
-    id: 2,
-    barberoId: "juan-santos",
-    nombre: "Juan Santos",
-    avatar: "https://randomuser.me/api/portraits/men/60.jpg",
-    rating: 3,
-    tiempo: "Hace 5 días",
-    fechaTimestamp: 1,
-    comentario: "Buen corte aunque hubo algo de demora en el turno."
-  },
-];
+function iniciales(nombre) {
+  return (nombre ?? "?")
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
-const barberosConOpiniones = [
-  { id: "carlos-reyes", nombre: "Carlos Reyes" },
-  { id: "juan-santos", nombre: "Juan Santos" },
-];
+function formatearTiempo(fechaISO) {
+  const fecha = new Date(fechaISO);
+  const diffHoras = (Date.now() - fecha.getTime()) / 3600000;
+  if (diffHoras < 1) return "Hace unos minutos";
+  if (diffHoras < 24) {
+    const horas = Math.floor(diffHoras);
+    return `Hace ${horas} hora${horas === 1 ? "" : "s"}`;
+  }
+  const dias = Math.floor(diffHoras / 24);
+  if (dias < 7) return `Hace ${dias} día${dias === 1 ? "" : "s"}`;
+  return fecha.toLocaleDateString("es-MX", { day: "numeric", month: "long" });
+}
 
 function Estrellas({ rating, size = "normal" }) {
   return (
@@ -74,54 +45,125 @@ function Estrellas({ rating, size = "normal" }) {
 }
 
 export default function OpinionBarberia() {
+  useActiveAccountGuard();
   const navigate = useNavigate();
+  const { state } = useLocation();
+  const barberiaId = state?.barberiaId;
+
+  const [barberia, setBarberia] = useState(null);
+  const [opinionesBarberia, setOpinionesBarberia] = useState([]);
+  const [opinionesBarberos, setOpinionesBarberos] = useState([]);
+  const [cargando, setCargando] = useState(true);
+
   const [tabActiva, setTabActiva] = useState("barberia");
   const [filtroEstrellas, setFiltroEstrellas] = useState("todas");
   const [orden, setOrden] = useState("recientes");
   const [filtroBarbero, setFiltroBarbero] = useState("todos");
 
-  // Filtrado y ordenamiento en tiempo real
+  useEffect(() => {
+    if (!barberiaId) {
+      setCargando(false);
+      return;
+    }
+    let cancelado = false;
+
+    (async () => {
+      const [{ data: b }, { data: reviews }] = await Promise.all([
+        supabase.from("barberias_public").select("*").eq("id", barberiaId).maybeSingle(),
+        supabase
+          .from("reviews")
+          .select("id, rating, comment, created_at, client_id, barber_membership_id, barberia_memberships!barber_membership_id(display_name)")
+          .eq("barberia_id", barberiaId)
+          .eq("is_published", true)
+          .order("created_at", { ascending: false }),
+      ]);
+
+      if (cancelado) return;
+      setBarberia(b ?? null);
+
+      // profiles_public en vez de embeber profiles directo: un cliente no puede leer
+      // el perfil completo de otra persona por RLS, solo la vista angosta nombre/foto.
+      const idsAutores = [...new Set((reviews ?? []).map((r) => r.client_id).filter(Boolean))];
+      const { data: autoresData } = idsAutores.length
+        ? await supabase.from("profiles_public").select("id, full_name, avatar_path").in("id", idsAutores)
+        : { data: [] };
+      const autorPorId = new Map((autoresData ?? []).map((a) => [a.id, a]));
+      const todas = (reviews ?? []).map((r) => ({ ...r, profiles: autorPorId.get(r.client_id) ?? null }));
+
+      setOpinionesBarberia(todas);
+      setOpinionesBarberos(todas.filter((r) => r.barber_membership_id));
+      setCargando(false);
+    })();
+
+    return () => { cancelado = true; };
+  }, [barberiaId]);
+
+  const barberosConOpiniones = useMemo(() => {
+    const mapa = new Map();
+    opinionesBarberos.forEach((r) => {
+      if (r.barber_membership_id && !mapa.has(r.barber_membership_id)) {
+        mapa.set(r.barber_membership_id, r.barberia_memberships?.display_name ?? "Barbero");
+      }
+    });
+    return [...mapa.entries()].map(([id, nombre]) => ({ id, nombre }));
+  }, [opinionesBarberos]);
+
   const opinionesFiltradas = useMemo(() => {
     const listaBase = tabActiva === "barberia" ? opinionesBarberia : opinionesBarberos;
 
     return listaBase
       .filter((item) => {
         const coincideEstrellas = filtroEstrellas === "todas" || item.rating === filtroEstrellas;
-        const coincideBarbero = tabActiva !== "barberos" || filtroBarbero === "todos" || item.barberoId === filtroBarbero;
+        const coincideBarbero = tabActiva !== "barberos" || filtroBarbero === "todos" || item.barber_membership_id === filtroBarbero;
         return coincideEstrellas && coincideBarbero;
       })
       .sort((a, b) => {
-        if (orden === "recientes") {
-          return b.fechaTimestamp - a.fechaTimestamp;
-        }
-        return b.rating - a.rating; // Mejor valorados primero
+        if (orden === "recientes") return new Date(b.created_at) - new Date(a.created_at);
+        return b.rating - a.rating;
       });
-  }, [tabActiva, filtroEstrellas, filtroBarbero, orden]);
+  }, [tabActiva, filtroEstrellas, filtroBarbero, orden, opinionesBarberia, opinionesBarberos]);
+
+  if (cargando) {
+    return <div className="obp-page"><div className="obp-content"><p>Cargando opiniones...</p></div></div>;
+  }
+
+  if (!barberia) {
+    return (
+      <div className="obp-page">
+        <div className="obp-main">
+          <div className="obp-content">
+            <p>No se encontró la barbería.</p>
+            <button type="button" className="obp-btn-back" onClick={() => navigate("/explorar")}>
+              <IconArrowLeft size={17} aria-hidden="true" /> Ir a explorar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="obp-page">
       <div className="obp-main">
 
-        {/* Encabezado */}
         <header className="obp-header">
-          <button className="obp-logo-btn" type="button" aria-label="Volver al inicio">
+          <button className="obp-logo-btn" type="button" aria-label="Ir a explorar" onClick={() => navigate("/explorar")}>
             <img src="/logo.png" alt="Barber Hub" className="obp-logo-barberhub" />
           </button>
         </header>
 
         <div className="obp-content">
 
-          {/* Nombre de la Barbería y Pestañas */}
           <div className="obp-barberia-info">
             <div className="obp-datos-block">
-              <h1 className="obp-barberia-name">URBAN CUTS</h1>
+              <h1 className="obp-barberia-name">{barberia.name}</h1>
               <div className="obp-rating-row">
-                <Estrellas rating={5} />
-                <span className="obp-total-opiniones">(220 opiniones)</span>
+                <Estrellas rating={Math.round(barberia.rating)} />
+                <span className="obp-total-opiniones">({barberia.total_opiniones} opiniones)</span>
               </div>
               <div className="obp-barberia-address">
                 <span className="obp-check-icon">✔</span>
-                Blvd. 10 de mayo, Puebla
+                {barberia.address_line1}, {barberia.city}
               </div>
             </div>
 
@@ -143,7 +185,6 @@ export default function OpinionBarberia() {
             </div>
           </div>
 
-          {/* Filtros de opiniones */}
           <div className="obp-filters">
             <div className="obp-filters-left">
               <span className="obp-filters-label">Filtrar por:</span>
@@ -168,7 +209,7 @@ export default function OpinionBarberia() {
               ))}
             </div>
 
-            {tabActiva === "barberos" && (
+            {tabActiva === "barberos" && barberosConOpiniones.length > 0 && (
               <label className="obp-barber-filter">
                 <span>Barbero:</span>
                 <select value={filtroBarbero} onChange={(e) => setFiltroBarbero(e.target.value)}>
@@ -180,7 +221,6 @@ export default function OpinionBarberia() {
               </label>
             )}
 
-            {/* Selector de ordenamiento */}
             <div className="obp-sort-container">
               <select
                 className="obp-sort-select"
@@ -193,35 +233,48 @@ export default function OpinionBarberia() {
             </div>
           </div>
 
-          {/* Lista de opiniones */}
           <div className="obp-list">
             {opinionesFiltradas.length > 0 ? (
-              opinionesFiltradas.map((op) => (
-                <div key={op.id} className="obp-review-card">
-                  <img src={op.avatar} alt={op.nombre} className="obp-avatar" />
-                  <div className="obp-review-body">
-                    <div className="obp-review-header">
-                      <span className="obp-client-name">{op.nombre}</span>
-                      <Estrellas rating={op.rating} size="small" />
-                      <span className="obp-review-time">{op.tiempo}</span>
+              opinionesFiltradas.map((op) => {
+                const nombre = op.profiles?.full_name ?? "Cliente";
+                const avatarUrl = urlAvatar(op.profiles?.avatar_path);
+                return (
+                  <div key={op.id} className="obp-review-card">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={nombre} className="obp-avatar" />
+                    ) : (
+                      <div className="obp-avatar obp-avatar-placeholder">{iniciales(nombre)}</div>
+                    )}
+                    <div className="obp-review-body">
+                      <div className="obp-review-header">
+                        <span className="obp-client-name">{nombre}</span>
+                        <Estrellas rating={op.rating} size="small" />
+                        <span className="obp-review-time">{formatearTiempo(op.created_at)}</span>
+                      </div>
+                      {tabActiva === "barberos" && op.barberia_memberships?.display_name && (
+                        <p className="obp-review-barbero">Con {op.barberia_memberships.display_name}</p>
+                      )}
+                      <p className="obp-review-text">{op.comment || "Sin comentario."}</p>
                     </div>
-                    <p className="obp-review-text">{op.comentario}</p>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="obp-empty-state">
-                No hay opiniones registradas con {filtroEstrellas} estrellas en esta sección.
+                {filtroEstrellas !== "todas"
+                  ? `No hay opiniones con ${filtroEstrellas} estrellas en esta sección.`
+                  : tabActiva === "barberia"
+                    ? "Esta barbería todavía no tiene opiniones."
+                    : "Todavía no hay opiniones sobre barberos en particular."}
               </div>
             )}
           </div>
 
-          {/* Botón regresar */}
           <div className="obp-actions">
             <button
               type="button"
               className="obp-btn-back"
-              onClick={() => navigate("/barberia-perfil/urban-cuts")}
+              onClick={() => navigate(`/barberia-perfil/${barberiaId}`)}
             >
               <IconArrowLeft size={17} aria-hidden="true" />
               Regresar

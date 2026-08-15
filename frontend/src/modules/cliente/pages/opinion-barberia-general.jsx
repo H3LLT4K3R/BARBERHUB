@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { supabase } from "../../../lib/supabase.js";
+import { useActiveAccountGuard } from "../../../hooks/useActiveAccountGuard";
 import "../styles/opinion-barberia-general.css";
 
 export default function OpinionBarberiaGeneral() {
+  useActiveAccountGuard();
   const navigate = useNavigate();
   const { state } = useLocation();
   const [rating, setRating] = useState(5);

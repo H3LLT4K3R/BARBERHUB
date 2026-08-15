@@ -109,7 +109,9 @@
 .al-opcion-barbero.activo { border-color: #c9a227; background: #fff8e9; }
 .al-opcion-servicio.activo, .al-opcion-barbero.activo { box-shadow: 0 0 0 1px #c9a227; }
 
-.al-aviso-seleccion { display: flex; align-items: center; gap: 7px; margin: -18px 0 20px; color: #8a651c; font-size: 0.9rem; }
+.al-aviso-seleccion { grid-column: 1 / -1; display: flex; align-items: center; gap: 7px; margin: -18px 0 20px; color: #8a651c; font-size: 0.9rem; }
+
+.al-acciones-sin-servicio { grid-column: 1 / -1; display: flex; align-items: flex-start; }
 
 .al-titulo-mes {
   font-size: 1.6rem;

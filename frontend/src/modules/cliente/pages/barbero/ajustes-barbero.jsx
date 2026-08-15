@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Bell,
   Check,
@@ -13,10 +14,11 @@ import {
   X,
 } from "lucide-react";
 import { supabase } from "../../../../lib/supabase.js";
-import { apiFetch } from "../../../../utils/api.js";
+import { apiFetch, clearSession } from "../../../../utils/api.js";
 import "../../styles/barbero/ajustes-barbero.css";
 
 export default function AjustesBarbero() {
+  const navigate = useNavigate();
   const [membership, setMembership] = useState(null);
   const [profile, setProfile] = useState({ name: "", phone: "", email: "", specialty: "" });
   const [settings, setSettings] = useState({
@@ -36,6 +38,9 @@ export default function AjustesBarbero() {
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [mostrarConfirm, setMostrarConfirm] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [desactivando, setDesactivando] = useState(false);
+  const [errorDesactivar, setErrorDesactivar] = useState("");
+  const [citasPendientesInfo, setCitasPendientesInfo] = useState(null);
 
   useEffect(() => {
     async function cargar() {
@@ -153,6 +158,30 @@ export default function AjustesBarbero() {
     setNotice("Contraseña actualizada correctamente.");
   };
 
+  const cerrarModalDesactivar = () => {
+    setDeleteOpen(false);
+    setErrorDesactivar("");
+    setCitasPendientesInfo(null);
+  };
+
+  const handleDesactivarCuenta = async () => {
+    setDesactivando(true);
+    setErrorDesactivar("");
+    try {
+      const resultado = await apiFetch("/perfil/membresia/desactivar", { method: "POST", body: JSON.stringify({}) });
+      if (resultado.desactivado) {
+        await clearSession();
+        navigate("/login", { replace: true, state: { mensaje: "Tu cuenta fue desactivada." } });
+        return;
+      }
+      setCitasPendientesInfo(resultado.citasPendientes ?? 0);
+    } catch (err) {
+      setErrorDesactivar(err.message || "No fue posible desactivar tu cuenta.");
+    } finally {
+      setDesactivando(false);
+    }
+  };
+
   if (cargando) {
     return <section className="ba-page"><p>Cargando ajustes...</p></section>;
   }
@@ -227,7 +256,7 @@ export default function AjustesBarbero() {
           </article>
 
           <div className="ba-danger-zone">
-            <div><strong>Desactivar cuenta</strong><span>Esta acción requiere contactar a soporte; aún no está disponible desde la app.</span></div>
+            <div><strong>Desactivar cuenta</strong><span>Dejarás de estar disponible en la barbería y perderás el acceso al panel de barbero hasta que te reactiven.</span></div>
             <button type="button" onClick={() => setDeleteOpen(true)}><Trash2 size={16} />Desactivar</button>
           </div>
         </div>
@@ -262,13 +291,32 @@ export default function AjustesBarbero() {
       {deleteOpen && (
         <div className="ba-modal-backdrop" role="presentation">
           <div className="ba-modal ba-delete-modal">
-            <button type="button" className="ba-modal-close" onClick={() => setDeleteOpen(false)} aria-label="Cerrar"><X size={18} /></button>
+            <button type="button" className="ba-modal-close" onClick={cerrarModalDesactivar} aria-label="Cerrar"><X size={18} /></button>
             <Trash2 size={24} />
-            <h3>¿Deseas desactivar tu cuenta?</h3>
-            <p>Esta función todavía no está conectada. Contacta al dueño de la barbería o a soporte para desactivar tu cuenta.</p>
-            <div className="ba-modal-buttons">
-              <button className="ba-text-button" type="button" onClick={() => setDeleteOpen(false)}>Cancelar</button>
-            </div>
+            {citasPendientesInfo !== null ? (
+              <>
+                <h3>No se pudo desactivar todavía</h3>
+                <p>
+                  Tienes {citasPendientesInfo} cita{citasPendientesInfo === 1 ? "" : "s"} próxima{citasPendientesInfo === 1 ? "" : "s"} asignada{citasPendientesInfo === 1 ? "" : "s"}.
+                  Le avisamos al dueño de la barbería para que las reasigne o las cancele antes de desactivar tu cuenta.
+                </p>
+                <div className="ba-modal-buttons">
+                  <button className="ba-primary-button" type="button" onClick={cerrarModalDesactivar}>Entendido</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3>¿Deseas desactivar tu cuenta?</h3>
+                <p>Dejarás de estar disponible en la barbería y perderás el acceso al panel de barbero hasta que el dueño te reactive (tu cuenta seguirá existiendo, por si la usas también como cliente). Si tienes citas próximas asignadas, primero se le avisará al dueño para que las resuelva.</p>
+                {errorDesactivar && <p style={{ color: "#b91c1c", fontSize: 13 }}>{errorDesactivar}</p>}
+                <div className="ba-modal-buttons">
+                  <button className="ba-text-button" type="button" onClick={cerrarModalDesactivar} disabled={desactivando}>Cancelar</button>
+                  <button className="ba-primary-button" type="button" onClick={handleDesactivarCuenta} disabled={desactivando}>
+                    {desactivando ? "Procesando..." : "Sí, desactivar"}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

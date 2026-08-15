@@ -180,6 +180,14 @@
   transform: translateY(-1px);
 }
 
+/*grid de tres columnas*/
+.bp-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
 .bp-panel-cupones {
   min-height: 0;
   margin-bottom: 20px;
@@ -247,14 +255,6 @@
   .bp-cupon-expira {
     width: 100%;
   }
-}
-
-/*grid de tres columnas*/
-.bp-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  align-items: stretch;
 }
 
 /*panel generico*/

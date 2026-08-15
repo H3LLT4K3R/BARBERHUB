@@ -13,6 +13,7 @@ import {
 import AppNavbar from "../components/app-navbar";
 import { supabase } from "../../../lib/supabase.js";
 import { getOpenStreetMapUrl } from "../../../utils/openStreetMap.js";
+import { useActiveAccountGuard } from "../../../hooks/useActiveAccountGuard";
 import "../styles/barberia-perfil.css";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -54,6 +55,7 @@ function calcularAbierto(businessHours) {
 }
 
 export default function BarberiaPerfil() {
+  useActiveAccountGuard();
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -173,9 +175,6 @@ export default function BarberiaPerfil() {
         state: {
           barberiaId: barberia.id,
           establecimiento: barberia.name,
-          servicioIdReal: servicios[0]?.id,
-          servicioNombre: servicios[0]?.name,
-          precio: servicios[0]?.price,
           moneda: barberia.currency_code,
           volverA: `/barberia-perfil/${id}`,
           volverAtras: volverA,

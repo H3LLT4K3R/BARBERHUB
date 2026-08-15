@@ -73,7 +73,7 @@ export default function CuponesBarbero() {
             <input value={busqueda} onChange={(event) => setBusqueda(event.target.value)} placeholder="Buscar cupón..." />
           </label>
           <div className="bc-coupon-table" role="table">
-            <div className="bc-table-header" role="row">
+            <div className="bc-table-header" role="row" style={{ gridTemplateColumns: "minmax(110px, 1fr) 44px 90px" }}>
               <span>Título / código</span><span>Usos</span><span>Vigencia</span>
             </div>
             {resultados.map((cupon) => (

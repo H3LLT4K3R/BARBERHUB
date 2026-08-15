@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IconLock } from "@tabler/icons-react";
 import { Eye, EyeOff } from "lucide-react";
@@ -19,38 +19,57 @@ export default function RestablecerPassword() {
   const [validando, setValidando] = useState(true);
   const [tokenValido, setTokenValido] = useState(false);
   const [error, setError] = useState("");
+  const yaProcesado = useRef(false);
 
+  // El cliente de Supabase trae detectSessionInUrl activado por defecto: puede
+  // procesar el link de recuperación (tokens en el hash) por su cuenta, en paralelo
+  // a este componente. Si las dos rutas leen el mismo hash y una de las dos gana la
+  // carrera después de que la otra ya estableció sesión, la que llega tarde puede
+  // dejar el cliente en un estado a medias — la contraseña parece actualizarse pero
+  // el login después falla. Por eso este efecto captura el hash y lo BORRA de la URL
+  // de inmediato, de forma síncrona, antes de cualquier await: así, sin importar en
+  // qué orden corran las dos rutas, solo una de las dos encuentra tokens que procesar.
+  // yaProcesado evita repetir este trabajo si el efecto corre dos veces (StrictMode
+  // en desarrollo) — sin esa bandera, el segundo montaje encontraría el hash ya
+  // vacío (limpiado por el primero) y caería erróneamente a "revisar si ya hay
+  // sesión", dando un resultado equivocado si el navegador tenía otra sesión suelta.
   useEffect(() => {
-    let cancelado = false;
+    if (yaProcesado.current) {
+      return;
+    }
+    yaProcesado.current = true;
 
-    async function validarEnlace() {
-      const hash = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : "";
-      const params = new URLSearchParams(hash);
+    const hashCapturado = window.location.hash.startsWith("#") ? window.location.hash.slice(1) : "";
+    if (window.location.hash) {
+      window.history.replaceState(null, "", window.location.pathname);
+    }
+    const params = new URLSearchParams(hashCapturado);
+
+    async function resolverSesion() {
+      // Un enlace vencido/inválido redirige con #error=... en vez de tokens.
+      if (params.get("error")) return false;
+
       const access_token = params.get("access_token");
       const refresh_token = params.get("refresh_token");
-
-      if (!access_token || !refresh_token) {
-        return { ok: false };
+      if (access_token && refresh_token) {
+        const { error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
+        return !sessionError;
       }
 
-      const { error: sessionError } = await supabase.auth.setSession({ access_token, refresh_token });
-      return { ok: !sessionError };
+      // Sin tokens propios en el hash: puede que detectSessionInUrl ya los haya
+      // procesado antes de que este efecto corriera. Se confirma con getSession().
+      const { data: { session } } = await supabase.auth.getSession();
+      return !!session;
     }
 
-    validarEnlace().then((resultado) => {
-      if (cancelado) return;
-      if (resultado.ok) {
-        window.history.replaceState(null, "", window.location.pathname);
+    resolverSesion().then((ok) => {
+      if (ok) {
         setTokenValido(true);
       } else {
         setError("El enlace no es válido o ya expiró. Solicita uno nuevo desde recuperar contraseña.");
       }
       setValidando(false);
     });
-
-    return () => {
-      cancelado = true;
-    };
   }, []);
 
   const handleSubmit = async (e) => {

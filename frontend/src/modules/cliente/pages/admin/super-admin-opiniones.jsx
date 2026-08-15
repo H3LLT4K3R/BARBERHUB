@@ -90,9 +90,6 @@ export default function SuperAdminOpiniones() {
             </div>
 
             {r.comment && <p style={{ margin: 0, fontSize: 14, color: "#374151" }}>{r.comment}</p>}
-            {r.owner_response && (
-              <p style={{ margin: 0, fontSize: 13, color: "#6b7280" }}><strong>Respuesta de la barbería:</strong> {r.owner_response}</p>
-            )}
 
             <div>
               <button
