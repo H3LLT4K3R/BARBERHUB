@@ -3,7 +3,6 @@ import {
   CalendarDays,
   CalendarX2,
   CheckCircle2,
-  ChevronDown,
   User,
   MoreHorizontal,
   Star,
@@ -11,9 +10,9 @@ import {
   Check,
   MessageCircle,
   Scissors,
+  Trash2,
   UsersRound,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../../lib/supabase.js";
 import { apiFetch } from "../../../../utils/api.js";
 import "../../styles/barbero/dashboard-barbero.css";
@@ -23,11 +22,11 @@ const ESTADOS_ACTIVOS = ["pending_confirmation", "pending_payment", "confirmed",
 const ESTADOS_CANCELADOS = ["cancelled", "rejected", "no_show"];
 const DIAS_SEMANA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
-function inicioDeSemana() {
+function inicioDeSemana(offsetSemanas = 0) {
   const hoy = new Date();
   const diff = hoy.getDay() === 0 ? -6 : 1 - hoy.getDay();
   const lunes = new Date(hoy);
-  lunes.setDate(hoy.getDate() + diff);
+  lunes.setDate(hoy.getDate() + diff + offsetSemanas * 7);
   lunes.setHours(0, 0, 0, 0);
   return lunes;
 }
@@ -45,7 +44,6 @@ function accionesPara(cita) {
 }
 
 export default function DashboardBarbero() {
-  const navigate = useNavigate();
   const hoy = new Date();
   const hoyIndex = hoy.getDay() === 0 ? 6 : hoy.getDay() - 1;
 
@@ -54,18 +52,29 @@ export default function DashboardBarbero() {
   const [promedioResenas, setPromedioResenas] = useState(null);
   const [clientesNuevosHoy, setClientesNuevosHoy] = useState(0);
   const [visitasPorCliente, setVisitasPorCliente] = useState(new Map());
+  const [historialCompletadas, setHistorialCompletadas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [citaSeleccionada, setCitaSeleccionada] = useState(null);
-  const [verAgenda, setVerAgenda] = useState(false);
+  const [semanaOffset, setSemanaOffset] = useState(0);
   const [diaActivo, setDiaActivo] = useState(hoyIndex);
   const [procesando, setProcesando] = useState(false);
   const [error, setError] = useState("");
 
   const dias = Array.from({ length: 7 }, (_, i) => {
-    const fecha = new Date(inicioDeSemana());
+    const fecha = new Date(inicioDeSemana(semanaOffset));
     fecha.setDate(fecha.getDate() + i);
     return fecha;
   });
+
+  const cambiarSemana = (delta) => {
+    setSemanaOffset((prev) => Math.max(0, prev + delta));
+    setDiaActivo(0);
+  };
+
+  const volverAHoy = () => {
+    setSemanaOffset(0);
+    setDiaActivo(hoyIndex);
+  };
 
   const obtenerDatos = async () => {
     const uid = (await supabase.auth.getUser()).data.user?.id;
@@ -78,23 +87,38 @@ export default function DashboardBarbero() {
 
     if (!membership) return null;
 
-    const inicioSemana = inicioDeSemana();
+    // Se carga desde el inicio de la semana actual hasta varias semanas adelante,
+    // para que el panel de "Próximos turnos" pueda navegar a semanas futuras sin
+    // volver a consultar la base de datos, mientras las métricas de "hoy" siguen
+    // calculándose sobre la fecha real (no la semana que el barbero esté viendo).
+    const inicioSemana = inicioDeSemana(0);
     const finSemana = new Date(inicioSemana);
-    finSemana.setDate(finSemana.getDate() + 7);
+    finSemana.setDate(finSemana.getDate() + 7 * 12);
 
-    const [{ data: citas }, { data: reviews }] = await Promise.all([
+    const [{ data: citas }, { data: reviews }, { data: completadas }] = await Promise.all([
       supabase
         .from("appointments")
-        .select("id, scheduled_at, status, total, client_note, updated_at, client_id, profiles!client_id(full_name, phone), appointment_services(service_name), payments(status)")
+        .select("id, scheduled_at, status, total, client_note, updated_at, client_id, hidden_by_barber_at, profiles!client_id(full_name, phone), appointment_services(service_name), payments(status)")
         .eq("barberia_id", membership.barberia_id)
         .gte("scheduled_at", inicioSemana.toISOString())
         .lt("scheduled_at", finSemana.toISOString())
+        .is("hidden_by_barber_at", null)
         .order("scheduled_at"),
       supabase
         .from("reviews")
         .select("rating")
         .eq("barberia_id", membership.barberia_id)
         .eq("is_published", true),
+      // Historial de citas terminadas: no se limita a la semana cargada, muestra
+      // las más recientes que ya se cumplieron, sin importar de qué día sean.
+      supabase
+        .from("appointments")
+        .select("id, scheduled_at, total, updated_at, client_id, profiles!client_id(full_name, phone), appointment_services(service_name)")
+        .eq("barberia_id", membership.barberia_id)
+        .eq("status", "completed")
+        .is("hidden_by_barber_at", null)
+        .order("updated_at", { ascending: false })
+        .limit(10),
     ]);
 
     const idsHoy = [...new Set((citas ?? [])
@@ -129,6 +153,7 @@ export default function DashboardBarbero() {
       promedioResenas: reviews?.length ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : null,
       clientesNuevos,
       visitas,
+      historialCompletadas: completadas ?? [],
     };
   };
 
@@ -142,6 +167,7 @@ export default function DashboardBarbero() {
     setPromedioResenas(datos.promedioResenas);
     setClientesNuevosHoy(datos.clientesNuevos);
     setVisitasPorCliente(datos.visitas);
+    setHistorialCompletadas(datos.historialCompletadas);
   };
 
   const cargar = async () => {
@@ -163,13 +189,21 @@ export default function DashboardBarbero() {
   }, []);
 
   const citasHoy = citasSemana.filter((c) => new Date(c.scheduled_at).toDateString() === hoy.toDateString());
-  const citasDelDia = citasSemana.filter((c) => new Date(c.scheduled_at).toDateString() === dias[diaActivo].toDateString());
+  const citasDelDia = citasSemana.filter(
+    (c) => new Date(c.scheduled_at).toDateString() === dias[diaActivo].toDateString() && !ESTADOS_CANCELADOS.includes(c.status)
+  );
 
   const agendadasHoy = citasHoy.filter((c) => ESTADOS_ACTIVOS.includes(c.status) || c.status === "completed").length;
-  const canceladasHoy = citasHoy.filter((c) => ESTADOS_CANCELADOS.includes(c.status)).length;
+  // Una cancelación puede ser de una cita agendada para otro día (el cliente cancela hoy
+  // una cita del jueves); por eso se cuenta por fecha de actualización, no de agenda.
+  const canceladasHoy = citasSemana.filter(
+    (c) => ESTADOS_CANCELADOS.includes(c.status) && new Date(c.updated_at).toDateString() === hoy.toDateString()
+  ).length;
   const atendidosHoy = citasHoy.filter((c) => c.status === "completed");
 
-  const siguienteTurno = citasHoy
+  // Se busca en toda la semana cargada (no solo "hoy") para mostrar la cita más
+  // cercana ya agendada, aunque sea en un día posterior.
+  const siguienteTurno = citasSemana
     .filter((c) => (c.status === "confirmed" || c.status === "in_progress") && new Date(c.scheduled_at) >= hoy)
     .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))[0];
 
@@ -196,6 +230,20 @@ export default function DashboardBarbero() {
     }
   };
 
+  const ocultarCita = async (cita) => {
+    setProcesando(true);
+    setError("");
+    try {
+      await apiFetch(`/citas/${cita.id}/ocultar`, { method: "POST", body: JSON.stringify({}) });
+      setCitasSemana((prev) => prev.filter((c) => c.id !== cita.id));
+      setHistorialCompletadas((prev) => prev.filter((c) => c.id !== cita.id));
+    } catch (err) {
+      setError(err.message || "No fue posible eliminar la cita.");
+    } finally {
+      setProcesando(false);
+    }
+  };
+
   if (cargando) {
     return <section className="bd-dashboard"><p>Cargando panel...</p></section>;
   }
@@ -212,9 +260,9 @@ export default function DashboardBarbero() {
           <h2>Mi jornada</h2>
           <p>Resumen de tus turnos y clientes de hoy.</p>
         </div>
-        <button className="bd-date-button" type="button" onClick={() => setVerAgenda(true)}>
-          <CalendarDays size={17} /> {hoy.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" })} <ChevronDown size={16} />
-        </button>
+        <span className="bd-date-button" style={{ cursor: "default" }}>
+          <CalendarDays size={17} /> {hoy.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" })}
+        </span>
       </header>
 
       {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
@@ -305,9 +353,16 @@ export default function DashboardBarbero() {
               <p className="bd-panel-kicker">Organización</p>
               <h3>Próximos turnos</h3>
             </div>
-            <button type="button" className="bd-select" onClick={() => navigate("/barbero/citas")}>
-              Agenda <ChevronDown size={15} />
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {semanaOffset !== 0 && (
+                <button type="button" className="bd-select" onClick={volverAHoy}>
+                  Volver a hoy
+                </button>
+              )}
+              <button type="button" className="bd-select" onClick={() => cambiarSemana(1)}>
+                Siguiente
+              </button>
+            </div>
           </div>
           <div className="bd-days">
             {dias.map((dia, index) => (
@@ -321,9 +376,8 @@ export default function DashboardBarbero() {
             {citasDelDia.length === 0 && <p style={{ color: '#64748b', fontSize: '13px' }}>No hay turnos para este día.</p>}
             {citasDelDia.map((cita) => (
               <div
-                className={`bd-appointment ${ESTADOS_CANCELADOS.includes(cita.status) ? "bd-appointment--blocked" : cita.status === "completed" ? "bd-appointment--confirmada" : cita.status === "confirmed" || cita.status === "in_progress" ? "bd-appointment--confirmada" : "bd-appointment--pendiente"}`}
+                className={`bd-appointment ${cita.status === "completed" || cita.status === "confirmed" || cita.status === "in_progress" ? "bd-appointment--confirmada" : "bd-appointment--pendiente"}`}
                 key={cita.id}
-                style={ESTADOS_CANCELADOS.includes(cita.status) ? { backgroundColor: '#f8fafc', opacity: 0.7 } : {}}
               >
                 <time>{new Date(cita.scheduled_at).toTimeString().slice(0, 5)}</time>
                 <div>
@@ -339,21 +393,21 @@ export default function DashboardBarbero() {
         </article>
       </div>
 
-      {/* SECCIÓN: HISTORIAL DE CORTES */}
+      {/* SECCIÓN: HISTORIAL DE CITAS TERMINADAS */}
       <section className="bd-promotions" style={{ marginTop: '2rem' }}>
         <div className="bd-promotions-heading">
           <div>
-            <p className="bd-eyebrow">Registro de hoy</p>
-            <h3>Historial de cortes terminados</h3>
+            <p className="bd-eyebrow">Registro reciente</p>
+            <h3>Historial de citas terminadas</h3>
           </div>
-          <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: '600' }}>{atendidosHoy.length} completados</span>
+          <span style={{ fontSize: '0.875rem', color: '#64748b', fontWeight: '600' }}>{historialCompletadas.length} completadas</span>
         </div>
 
-        {atendidosHoy.length === 0 ? (
-          <p style={{ color: '#64748b' }}>Aún no completas ningún corte hoy.</p>
+        {historialCompletadas.length === 0 ? (
+          <p style={{ color: '#64748b' }}>Aún no completas ninguna cita.</p>
         ) : (
           <div className="bd-promotion-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))' }}>
-            {atendidosHoy.map((registro) => (
+            {historialCompletadas.map((registro) => (
               <article
                 className="bd-promotion"
                 key={registro.id}
@@ -365,10 +419,22 @@ export default function DashboardBarbero() {
                 <div className="bd-promotion-content" style={{ width: '100%' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                     <h4 style={{ color: '#0f172a' }}>{registro.profiles?.full_name ?? "Cliente"}</h4>
-                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500' }}><Clock size={12} style={{ display: 'inline', marginRight: '4px' }} />{new Date(registro.updated_at).toTimeString().slice(0, 5)}</span>
+                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500' }}>
+                      <Clock size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                      {new Date(registro.scheduled_at).toLocaleDateString("es-MX", { day: "numeric", month: "short" })} · {new Date(registro.scheduled_at).toTimeString().slice(0, 5)}
+                    </span>
                   </div>
                   <p style={{ color: '#475569' }}>{registro.appointment_services?.[0]?.service_name ?? "Servicio"}</p>
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px', alignItems: 'center' }}>
+                    <button
+                      type="button"
+                      title="Eliminar de la agenda"
+                      onClick={() => ocultarCita(registro)}
+                      disabled={procesando}
+                      style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', padding: 4, display: 'flex' }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
                     <strong style={{ color: '#0f172a' }}>${Number(registro.total).toFixed(2)}</strong>
                   </div>
                 </div>
@@ -425,20 +491,6 @@ export default function DashboardBarbero() {
         <div style={{ backgroundColor: '#f8fafc', padding: '15px', borderRadius: '8px', fontSize: '0.9rem', border: '1px solid #e2e8f0', marginBottom: '15px' }}>
           <p style={{ margin: 0, color: '#0f172a' }}><strong>Notas del cliente:</strong> {citaSeleccionada?.client_note || "Sin notas."}</p>
         </div>
-
-        {citaSeleccionada?.profiles?.phone && (
-          <button
-            style={{ width: '100%', padding: '12px', backgroundColor: 'white', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '8px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', fontWeight: '600', cursor: 'pointer' }}
-            onClick={() => { window.location.href = `tel:${citaSeleccionada.profiles.phone}`; }}
-          >
-            <MessageCircle size={18} /> Llamar a {citaSeleccionada.profiles.full_name ?? "cliente"}
-          </button>
-        )}
-      </BarberoModal>
-
-      <BarberoModal open={verAgenda} title="Agenda del día" onClose={() => setVerAgenda(false)} footer={<button className="bm-primary" onClick={() => setVerAgenda(false)}>Volver al panel</button>}>
-        <p>Estás consultando la agenda de hoy, {hoy.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}.</p>
-        <p>Tienes {agendadasHoy} turnos agendados para hoy.</p>
       </BarberoModal>
     </section>
   );

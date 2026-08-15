@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { UsersRound } from "lucide-react";
+import { Receipt, Trash2, UsersRound } from "lucide-react";
 import { supabase } from "../../../../lib/supabase.js";
 import { apiFetch } from "../../../../utils/api.js";
 import "../../styles/barbero/citas-barbero.css";
@@ -7,7 +7,10 @@ import BarberoModal from "./barbero-modal";
 
 const ESTADOS_ACTIVOS = ["pending_confirmation", "pending_payment", "confirmed", "in_progress"];
 const ESTADOS_TERMINALES = ["cancelled", "rejected", "no_show"];
+const ESTADOS_OCULTABLES = ["cancelled", "rejected", "no_show", "completed"];
 const DIAS_SEMANA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
+// Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
+const ANTICIPO_FIJO_MXN = 100;
 
 function inicioDeSemana(offsetSemanas = 0) {
   const hoy = new Date();
@@ -19,14 +22,18 @@ function inicioDeSemana(offsetSemanas = 0) {
 }
 
 function infoEstado(cita) {
-  const pagoAprobado = (cita.payments ?? []).some((p) => p.status === "approved");
+  const pagos = cita.payments ?? [];
+  const pagoAprobado = pagos.some((p) => p.status === "approved");
+  const pagoEnRevision = pagos.some((p) => p.status === "pending_review");
   switch (cita.status) {
     case "pending_confirmation":
       return pagoAprobado
         ? { texto: "Pago recibido - confirmar al 100%", clase: "pendiente" }
         : { texto: "Solicitud nueva - por aceptar", clase: "pendiente" };
     case "pending_payment":
-      return { texto: "Aceptada - esperando pago del cliente", clase: "confirmada" };
+      return pagoEnRevision
+        ? { texto: "Comprobante recibido - por revisar", clase: "pendiente" }
+        : { texto: "Aceptada - esperando pago del cliente", clase: "confirmada" };
     case "confirmed":
       return { texto: "Confirmada", clase: "confirmada" };
     case "in_progress":
@@ -73,6 +80,9 @@ export default function CitasBarbero() {
   const [diaActivo, setDiaActivo] = useState(new Date().getDay() === 0 ? 6 : new Date().getDay() - 1);
   const [accion, setAccion] = useState(null);
   const [motivo, setMotivo] = useState("");
+  const [comprobanteRevisar, setComprobanteRevisar] = useState(null);
+  const [comprobanteUrl, setComprobanteUrl] = useState("");
+  const [motivoRechazoComprobante, setMotivoRechazoComprobante] = useState("");
   const [procesando, setProcesando] = useState(false);
   const [error, setError] = useState("");
 
@@ -83,7 +93,7 @@ export default function CitasBarbero() {
   });
 
   const cambiarSemana = (delta) => {
-    setSemanaOffset((prev) => prev + delta);
+    setSemanaOffset((prev) => Math.max(0, prev + delta));
     setDiaActivo(0);
   };
 
@@ -109,10 +119,11 @@ export default function CitasBarbero() {
         id, scheduled_at, status, total, client_note, cancellation_reason,
         profiles!client_id(full_name, phone),
         appointment_services(service_name),
-        payments(status)
+        payments(id, status, proof_image_path)
       `)
       .eq("barberia_id", membership.barberia_id)
       .in("status", [...ESTADOS_ACTIVOS, ...ESTADOS_TERMINALES])
+      .is("hidden_by_barber_at", null)
       .order("scheduled_at");
 
     return data ?? [];
@@ -175,6 +186,60 @@ export default function CitasBarbero() {
     }
   };
 
+  const ocultarCita = async (cita) => {
+    setProcesando(true);
+    setError("");
+    try {
+      await apiFetch(`/citas/${cita.id}/ocultar`, { method: "POST", body: JSON.stringify({}) });
+      setCitas((prev) => prev.filter((c) => c.id !== cita.id));
+    } catch (err) {
+      setError(err.message || "No fue posible eliminar la cita.");
+    } finally {
+      setProcesando(false);
+    }
+  };
+
+  const abrirRevisionComprobante = async (cita) => {
+    setError("");
+    setMotivoRechazoComprobante("");
+    setComprobanteRevisar(cita);
+    setComprobanteUrl("");
+    const pago = (cita.payments ?? []).find((p) => p.status === "pending_review");
+    if (!pago?.proof_image_path) return;
+    const { data, error: urlError } = await supabase.storage
+      .from("comprobantes")
+      .createSignedUrl(pago.proof_image_path, 300);
+    if (!urlError) setComprobanteUrl(data.signedUrl);
+  };
+
+  const confirmarPagoManual = async (cita) => {
+    setProcesando(true);
+    setError("");
+    try {
+      await apiFetch(`/citas/${cita.id}/confirmar-pago`, { method: "POST", body: JSON.stringify({}) });
+      setComprobanteRevisar(null);
+      await cargarCitas();
+    } catch (err) {
+      setError(err.message || "No fue posible confirmar el pago.");
+    } finally {
+      setProcesando(false);
+    }
+  };
+
+  const rechazarComprobante = async (cita, motivoTexto) => {
+    setProcesando(true);
+    setError("");
+    try {
+      await apiFetch(`/citas/${cita.id}/rechazar-comprobante`, { method: "POST", body: JSON.stringify({ motivo: motivoTexto || "" }) });
+      setComprobanteRevisar(null);
+      await cargarCitas();
+    } catch (err) {
+      setError(err.message || "No fue posible rechazar el comprobante.");
+    } finally {
+      setProcesando(false);
+    }
+  };
+
   if (cargando) {
     return <section className="ba-page"><p>Cargando citas...</p></section>;
   }
@@ -196,10 +261,7 @@ export default function CitasBarbero() {
 
       {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
 
-      <div className="ba-semana-nav" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", margin: "16px 0 8px" }}>
-        <button type="button" onClick={() => cambiarSemana(-1)} style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "6px 12px", cursor: "pointer", fontWeight: 600 }}>
-          ← Semana anterior
-        </button>
+      <div className="ba-semana-nav" style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 16, margin: "16px 0 8px" }}>
         <span style={{ fontSize: "13px", color: "#6b7280", fontWeight: 600 }}>
           {dias[0].toLocaleDateString("es-MX", { day: "numeric", month: "short" })} – {dias[6].toLocaleDateString("es-MX", { day: "numeric", month: "short" })}
           {semanaOffset !== 0 && (
@@ -233,6 +295,7 @@ export default function CitasBarbero() {
           const estado = infoEstado(cita);
           const hora = new Date(cita.scheduled_at).toTimeString().slice(0, 5);
           const acciones = accionesParaCita(cita);
+          const pagoEnRevision = (cita.payments ?? []).some((p) => p.status === "pending_review");
 
           return (
             <article className={`ba-cita ba-cita--${estado.clase}`} key={cita.id}>
@@ -245,6 +308,11 @@ export default function CitasBarbero() {
                 {cita.client_note && <small>Notas: {cita.client_note}</small>}
               </div>
               <div className="ba-actions">
+                {pagoEnRevision && (
+                  <button className="accept" onClick={() => abrirRevisionComprobante(cita)} disabled={procesando}>
+                    <Receipt size={14} /> Revisar comprobante
+                  </button>
+                )}
                 {acciones.map((a) => (
                   <button
                     key={a.tipo}
@@ -255,6 +323,16 @@ export default function CitasBarbero() {
                     {a.label}
                   </button>
                 ))}
+                {ESTADOS_OCULTABLES.includes(cita.status) && (
+                  <button
+                    className="reject"
+                    title="Eliminar de la agenda"
+                    onClick={() => ocultarCita(cita)}
+                    disabled={procesando}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
               </div>
             </article>
           );
@@ -275,6 +353,38 @@ export default function CitasBarbero() {
         }
       >
         <textarea className="ba-textarea" value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Explica el motivo para el cliente…" />
+      </BarberoModal>
+
+      <BarberoModal
+        open={Boolean(comprobanteRevisar)}
+        title="Revisar comprobante de pago"
+        onClose={() => setComprobanteRevisar(null)}
+        footer={
+          <>
+            <button className="bm-secondary" onClick={() => rechazarComprobante(comprobanteRevisar, motivoRechazoComprobante)} disabled={procesando}>
+              Rechazar
+            </button>
+            <button className="bm-primary" onClick={() => confirmarPagoManual(comprobanteRevisar)} disabled={procesando}>
+              Confirmar pago recibido
+            </button>
+          </>
+        }
+      >
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>{comprobanteRevisar?.profiles?.full_name ?? "Cliente"}</strong> — anticipo esperado: <strong>${ANTICIPO_FIJO_MXN} MXN</strong>
+        </p>
+        {comprobanteUrl ? (
+          <img src={comprobanteUrl} alt="Comprobante de pago" style={{ width: "100%", borderRadius: 8, border: "1px solid #e5e7eb" }} />
+        ) : (
+          <p style={{ color: "#6b7280" }}>Cargando comprobante...</p>
+        )}
+        <textarea
+          className="ba-textarea"
+          style={{ marginTop: 10 }}
+          value={motivoRechazoComprobante}
+          onChange={(e) => setMotivoRechazoComprobante(e.target.value)}
+          placeholder="Si vas a rechazarlo, explica por qué (opcional)…"
+        />
       </BarberoModal>
     </section>
   );

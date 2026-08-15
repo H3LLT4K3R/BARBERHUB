@@ -76,7 +76,9 @@ export default function SeguimientoServicio() {
       ?? null;
 
     let visitasPrevias = 0;
-    if (citaActual) {
+    // Si el cliente borró su cuenta por completo, profiles queda null (ver
+    // DB/add_client_full_delete_option.sql) — no hay a quién contarle visitas previas.
+    if (citaActual?.profiles?.id) {
       const { count } = await supabase
         .from("appointments")
         .select("id", { count: "exact", head: true })
@@ -195,7 +197,7 @@ export default function SeguimientoServicio() {
           <h3>{servicios.map((s) => s.service_name).join(" + ") || "Servicio"}</h3>
           <p><MapPin size={15} /> {barberia?.name} · {barberia?.city}</p>
           <div className="ss-contact-actions">
-            <a href={`tel:${cita.profiles.phone ?? ""}`}><Phone size={15} /> Llamar</a>
+            <a href={`tel:${cita.profiles?.phone ?? ""}`}><Phone size={15} /> Llamar</a>
           </div>
         </div>
         <div className="ss-service-controls">
@@ -211,7 +213,7 @@ export default function SeguimientoServicio() {
       <section className="ss-details-grid">
         <article className="ss-detail-card ss-person-card">
           <p className="ss-card-kicker">Más información</p><h3>Cliente</h3>
-          <div className="ss-person"><div><strong>{cita.profiles.full_name}</strong><span><Phone size={13} /> {cita.profiles.phone ?? "Sin teléfono"}</span></div></div>
+          <div className="ss-person"><div><strong>{cita.profiles?.full_name ?? "Cliente eliminado"}</strong><span><Phone size={13} /> {cita.profiles?.phone ?? "Sin teléfono"}</span></div></div>
           <div className="ss-stats">
             <div><span>Tipo</span><strong>{visitasPrevias > 0 ? "Frecuente" : "Nuevo"}</strong></div>
             <div><span>Visitas previas</span><strong>{visitasPrevias}</strong></div>

@@ -321,6 +321,14 @@
   margin-bottom: 14px;
 }
 
+img.ajt-avatar {
+  transition: opacity 0.15s ease;
+}
+
+img.ajt-avatar:hover {
+  opacity: 0.85;
+}
+
 .ajt-tarjeta-perfil h3 {
   margin-bottom: 6px;
 }

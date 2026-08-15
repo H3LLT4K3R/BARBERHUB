@@ -1,12 +1,19 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 import {
-  User, MapPin, Plus, Trash2, Scissors, Edit2, Check, Star, Users,
+  User, MapPin, Plus, Trash2, Scissors, Edit2, Check, Star, Users, Camera,
 } from "lucide-react";
 
 import "../../styles/Barberias/perfilbarberia.css";
 import { supabase } from "../../../../lib/supabase.js";
 import { ESTADOS, ciudadesDe, zonasDe } from "../../data/ubicaciones.js";
+
+const TIPOS_IMAGEN_PERMITIDOS = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const TAMANO_MAXIMO_BYTES = 5 * 1024 * 1024;
+
+function urlPublica(path) {
+  if (!path) return null;
+  return supabase.storage.from("perfiles").getPublicUrl(path).data.publicUrl;
+}
 
 const DIAS_SEMANA = [
   { weekday: 1, label: "Lunes" },
@@ -21,8 +28,8 @@ const DIAS_SEMANA = [
 const HORARIO_DEFAULT = { opens_at: "09:00", closes_at: "20:00", is_closed: false };
 
 export default function PerfilBarberia() {
-  const navigate = useNavigate();
   const [cargando, setCargando] = useState(true);
+  const [sinBarberia, setSinBarberia] = useState(false);
   const [barberia, setBarberia] = useState(null);
   const [servicios, setServicios] = useState([]);
   const [stats, setStats] = useState({ barberos: 0, rating: 0, totalOpiniones: 0 });
@@ -35,6 +42,10 @@ export default function PerfilBarberia() {
   const [nuevoServicioPrecio, setNuevoServicioPrecio] = useState("");
   const [guardando, setGuardando] = useState(false);
   const [mensaje, setMensaje] = useState("");
+  const [fotoPortada, setFotoPortada] = useState(null);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
+  const [errorFoto, setErrorFoto] = useState("");
+  const fotoInputRef = useRef(null);
 
   useEffect(() => {
     let cancelado = false;
@@ -52,22 +63,28 @@ export default function PerfilBarberia() {
       if (cancelado) return;
 
       if (!membership) {
-        navigate("/registrar-barberia", { replace: true });
+        // El registro de barberías ahora lo hace exclusivamente el super admin
+        // (adminController.crearBarberiaConDuenio); ya no existe un flujo de
+        // autorregistro al que mandar a alguien sin barbería.
+        setSinBarberia(true);
+        setCargando(false);
         return;
       }
 
-      const [{ data: b }, { data: serviciosData }, { data: hoursData }, { data: membershipsData }, { data: reviewsData }] = await Promise.all([
+      const [{ data: b }, { data: serviciosData }, { data: hoursData }, { data: membershipsData }, { data: reviewsData }, { data: mediaData }] = await Promise.all([
         supabase.from("barberias").select("*").eq("id", membership.barberia_id).single(),
         supabase.from("services").select("id, name, price, duration_minutes, is_active").eq("barberia_id", membership.barberia_id).order("sort_order"),
         supabase.from("business_hours").select("weekday, opens_at, closes_at, is_closed").eq("barberia_id", membership.barberia_id),
         supabase.from("barberia_memberships").select("id").eq("barberia_id", membership.barberia_id).eq("role", "barber").eq("is_active", true),
         supabase.from("reviews").select("rating").eq("barberia_id", membership.barberia_id).eq("is_published", true),
+        supabase.from("barberia_media").select("id, storage_path").eq("barberia_id", membership.barberia_id).eq("is_cover", true).maybeSingle(),
       ]);
 
       if (cancelado) return;
 
       setBarberia(b);
       setServicios(serviciosData ?? []);
+      setFotoPortada(mediaData ?? null);
 
       if (hoursData?.length) {
         setHorarios(DIAS_SEMANA.map((d) => {
@@ -90,7 +107,7 @@ export default function PerfilBarberia() {
 
     cargar();
     return () => { cancelado = true; };
-  }, [navigate]);
+  }, []);
 
   const actualizarCampoBarberia = (campo, valor) => {
     setBarberia((prev) => {
@@ -115,6 +132,7 @@ export default function PerfilBarberia() {
           state: barberia.state,
           city: barberia.city,
           zone: barberia.zone,
+          payment_link_url: barberia.payment_link_url || null,
         })
         .eq("id", barberia.id);
       if (updateError) throw updateError;
@@ -133,6 +151,66 @@ export default function PerfilBarberia() {
       setMensaje(err.message || "No fue posible guardar los cambios.");
     } finally {
       setGuardando(false);
+    }
+  };
+
+  const subirFotoPortada = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!TIPOS_IMAGEN_PERMITIDOS.includes(file.type)) {
+      setErrorFoto("Solo se aceptan imágenes JPG, PNG, WEBP o GIF.");
+      event.target.value = "";
+      return;
+    }
+    if (file.size > TAMANO_MAXIMO_BYTES) {
+      setErrorFoto("La imagen no puede pesar más de 5 MB.");
+      event.target.value = "";
+      return;
+    }
+
+    setErrorFoto("");
+    setSubiendoFoto(true);
+    try {
+      const path = `barberias/${barberia.id}/${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage.from("perfiles").upload(path, file);
+      if (uploadError) throw uploadError;
+
+      if (fotoPortada) {
+        const { error: removeError } = await supabase.storage.from("perfiles").remove([fotoPortada.storage_path]);
+        if (removeError) throw removeError;
+        const { error: deleteRowError } = await supabase.from("barberia_media").delete().eq("id", fotoPortada.id);
+        if (deleteRowError) throw deleteRowError;
+      }
+
+      const { data: nuevaFoto, error: insertError } = await supabase
+        .from("barberia_media")
+        .insert({ barberia_id: barberia.id, storage_path: path, is_cover: true })
+        .select("id, storage_path")
+        .single();
+      if (insertError) throw insertError;
+
+      setFotoPortada(nuevaFoto);
+    } catch (err) {
+      setErrorFoto(err.message || "No fue posible subir la foto.");
+    } finally {
+      setSubiendoFoto(false);
+      event.target.value = "";
+    }
+  };
+
+  const eliminarFotoPortada = async () => {
+    if (!fotoPortada) return;
+    setSubiendoFoto(true);
+    setErrorFoto("");
+    try {
+      await supabase.storage.from("perfiles").remove([fotoPortada.storage_path]);
+      const { error: deleteError } = await supabase.from("barberia_media").delete().eq("id", fotoPortada.id);
+      if (deleteError) throw deleteError;
+      setFotoPortada(null);
+    } catch (err) {
+      setErrorFoto(err.message || "No fue posible eliminar la foto.");
+    } finally {
+      setSubiendoFoto(false);
     }
   };
 
@@ -179,31 +257,88 @@ export default function PerfilBarberia() {
     return <div className="pagina-barberia-global"><p style={{ padding: 24 }}>Cargando tu barbería...</p></div>;
   }
 
+  if (sinBarberia) {
+    return (
+      <div className="pagina-barberia-global">
+        <p style={{ padding: 24 }}>
+          Tu cuenta no tiene una barbería registrada. El alta de nuevas barberías la gestiona el equipo de Barber Hub — contacta a soporte.
+        </p>
+      </div>
+    );
+  }
+
   const iniciales = (barberia.name || "B").split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 
   return (
     <div className="pagina-barberia-global">
       <div className="perfil-clean-wrapper">
-        <div className="barber-cards-row-grid-three">
+        <div className="perfil-barber-cards-row-grid-three">
 
           {/* COLUMNA 1 */}
           <div className="layout-column">
-            <div className="card-profile-black">
-              <div className="profile-avatar-circle">
-                <span style={{ fontSize: "1.4rem", fontWeight: 800 }}>{iniciales}</span>
+            <div className="perfil-card-profile-black">
+              <div style={{ position: "relative", width: 130, margin: "0 auto" }}>
+                <div
+                  style={{
+                    width: 130, height: 130, borderRadius: "50%", background: "#374151",
+                    border: "4px solid #D4AF37", overflow: "hidden", display: "flex",
+                    alignItems: "center", justifyContent: "center",
+                  }}
+                >
+                  {fotoPortada ? (
+                    <img
+                      src={urlPublica(fotoPortada.storage_path)}
+                      alt={barberia.name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: "1.4rem", fontWeight: 800 }}>{iniciales}</span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => fotoInputRef.current?.click()}
+                  disabled={subiendoFoto}
+                  title="Cambiar foto"
+                  style={{
+                    position: "absolute", right: 0, bottom: 4, width: 32, height: 32, borderRadius: "50%",
+                    background: "#111827", color: "#e5be6b", border: "3px solid #fff", display: "flex",
+                    alignItems: "center", justifyContent: "center", cursor: subiendoFoto ? "wait" : "pointer",
+                  }}
+                >
+                  <Camera size={15} />
+                </button>
+                {fotoPortada && (
+                  <button
+                    type="button"
+                    onClick={eliminarFotoPortada}
+                    disabled={subiendoFoto}
+                    title="Eliminar foto"
+                    style={{
+                      position: "absolute", left: 0, bottom: 4, width: 32, height: 32, borderRadius: "50%",
+                      background: "#fff", color: "#b90043", border: "3px solid #fff", display: "flex",
+                      alignItems: "center", justifyContent: "center", cursor: subiendoFoto ? "wait" : "pointer",
+                      boxShadow: "0 0 0 1px #e5e7eb",
+                    }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
+                <input ref={fotoInputRef} type="file" accept="image/*" onChange={subirFotoPortada} style={{ display: "none" }} />
               </div>
+              {errorFoto && <p style={{ color: "#f87171", fontSize: 12, marginTop: 8 }}>{errorFoto}</p>}
 
-              <div className="editable-name-container">
+              <div className="perfil-editable-name-container">
                 <input
                   type="text"
                   value={barberia.name ?? ""}
                   onChange={(e) => actualizarCampoBarberia("name", e.target.value)}
-                  className="profile-title-name-input"
+                  className="perfil-profile-title-name-input"
                   placeholder="Nombre de la barbería..."
                 />
               </div>
 
-              <p className="profile-subtitle-geo">
+              <p className="perfil-profile-subtitle-geo">
                 <MapPin className="inline-geo-icon" /> {[barberia.zone, barberia.city].filter(Boolean).join(", ") || "Sin ubicación"}
               </p>
 
@@ -217,7 +352,7 @@ export default function PerfilBarberia() {
               </button>
             </div>
 
-            <div className="card-white-container localization-premium-card">
+            <div className="perfil-card-white-container localization-premium-card">
               <div className="localization-header-block">
                 <div className="geo-icon-badge">
                   <MapPin className="w-5 h-5 icon-gold" />
@@ -258,17 +393,17 @@ export default function PerfilBarberia() {
           </div>
 
           {/* COLUMNA 2 */}
-          <div className="card-white-container layout-column flex-between" style={{ justifyContent: "space-between" }}>
+          <div className="perfil-card-white-container layout-column flex-between" style={{ justifyContent: "space-between" }}>
             <div>
-              <div className="custom-navigation-tabs">
-                <button onClick={() => setActiveTab("Acerca")} className={`nav-tab-item ${activeTab === "Acerca" ? "active" : ""}`}><User className="w-3 h-3" /> Acerca</button>
-                <button onClick={() => setActiveTab("Servicios")} className={`nav-tab-item ${activeTab === "Servicios" ? "active" : ""}`}><Scissors className="w-3 h-3" /> Servicios</button>
+              <div className="perfil-custom-navigation-tabs">
+                <button onClick={() => setActiveTab("Acerca")} className={`perfil-nav-tab-item ${activeTab === "Acerca" ? "active" : ""}`}><User className="w-3 h-3" /> Acerca</button>
+                <button onClick={() => setActiveTab("Servicios")} className={`perfil-nav-tab-item ${activeTab === "Servicios" ? "active" : ""}`}><Scissors className="w-3 h-3" /> Servicios</button>
               </div>
 
               {activeTab === "Acerca" && (
                 <>
                   <textarea
-                    className="description-paragraph-text"
+                    className="perfil-description-paragraph-text"
                     style={{ width: "100%", border: "1px solid var(--color-border)", borderRadius: 8, padding: 8 }}
                     rows={3}
                     value={barberia.description ?? ""}
@@ -277,12 +412,29 @@ export default function PerfilBarberia() {
                   />
                   <input
                     type="tel"
-                    className="description-paragraph-text"
+                    className="perfil-description-paragraph-text"
                     style={{ width: "100%", border: "1px solid var(--color-border)", borderRadius: 8, padding: 8, marginTop: 8 }}
                     value={barberia.phone ?? ""}
                     onChange={(e) => actualizarCampoBarberia("phone", e.target.value)}
                     placeholder="Teléfono de contacto"
                   />
+
+                  <div style={{ marginTop: 12 }}>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: "#374151", display: "block", marginBottom: 4 }}>
+                      Link de pago (Mercado Pago) para el anticipo
+                    </label>
+                    <input
+                      type="url"
+                      className="perfil-description-paragraph-text"
+                      style={{ width: "100%", border: "1px solid var(--color-border)", borderRadius: 8, padding: 8 }}
+                      value={barberia.payment_link_url ?? ""}
+                      onChange={(e) => actualizarCampoBarberia("payment_link_url", e.target.value)}
+                      placeholder="https://www.mercadopago.com.mx/...."
+                    />
+                    <p style={{ fontSize: 11, color: "#6b7280", marginTop: 4 }}>
+                      Crea un link de pago fijo por ${100} MXN desde tu cuenta de Mercado Pago y pégalo aquí. Tus clientes lo usarán para pagar el anticipo; tú confirmas cada pago manualmente cuando suban su comprobante.
+                    </p>
+                  </div>
 
                   <div className="mb-4 bg-black-50 p-3 rounded-xl border border-gray-100" style={{ marginTop: 12 }}>
                     <div className="flex justify-between items-center mb-3">
@@ -323,7 +475,7 @@ export default function PerfilBarberia() {
 
               {activeTab === "Servicios" && (
                 <div className="premium-services-panel">
-                  <h4 className="sub-section-title-large">Gestión de Servicios</h4>
+                  <h4 className="perfil-sub-section-title-large">Gestión de Servicios</h4>
 
                   <div className="add-service-inline-card">
                     <h5>Añadir Servicio</h5>
@@ -359,7 +511,7 @@ export default function PerfilBarberia() {
           </div>
 
           {/* COLUMNA 3 */}
-          <div className="card-white-container layout-column">
+          <div className="perfil-card-white-container layout-column">
             <div className="horizontal-stats-header-bar">
               <div className="stat-segment"><span className="stat-top-lbl">Servicios</span><span className="stat-bottom-val">{servicios.length}</span></div>
               <div className="stat-segment border-x border-gray-100"><span className="stat-top-lbl"><Users className="w-3 h-3" style={{ display: "inline" }} /> Barberos</span><span className="stat-bottom-val">{stats.barberos}</span></div>

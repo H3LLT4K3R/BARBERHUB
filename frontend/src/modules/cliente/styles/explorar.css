@@ -308,6 +308,10 @@
   border: 1px solid #E5E7EB;
   position: sticky;
   top: 94px;
+  /* Leaflet asigna z-index internos de hasta 1000 a sus controles/paneles; sin esto
+     se escapan por encima del menú lateral y el overlay móvil (z-index 40-50). */
+  isolation: isolate;
+  z-index: 0;
 }
 
 .explorar-map-iframe {

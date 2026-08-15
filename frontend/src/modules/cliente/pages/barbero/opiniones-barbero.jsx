@@ -9,7 +9,6 @@ export default function OpinionesBarbero() {
   const [cargando, setCargando] = useState(true);
   const [busqueda, setBusqueda] = useState("");
   const [seleccionada, setSeleccionada] = useState(null);
-  const [respuesta, setRespuesta] = useState("");
   const [procesando, setProcesando] = useState(false);
   const [error, setError] = useState("");
 
@@ -26,7 +25,7 @@ export default function OpinionesBarbero() {
 
     const { data } = await supabase
       .from("reviews")
-      .select("id, rating, comment, owner_response, is_published, is_featured, created_at, profiles!client_id(full_name)")
+      .select("id, rating, comment, is_published, is_featured, created_at, profiles!client_id(full_name)")
       .eq("barberia_id", membership.barberia_id)
       .order("created_at", { ascending: false });
 
@@ -59,25 +58,6 @@ export default function OpinionesBarbero() {
   const promedio = opiniones.length
     ? (opiniones.reduce((acc, o) => acc + o.rating, 0) / opiniones.length).toFixed(1)
     : "0.0";
-
-  const enviarRespuesta = async () => {
-    if (!seleccionada || !respuesta.trim()) return;
-    setProcesando(true);
-    setError("");
-    try {
-      await apiFetch(`/resenas/${seleccionada.id}/responder`, {
-        method: "POST",
-        body: JSON.stringify({ respuesta: respuesta.trim() }),
-      });
-      setRespuesta("");
-      await cargar();
-      setSeleccionada((prev) => ({ ...prev, owner_response: respuesta.trim() }));
-    } catch (err) {
-      setError(err.message || "No fue posible enviar la respuesta.");
-    } finally {
-      setProcesando(false);
-    }
-  };
 
   const alternarPublicacion = async (opinion) => {
     setProcesando(true);
@@ -141,16 +121,6 @@ export default function OpinionesBarbero() {
               </article>
               <article className="bo-review-detail">
                 <p>{seleccionada.comment || "Sin comentario."}</p>
-                {seleccionada.owner_response ? (
-                  <p><strong>Tu respuesta:</strong> {seleccionada.owner_response}</p>
-                ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    <textarea className="bo-message" placeholder="Responder a esta reseña…" value={respuesta} onChange={(e) => setRespuesta(e.target.value)} />
-                    <button className="bm-primary" onClick={enviarRespuesta} disabled={procesando || !respuesta.trim()} style={{ alignSelf: "flex-start" }}>
-                      Enviar respuesta
-                    </button>
-                  </div>
-                )}
               </article>
             </>
           ) : (
@@ -167,7 +137,7 @@ export default function OpinionesBarbero() {
             <button
               className={seleccionada?.id === opinion.id ? "bo-review active" : "bo-review"}
               key={opinion.id}
-              onClick={() => { setSeleccionada(opinion); setRespuesta(""); }}
+              onClick={() => setSeleccionada(opinion)}
             >
               <strong>{opinion.profiles?.full_name ?? "Cliente"}</strong>
               <span>{opinion.comment || "Sin comentario"}</span>

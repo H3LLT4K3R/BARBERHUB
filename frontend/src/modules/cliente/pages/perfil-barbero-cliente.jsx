@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { IconArrowLeft, IconStarFilled, IconUser } from "@tabler/icons-react";
 import AppNavbar from "../components/app-navbar";
+import ImageLightbox from "../components/image-lightbox";
 import { supabase } from "../../../lib/supabase.js";
+import { useActiveAccountGuard } from "../../../hooks/useActiveAccountGuard";
 import "../styles/perfil-barbero-cliente.css";
 
 function urlPublica(path) {
@@ -11,6 +13,7 @@ function urlPublica(path) {
 }
 
 export default function PerfilBarberoCliente() {
+  useActiveAccountGuard();
   const { membershipId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -20,6 +23,7 @@ export default function PerfilBarberoCliente() {
   const [fotos, setFotos] = useState([]);
   const [stats, setStats] = useState({ rating: 0, total: 0 });
   const [cargando, setCargando] = useState(true);
+  const [imagenAmpliada, setImagenAmpliada] = useState(null);
 
   useEffect(() => {
     let cancelado = false;
@@ -27,7 +31,7 @@ export default function PerfilBarberoCliente() {
     async function cargar() {
       const { data: membership } = await supabase
         .from("barberia_memberships")
-        .select("id, display_name, specialty, profile_id, barberia_id, barberias(name), profiles!profile_id(full_name, avatar_path)")
+        .select("id, display_name, specialty, profile_id, barberia_id, barberias(name)")
         .eq("id", membershipId)
         .eq("role", "barber")
         .eq("is_active", true)
@@ -39,15 +43,18 @@ export default function PerfilBarberoCliente() {
         return;
       }
 
-      const [{ data: portafolio }, { data: reviews }] = await Promise.all([
+      // profiles_public en vez de embeber profiles directo: un cliente no puede leer
+      // el perfil completo de otra persona por RLS, solo la vista angosta nombre/foto.
+      const [{ data: portafolio }, { data: reviews }, { data: perfilPublico }] = await Promise.all([
         supabase.from("barber_portfolio_images").select("id, image_path").eq("membership_id", membershipId).order("created_at", { ascending: false }),
         supabase.from("reviews").select("rating").eq("barber_membership_id", membershipId).eq("is_published", true),
+        supabase.from("profiles_public").select("full_name, avatar_path").eq("id", membership.profile_id).maybeSingle(),
       ]);
 
       if (cancelado) return;
 
       const calificaciones = reviews ?? [];
-      setBarbero(membership);
+      setBarbero({ ...membership, profiles: perfilPublico ?? null });
       setFotos(portafolio ?? []);
       setStats({
         rating: calificaciones.length ? calificaciones.reduce((acc, r) => acc + r.rating, 0) / calificaciones.length : 0,
@@ -94,7 +101,11 @@ export default function PerfilBarberoCliente() {
 
         <section className="pbc-hero">
           <div className="pbc-avatar-grande">
-            {avatarUrl ? <img src={avatarUrl} alt={nombre} /> : <IconUser size={48} />}
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={nombre} style={{ cursor: "pointer" }} onClick={() => setImagenAmpliada(avatarUrl)} title="Ver foto" />
+            ) : (
+              <IconUser size={48} />
+            )}
           </div>
           <div>
             <h1 className="pbc-nombre">{nombre}</h1>
@@ -113,15 +124,20 @@ export default function PerfilBarberoCliente() {
             <p className="pbc-vacio">Este barbero aún no ha subido fotos de sus trabajos.</p>
           ) : (
             <div className="pbc-galeria">
-              {fotos.map((f) => (
-                <div key={f.id} className="pbc-foto-item">
-                  <img src={urlPublica(f.image_path)} alt="Trabajo del barbero" />
-                </div>
-              ))}
+              {fotos.map((f) => {
+                const fotoUrl = urlPublica(f.image_path);
+                return (
+                  <div key={f.id} className="pbc-foto-item">
+                    <img src={fotoUrl} alt="Trabajo del barbero" style={{ cursor: "pointer" }} onClick={() => setImagenAmpliada(fotoUrl)} title="Ver foto" />
+                  </div>
+                );
+              })}
             </div>
           )}
         </section>
       </main>
+
+      {imagenAmpliada && <ImageLightbox src={imagenAmpliada} alt={nombre} onClose={() => setImagenAmpliada(null)} />}
     </div>
   );
 }

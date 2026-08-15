@@ -14,16 +14,20 @@ import {
 } from "lucide-react";
 import { clearSession } from "../../../../utils/api.js";
 import { useSuspensionGuard } from "../../../../hooks/useSuspensionGuard.js";
+import { supabase } from "../../../../lib/supabase.js";
+import { obtenerModulosBloqueados } from "../../../../utils/modulePermissions.js";
 import "../../styles/barbero/barbero-layout.css";
 
+// "module" liga el ítem al code de platform_modules que el dueño puede prender/apagar
+// desde Seguridad de la Plataforma. Los ítems sin "module" siempre quedan visibles.
 const NAV_ITEMS = [
-  { href: "/barbero/inicio",      label: "Inicio",                icon: LayoutDashboard },
-  { href: "/barbero/citas",       label: "Gestión de citas",      icon: CalendarDays    },
-  { href: "/barbero/cupones",     label: "Cupones",               icon: Ticket          },
-  { href: "/barbero/perfil",      label: "Perfil Barbería",       icon: Store           },
-  { href: "/barbero/opiniones",   label: "Opiniones",             icon: Star            },
-  { href: "/barbero/seguimiento", label: "Seguimiento",           icon: ClipboardList   },
-  { href: "/barbero/ajustes",    label: "Ajustes",               icon: Settings        },
+  { href: "/barbero/inicio",      label: "Inicio",                icon: LayoutDashboard, module: null      },
+  { href: "/barbero/citas",       label: "Gestión de citas",      icon: CalendarDays,    module: "agenda"  },
+  { href: "/barbero/cupones",     label: "Cupones",               icon: Ticket,          module: "cupones" },
+  { href: "/barbero/perfil",      label: "Perfil Barbero",        icon: Store,           module: null      },
+  { href: "/barbero/opiniones",   label: "Opiniones",             icon: Star,            module: "opiniones" },
+  { href: "/barbero/seguimiento", label: "Seguimiento",           icon: ClipboardList,   module: "agenda"  },
+  { href: "/barbero/ajustes",    label: "Ajustes",               icon: Settings,        module: null      },
 ];
 
 export default function BarberoLayout({ children, titulo = "" }) {
@@ -31,6 +35,7 @@ export default function BarberoLayout({ children, titulo = "" }) {
   const location  = useLocation();
   const [open, setOpen]       = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [modulosBloqueados, setModulosBloqueados] = useState(new Set());
 
   useSuspensionGuard();
 
@@ -39,6 +44,28 @@ export default function BarberoLayout({ children, titulo = "" }) {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+
+  useEffect(() => {
+    async function cargarPermisosNav() {
+      const uid = (await supabase.auth.getUser()).data.user?.id;
+      if (!uid) return;
+      const { data: membership } = await supabase
+        .from("barberia_memberships")
+        .select("id, role")
+        .eq("profile_id", uid)
+        .eq("role", "barber")
+        .eq("is_active", true)
+        .maybeSingle();
+      if (!membership) return;
+      setModulosBloqueados(await obtenerModulosBloqueados(membership.id, membership.role));
+    }
+    cargarPermisosNav();
+  }, []);
+
+  const navItems = NAV_ITEMS.filter((item) => {
+    if (!item.module) return true;
+    return !modulosBloqueados.has(item.module);
+  });
 
   const isActive = (href) => location.pathname.startsWith(href);
 
@@ -74,7 +101,7 @@ export default function BarberoLayout({ children, titulo = "" }) {
 
         {/* Nav */}
         <nav className="bl-nav">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const Icon   = item.icon;
             const active = isActive(item.href);
             return (

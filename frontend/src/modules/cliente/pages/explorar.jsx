@@ -32,7 +32,11 @@ function AjustarVistaMapa({ barberias }) {
   return null;
 }
 
-export default function Explorar() {
+function normalizarTexto(texto) {
+  return (texto ?? "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+}
+
+export default function Explorar({ searchQuery = "" }) {
   const navigate = useNavigate();
   const [barberias, setBarberias] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -66,11 +70,13 @@ export default function Explorar() {
   }, []);
 
   const barberiasPorUbicacion = useMemo(() => {
+    const busqueda = normalizarTexto(searchQuery.trim());
     return barberias
       .filter((b) => !estado || b.state === estado)
       .filter((b) => !ciudad || b.city === ciudad)
-      .filter((b) => !zona || b.zone === zona);
-  }, [barberias, estado, ciudad, zona]);
+      .filter((b) => !zona || b.zone === zona)
+      .filter((b) => !busqueda || normalizarTexto(b.name).includes(busqueda));
+  }, [barberias, estado, ciudad, zona, searchQuery]);
 
   useEffect(() => {
     if (!fecha) return;

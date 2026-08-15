@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, cloneElement, isValidElement } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { CalendarDays, Map, Menu, X, LogOut, History, Heart, Bell, Settings, User, Search } from "lucide-react";
 import { clearSession } from "../../../utils/api";
+import { useActiveAccountGuard } from "../../../hooks/useActiveAccountGuard";
 import "../styles/sidebar-layout.css"; // Lo mantenemos por si tienes tipografías u otros estilos menores
 
 const NAV_ITEMS = [
@@ -14,6 +15,7 @@ const NAV_ITEMS = [
 ];
 
 export default function SidebarLayout({ children }) {
+  useActiveAccountGuard();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);
@@ -179,7 +181,7 @@ export default function SidebarLayout({ children }) {
 
         {/* 4. CONTENIDO PRINCIPAL DONDE SE CARGAN TUS VISTAS */}
         <main style={{ flex: 1, overflowY: "auto", position: "relative", backgroundColor: "#f9fafb", padding: isMobile ? "16px" : "24px" }}>
-          {children}
+          {esExplorar && isValidElement(children) ? cloneElement(children, { searchQuery }) : children}
         </main>
       </div>
     </div>

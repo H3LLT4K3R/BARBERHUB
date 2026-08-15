@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { apiFetch } from "../../../utils/api.js";
+import { useActiveAccountGuard } from "../../../hooks/useActiveAccountGuard";
 import "../styles/pago-anticipo.css";
 
 // Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
 const ANTICIPO_FIJO_MXN = 100;
 
 export default function PagoAnticipo() {
+  useActiveAccountGuard();
   const navigate = useNavigate();
   const { state } = useLocation();
   const [enviando, setEnviando] = useState(false);
@@ -208,7 +210,7 @@ export default function PagoAnticipo() {
               <div className="pa-summary-item">
                 <span className="pa-label">TOTAL DEL SERVICIO (se paga en el local)</span>
                 <span className="pa-value" style={cupon ? { textDecoration: "line-through", color: "#8e8e93" } : undefined}>
-                  {resumen.total}
+                  {cupon ? resumen.total : `$${Math.max(0, state.precio - ANTICIPO_FIJO_MXN)} ${state.moneda}`}
                 </span>
               </div>
               {cupon && (
@@ -222,7 +224,7 @@ export default function PagoAnticipo() {
               {cupon && (
                 <div className="pa-summary-item">
                   <span className="pa-label">NUEVO TOTAL (se paga en el local)</span>
-                  <span className="pa-value font-bold">${cupon.total} {state.moneda}</span>
+                  <span className="pa-value font-bold">${Math.max(0, cupon.total - ANTICIPO_FIJO_MXN)} {state.moneda}</span>
                 </div>
               )}
               <div className="pa-summary-item pa-highlight-row">

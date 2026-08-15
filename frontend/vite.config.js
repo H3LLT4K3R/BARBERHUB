@@ -8,6 +8,9 @@ export default defineConfig({
     tailwindcss(), // Agrega esta línea
   ],
   server: {
+    // Permite conectarse desde otros dispositivos en la misma red (ej. un celular),
+    // no solo desde localhost.
+    host: true,
     proxy: {
       // El frontend llama a rutas relativas "/api/..." (ver utils/api.js);
       // Vite las reenvía al backend Express que corre en el puerto 3000.

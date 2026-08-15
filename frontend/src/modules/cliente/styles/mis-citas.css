@@ -212,7 +212,9 @@
 .contenedor-precio {
   width: 100%;
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
   margin-bottom: 12px;
 }
 
@@ -402,7 +404,7 @@
   }
 
   .contenedor-precio {
-    justify-content: flex-start;
+    align-items: flex-start;
   }
 
   .stepper-progreso {

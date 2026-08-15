@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { IconCircleCheck } from "@tabler/icons-react";
 import { formatearHorarioCita, keyAFecha } from "../../../utils/fecha.js";
+import { supabase } from "../../../lib/supabase.js";
+import { useActiveAccountGuard } from "../../../hooks/useActiveAccountGuard";
 import PageNavbar from "../components/page-navbar";
 import "../styles/datos-reserva.css";
 
@@ -9,12 +11,30 @@ import "../styles/datos-reserva.css";
 const ANTICIPO_FIJO_MXN = 100;
 
 export default function DatosReserva() {
+  useActiveAccountGuard();
   const navigate = useNavigate();
   const { state } = useLocation();
 
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
   const [error, setError] = useState("");
+
+  // El cliente ya inició sesión para llegar hasta aquí: se jalan sus datos del
+  // perfil para no hacerlo escribirlos de nuevo. Se dejan editables por si
+  // necesita corregirlos o agendar con un número de contacto distinto.
+  useEffect(() => {
+    let cancelado = false;
+    (async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const uid = userData?.user?.id;
+      if (!uid) return;
+      const { data: perfil } = await supabase.from("profiles").select("full_name, phone").eq("id", uid).maybeSingle();
+      if (cancelado || !perfil) return;
+      if (perfil.full_name) setNombre(perfil.full_name);
+      if (perfil.phone) setTelefono(perfil.phone);
+    })();
+    return () => { cancelado = true; };
+  }, []);
 
   if (!state?.barberiaId || !state?.fecha || !state?.hora) {
     return (
@@ -39,6 +59,8 @@ export default function DatosReserva() {
     moneda: state.moneda ?? "CLP",
     fecha: state.fecha,
     hora: state.hora,
+    barberMembershipId: state.barberMembershipId ?? null,
+    barberoNombre: state.barberoNombre ?? null,
   };
 
   const fechaObj = keyAFecha(reserva.fecha);
@@ -113,9 +135,13 @@ export default function DatosReserva() {
                 <span className="dr-valor">{reserva.servicio}</span>
               </div>
               <div className="dr-fila-resumen">
+                <span className="dr-etiqueta">BARBERO</span>
+                <span className="dr-valor">{reserva.barberoNombre ?? "Sin preferencia"}</span>
+              </div>
+              <div className="dr-fila-resumen">
                 <span className="dr-etiqueta">TOTAL DEL SERVICIO (se paga en el local)</span>
                 <span className="dr-valor">
-                  ${reserva.precio} {reserva.moneda}
+                  ${Math.max(0, reserva.precio - ANTICIPO_FIJO_MXN)} {reserva.moneda}
                 </span>
               </div>
               <div className="dr-fila-resumen destacado">

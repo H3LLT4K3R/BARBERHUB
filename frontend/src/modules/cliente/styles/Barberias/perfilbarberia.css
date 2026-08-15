@@ -32,7 +32,7 @@
   overflow-x: hidden; /* Evita cualquier scroll horizontal accidental */
 }
 
-.barber-cards-row-grid-three {
+.perfil-barber-cards-row-grid-three {
   display: grid;
   /* auto-fit adapta las columnas al tamaño de la pantalla automáticamente */
   grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
@@ -50,7 +50,7 @@
 /* ==========================================================================
    ── TARJETAS (NEGRAS Y BLANCAS) ──
    ========================================================================== */
-.card-profile-black {
+.perfil-card-profile-black {
   background: linear-gradient(135deg, #1f2937 0%, var(--black) 100%);
   border-radius: 1.25rem;
   padding: 1.75rem 1.25rem;
@@ -60,7 +60,7 @@
   border: 1px solid var(--color-gray-dark);
 }
 
-.card-white-container {
+.perfil-card-white-container {
   background-color: var(--white);
   border-radius: 1rem;
   padding: 1.25rem;
@@ -68,7 +68,7 @@
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
 }
 
-.hidden-file-input { display: none !important; opacity: 0 !important; }
+.perfil-hidden-file-input { display: none !important; opacity: 0 !important; }
 
 /* ==========================================================================
    ── ELEMENTOS DE LA TARJETA DE PERFIL (Avatar, Nombre, Acciones) ──
@@ -89,21 +89,21 @@
   box-shadow: 0 4px 12px rgba(233, 196, 106, 0.2); 
 }
 
-.avatar-img-preview { width: 100%; height: 100%; object-fit: cover; }
+.perfil-avatar-img-preview { width: 100%; height: 100%; object-fit: cover; }
 .avatar-hover-overlay { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; }
 .interactive-avatar:hover .avatar-hover-overlay { opacity: 1; }
-.avatar-placeholder-icon { color: var(--bh-gold); width: 2.5rem; height: 2.5rem; }
+.perfil-avatar-placeholder-icon { color: var(--bh-gold); width: 2.5rem; height: 2.5rem; }
 
-.editable-name-container { margin-bottom: 0.35rem; }
-.profile-title-name-input { 
+.perfil-editable-name-container { margin-bottom: 0.35rem; }
+.perfil-profile-title-name-input { 
   background: transparent; border: none; color: var(--white); font-size: 1.05rem; 
   font-weight: 700; text-align: center; width: 100%; outline: none; 
   border-bottom: 1px dashed rgba(255,255,255,0.2); padding-bottom: 2px;
 }
-.profile-title-name-input:focus { border-bottom-color: var(--bh-gold); }
+.perfil-profile-title-name-input:focus { border-bottom-color: var(--bh-gold); }
 
 /* Ajustado a un gris más visible sobre negro */
-.profile-subtitle-geo { font-size: 0.8rem; color: #9ca3af; display: flex; align-items: center; justify-content: center; gap: 0.35rem; margin-bottom: 0; }
+.perfil-profile-subtitle-geo { font-size: 0.8rem; color: #9ca3af; display: flex; align-items: center; justify-content: center; gap: 0.35rem; margin-bottom: 0; }
 .inline-geo-icon { width: 0.9rem; height: 0.9rem; color: var(--bh-gold); }
 
 .profile-quick-actions { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.12); gap: 0.5rem; }
@@ -133,10 +133,10 @@
 /* ==========================================================================
    ── PESTAÑAS, ACERCA DE Y HABILIDADES ──
    ========================================================================== */
-.custom-navigation-tabs { display: flex; background-color: var(--color-gray-light); padding: 0.2rem; border-radius: 0.5rem; gap: 0.25rem; margin-bottom: 0.75rem; }
-.nav-tab-item { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.25rem; font-size: 11px; padding: 0.4rem 0; border: none; background: none; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
-.nav-tab-item.active { background-color: var(--black); color: var(--bh-gold); border-radius: 0.35rem; font-weight: 700; }
-.description-paragraph-text { font-size: 11px; color: var(--text-muted); margin-bottom: 0.75rem; }
+.perfil-custom-navigation-tabs { display: flex; background-color: var(--color-gray-light); padding: 0.2rem; border-radius: 0.5rem; gap: 0.25rem; margin-bottom: 0.75rem; }
+.perfil-nav-tab-item { flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.25rem; font-size: 11px; padding: 0.4rem 0; border: none; background: none; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
+.perfil-nav-tab-item.active { background-color: var(--black); color: var(--bh-gold); border-radius: 0.35rem; font-weight: 700; }
+.perfil-description-paragraph-text { font-size: 11px; color: var(--text-muted); margin-bottom: 0.75rem; }
 .read-more-gold { color: var(--bh-gold); font-weight: 700; cursor: pointer; }
 
 .sub-section-title { font-size: 11px; font-weight: 700; color: var(--black); }
@@ -147,19 +147,19 @@
 .hours-val { font-weight: 700; color: var(--black); }
 .inline-hours-editor-input { border: 1px solid var(--bh-gold); border-radius: 0.25rem; font-size: 11px; padding: 0.1rem 0.3rem; width: 120px; outline: none; }
 
-.skills-image-display-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 10px; }
-.skill-photo-card { border: 1px solid var(--color-border); border-radius: 0.75rem; overflow: hidden; background: var(--white); }
-.skill-image-wrapper { height: 5rem; position: relative; }
+.perfil-skills-image-display-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 10px; }
+.perfil-skill-photo-card { border: 1px solid var(--color-border); border-radius: 0.75rem; overflow: hidden; background: var(--white); }
+.perfil-skill-image-wrapper { height: 5rem; position: relative; }
 .skill-floating-price { position: absolute; top: 0.3rem; right: 0.3rem; background-color: var(--bh-gold); color: var(--black); font-size: 9px; font-weight: 700; padding: 0.15rem 0.4rem; border-radius: 0.25rem; }
-.skill-card-footer-info { padding: 0.4rem; text-align: center; }
-.skill-label-name { font-size: 10px; font-weight: 700; margin: 0.1rem 0; color: var(--black); }
-.clean-upload-trigger-btn { width: 100%; background-color: var(--color-gray-light); color: var(--color-gray-dark); border: 1px dashed var(--color-border); padding: 0.35rem 0; border-radius: 0.35rem; font-size: 9px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem; transition: background 0.2s; }
-.clean-upload-trigger-btn:hover { background-color: var(--color-border); }
+.perfil-skill-card-footer-info { padding: 0.4rem; text-align: center; }
+.perfil-skill-label-name { font-size: 10px; font-weight: 700; margin: 0.1rem 0; color: var(--black); }
+.perfil-clean-upload-trigger-btn { width: 100%; background-color: var(--color-gray-light); color: var(--color-gray-dark); border: 1px dashed var(--color-border); padding: 0.35rem 0; border-radius: 0.35rem; font-size: 9px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem; transition: background 0.2s; }
+.perfil-clean-upload-trigger-btn:hover { background-color: var(--color-border); }
 
 /* ==========================================================================
    ── SERVICIOS Y BOTÓN GUARDAR ──
    ========================================================================== */
-.sub-section-title-large { font-size: 13px; font-weight: 800; color: var(--black); margin-bottom: 0.85rem; }
+.perfil-sub-section-title-large { font-size: 13px; font-weight: 800; color: var(--black); margin-bottom: 0.85rem; }
 
 /* Tarjeta punteada de añadir servicio con texto en negro forzado */
 .add-service-inline-card { 
@@ -225,22 +225,22 @@
 .calendar-subtab-item { flex: 1; background: none; border: none; padding: 0.5rem 0; font-size: 11px; font-weight: 600; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.35rem; border-bottom: 2px solid transparent; transition: all 0.2s; }
 .calendar-subtab-item.active { color: var(--black); border-bottom-color: var(--bh-gold); font-weight: 700; }
 
-.calendar-day-modifier-box { background-color: var(--color-gray-light); border: 1px solid var(--color-border); border-radius: 0.75rem; padding: 0.75rem; margin-bottom: 0.75rem; }
-.modifier-selected-day-title { font-size: 10px; color: var(--color-gray-dark); margin: 0 0 0.5rem 0; }
-.modifier-inputs-row { display: flex; align-items: center; gap: 0.4rem; font-size: 11px; }
-.modifier-input { width: 75px; border: 1px solid var(--color-border); border-radius: 0.35rem; font-size: 11px; padding: 0.35rem; text-align: center; background: var(--white); outline: none; }
-.modifier-input:focus { border-color: var(--bh-gold); }
-.modifier-input.flex-1 { width: auto; flex: 1; text-align: left; }
-.modifier-save-btn { background-color: var(--black); color: var(--bh-gold); border: none; border-radius: 0.35rem; padding: 0.4rem 0.6rem; cursor: pointer; }
+.perfil-calendar-day-modifier-box { background-color: var(--color-gray-light); border: 1px solid var(--color-border); border-radius: 0.75rem; padding: 0.75rem; margin-bottom: 0.75rem; }
+.perfil-modifier-selected-day-title { font-size: 10px; color: var(--color-gray-dark); margin: 0 0 0.5rem 0; }
+.perfil-modifier-inputs-row { display: flex; align-items: center; gap: 0.4rem; font-size: 11px; }
+.perfil-modifier-input { width: 75px; border: 1px solid var(--color-border); border-radius: 0.35rem; font-size: 11px; padding: 0.35rem; text-align: center; background: var(--white); outline: none; }
+.perfil-modifier-input:focus { border-color: var(--bh-gold); }
+.perfil-modifier-input.flex-1 { width: auto; flex: 1; text-align: left; }
+.perfil-modifier-save-btn { background-color: var(--black); color: var(--bh-gold); border: none; border-radius: 0.35rem; padding: 0.4rem 0.6rem; cursor: pointer; }
 
 .current-day-settings-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.6rem; }
-.setting-pill { font-size: 10px; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: 50px; display: flex; align-items: center; gap: 4px; }
-.setting-pill.green-pill { background-color: #dcfce7; color: #166534; }
-.setting-pill.red-pill { background-color: #ffe4e6; color: #991b1b; }
+.perfil-setting-pill { font-size: 10px; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: 50px; display: flex; align-items: center; gap: 4px; }
+.perfil-setting-pill.green-pill { background-color: #dcfce7; color: #166534; }
+.perfil-setting-pill.red-pill { background-color: #ffe4e6; color: #991b1b; }
 
-.calendar-month-selector { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; background-color: var(--black); padding: 0.4rem 0.5rem; border-radius: 0.5rem; }
-.calendar-month-title { font-size: 11px; font-weight: 800; color: var(--bh-gold); }
-.calendar-arrow-btn { background: none; border: none; color: var(--white); cursor: pointer; }
+.perfil-calendar-month-selector { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; background-color: var(--black); padding: 0.4rem 0.5rem; border-radius: 0.5rem; }
+.perfil-calendar-month-title { font-size: 11px; font-weight: 800; color: var(--bh-gold); }
+.perfil-calendar-arrow-btn { background: none; border: none; color: var(--white); cursor: pointer; }
 
 .calendar-weekdays-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 10px; font-weight: 700; color: var(--text-muted); margin-bottom: 0.4rem; }
 .calendar-days-mesh { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../lib/supabase.js";
 import "../styles/notificaciones.css";
 
@@ -49,13 +50,14 @@ function formatearFecha(fechaISO) {
 }
 
 export default function Notificaciones() {
+  const navigate = useNavigate();
   const [notificaciones, setNotificaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
 
   async function obtenerNotificaciones() {
     const { data } = await supabase
       .from("notifications")
-      .select("id, type, title, body, read_at, created_at")
+      .select("id, type, title, body, action_url, read_at, created_at")
       .order("created_at", { ascending: false });
     return data ?? [];
   }
@@ -72,9 +74,10 @@ export default function Notificaciones() {
     return () => { cancelado = true; };
   }, []);
 
-  const handleNotificationClick = async (id) => {
-    setNotificaciones((prev) => prev.map((n) => (n.id === id ? { ...n, read_at: n.read_at ?? new Date().toISOString() } : n)));
-    await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", id).is("read_at", null);
+  const handleNotificationClick = async (alerta) => {
+    setNotificaciones((prev) => prev.map((n) => (n.id === alerta.id ? { ...n, read_at: n.read_at ?? new Date().toISOString() } : n)));
+    await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", alerta.id).is("read_at", null);
+    if (alerta.action_url) navigate(alerta.action_url);
   };
 
   const handleMarcarTodasLeidas = async () => {
@@ -120,8 +123,8 @@ export default function Notificaciones() {
                   role="button"
                   tabIndex={0}
                   className={`tarjeta-notificacion ${!alerta.read_at ? "no-leida" : ""}`}
-                  onClick={() => handleNotificationClick(alerta.id)}
-                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleNotificationClick(alerta.id)}
+                  onClick={() => handleNotificationClick(alerta)}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && handleNotificationClick(alerta)}
                   aria-label={`Notificación: ${alerta.title}`}
                 >
                   <div className={`icono-contenedor ${alerta.type}`}>

@@ -49,7 +49,6 @@ import OwnerSeguridad from "./modules/cliente/pages/owner/owner-seguridad";
 import OwnerControlNegocio from "./modules/cliente/pages/owner/owner-control-negocio";
 import OwnerUsuarios from "./modules/cliente/pages/owner/owner-usuarios";
 import OwnerFidelidad from "./modules/cliente/pages/owner/owner-fidelidad";
-import OwnerRegistrarBarberia from "./modules/cliente/pages/owner/owner-registrar-barberia";
 import SuperAdminPanel from "./modules/cliente/pages/admin/super-admin-panel";
 
 
@@ -227,10 +226,6 @@ element={
 }
 />
 
-<Route
-path="/registrar-barberia"
-element={<OwnerRegistrarBarberia />}
-/>
 
 <Route
 path="/admin"
@@ -277,7 +272,7 @@ element={
 <Route
 path="/barbero/perfil"
 element={
-<BarberoLayout titulo="Perfil Barbería">
+<BarberoLayout titulo="Perfil Barbero">
 <PerfilBarberiaBarbero />
 </BarberoLayout>
 }
