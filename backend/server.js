@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import cron from 'node-cron';
 import { limiterGeneral } from './middleware/rateLimit.js';
 import { enviarRecordatoriosDeCupones } from './utils/cupones.js';
+import { enviarRecordatoriosDeCitas, enviarResumenDiario } from './controllers/citasController.js';
 import pagosRoutes from './routes/pagos.js';
 import mercadoPagoRoutes from './routes/mercadoPago.js';
 import citasRoutes from './routes/citas.js';
@@ -74,4 +75,15 @@ app.listen(PORT, () => {
 // Recordatorio de cupones por vencer: una vez al día, a las 9am hora del servidor.
 cron.schedule('0 9 * * *', () => {
   enviarRecordatoriosDeCupones().catch((err) => console.error('Error en el job de recordatorios de cupones:', err));
+});
+
+// Recordatorio de citas confirmadas para "mañana": una vez al día, a las 9am.
+cron.schedule('0 9 * * *', () => {
+  enviarRecordatoriosDeCitas().catch((err) => console.error('Error en el job de recordatorios de citas:', err));
+});
+
+// Resumen diario para el barbero ("Resumen diario" en Ajustes): una vez al día, a las
+// 7am, antes de que empiece la jornada.
+cron.schedule('0 7 * * *', () => {
+  enviarResumenDiario().catch((err) => console.error('Error en el job de resumen diario:', err));
 });

@@ -9,7 +9,9 @@ const BLOCKING_STATUSES = ['pending_confirmation', 'confirmed', 'in_progress'];
 // Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
 // Duplica la constante de mercadoPagoController.js — el flujo manual no depende del
 // flujo automático de Mercado Pago, que se deja intacto pero sin usarse.
-const ANTICIPO_FIJO_MXN = 100;
+const ANTICIPO_FIJO_MXN = 75;
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const timeToMinutes = (time) => {
     const [h, m] = time.split(':').map(Number);
@@ -41,6 +43,43 @@ async function notificar(filas) {
     if (!filas.length) return;
     const { error } = await supabaseAdmin.from('notifications').insert(filas);
     if (error) console.error('No se pudieron crear notificaciones:', error.message);
+}
+
+// Respeta los switches de Notificaciones del cliente (ajustes.jsx). Cada perfil tiene
+// su fila garantizada por un trigger al crearse (ver
+// DB/add_client_notification_preferences.sql), pero si por algo faltara, se asume que
+// sí quiere la notificación (no perderla por un error de datos).
+async function clienteQuierePreferencia(clientId, campo) {
+    const { data, error } = await supabaseAdmin
+        .from('client_notification_preferences')
+        .select(campo)
+        .eq('profile_id', clientId)
+        .maybeSingle();
+    if (error) {
+        console.error('No se pudo consultar la preferencia de notificación:', error.message);
+        return true;
+    }
+    return data ? data[campo] !== false : true;
+}
+
+// Igual que clienteQuierePreferencia, pero para los switches de Notificaciones del
+// barbero (ajustes-barbero.jsx). Solo las memberships con role='barber' tienen fila en
+// barber_notification_preferences (ver provision_barber_settings en el esquema); owner/admin
+// no tienen switch para esto, así que si no hay fila se asume que sí quieren el aviso.
+async function filtrarStaffPorPreferencia(barberiaId, profileIds, campo) {
+    if (!profileIds.length) return [];
+    const { data, error } = await supabaseAdmin
+        .from('barberia_memberships')
+        .select('profile_id, barber_notification_preferences(new_appointment_alerts, cancellation_alerts, review_alerts, daily_summary_alerts)')
+        .eq('barberia_id', barberiaId)
+        .in('profile_id', profileIds);
+    if (error) {
+        console.error('No se pudo consultar las preferencias de notificación del staff:', error.message);
+        return profileIds;
+    }
+    return (data ?? [])
+        .filter((m) => m.barber_notification_preferences?.[campo] !== false)
+        .map((m) => m.profile_id);
 }
 
 // Confirma que el usuario autenticado es owner/admin/barbero activo de la barbería,
@@ -79,6 +118,13 @@ export const obtenerDisponibilidad = async (req, res) => {
     const { barberiaId, barberMembershipId, fecha, duracionMinutos } = req.query;
     if (!barberiaId || !fecha) {
         return res.status(400).json({ error: 'Faltan barberiaId o fecha.' });
+    }
+    // barberMembershipId se interpola directo en un filtro .or() de PostgREST más abajo
+    // (endpoint público, sin sesión) — sin este chequeo, un valor con comas/paréntesis
+    // podría inyectar condiciones extra al filtro (mismo hueco que ya se cerró en
+    // utils/cupones.js con exigirUuid).
+    if (barberMembershipId && !UUID_RE.test(barberMembershipId)) {
+        return res.status(400).json({ error: 'barberMembershipId inválido.' });
     }
 
     const duracion = Number(duracionMinutos) > 0 ? Number(duracionMinutos) : SLOT_MINUTES;
@@ -212,10 +258,11 @@ export const crearCita = async (req, res) => {
             return res.status(403).json({ error: 'Esta barbería está temporalmente suspendida y no puede recibir citas nuevas.' });
         }
 
+        let autoAceptada = false;
         if (barberMembershipId) {
             const { data: membership, error: membershipError } = await supabaseAdmin
                 .from('barberia_memberships')
-                .select('id, role, is_active, barber_settings(accepting_appointments)')
+                .select('id, role, is_active, barber_settings(accepting_appointments, auto_accept_appointments)')
                 .eq('id', barberMembershipId)
                 .eq('barberia_id', barberiaId)
                 .maybeSingle();
@@ -226,6 +273,10 @@ export const crearCita = async (req, res) => {
             if (membership.barber_settings && !membership.barber_settings.accepting_appointments) {
                 return res.status(409).json({ error: 'Este barbero no está aceptando citas por ahora.' });
             }
+            // Switch "Confirmación automática" de Ajustes: si el barbero elegido lo tiene
+            // prendido, la solicitud se crea directo en pending_payment (como si él mismo
+            // hubiera aceptado) en vez de esperar su revisión manual.
+            autoAceptada = Boolean(membership.barber_settings?.auto_accept_appointments);
         }
 
         const uniqueServiceIds = [...new Set(serviceIds)];
@@ -304,9 +355,10 @@ export const crearCita = async (req, res) => {
                 discount_total: discountTotal,
                 total,
                 // No se pide pago todavía: primero el barbero/admin debe aceptar la
-                // solicitud. Este mismo estado también bloquea el horario para otros
-                // clientes (ver appointments_no_barber_overlap en el esquema SQL).
-                status: 'pending_confirmation',
+                // solicitud (salvo que el barbero tenga "Confirmación automática" activada,
+                // ver autoAceptada arriba). Este mismo estado también bloquea el horario
+                // para otros clientes (ver appointments_no_barber_overlap en el esquema SQL).
+                status: autoAceptada ? 'pending_payment' : 'pending_confirmation',
             })
             .select('id, confirmation_code, scheduled_at, subtotal, discount_total, total, status')
             .single();
@@ -354,16 +406,33 @@ export const crearCita = async (req, res) => {
         }
 
         const staffIds = await obtenerStaffActivo(barberiaId);
+        const staffQueQuiereAviso = await filtrarStaffPorPreferencia(barberiaId, staffIds, 'new_appointment_alerts');
         await notificar(
-            staffIds.map((profileId) => ({
+            staffQueQuiereAviso.map((profileId) => ({
                 profile_id: profileId,
                 type: 'appointment',
-                title: 'Nueva solicitud de cita',
-                body: `Tienes una nueva solicitud para el ${new Date(scheduledAt).toLocaleString('es-MX')}. Revísala para aceptarla o rechazarla.`,
+                title: autoAceptada ? 'Nueva cita confirmada automáticamente' : 'Nueva solicitud de cita',
+                body: autoAceptada
+                    ? `Se confirmó automáticamente una cita para el ${new Date(scheduledAt).toLocaleString('es-MX')}.`
+                    : `Tienes una nueva solicitud para el ${new Date(scheduledAt).toLocaleString('es-MX')}. Revísala para aceptarla o rechazarla.`,
                 action_url: `/barbero/citas`,
                 data: { appointmentId: appointment.id },
             }))
         );
+
+        if (autoAceptada) {
+            // Con "Confirmación automática" no hay revisión manual (aceptarCita nunca se
+            // llama), así que el cliente recibe aquí mismo el aviso que normalmente le
+            // llegaría cuando el barbero aprueba la solicitud.
+            await notificar([{
+                profile_id: req.user.id,
+                type: 'appointment',
+                title: '¡Tu cita fue aceptada!',
+                body: 'Tu solicitud se confirmó automáticamente. Realiza el pago del anticipo para asegurar tu horario.',
+                action_url: '/mis-citas',
+                data: { appointmentId: appointment.id },
+            }]);
+        }
 
         res.status(201).json({
             appointment: { ...appointment, currency_code: barberia.currency_code },
@@ -446,8 +515,9 @@ export const cancelarCita = async (req, res) => {
         if (updateError) throw updateError;
 
         const staffIds = await obtenerStaffActivo(appointment.barberia_id);
+        const staffQueQuiereAviso = await filtrarStaffPorPreferencia(appointment.barberia_id, staffIds, 'cancellation_alerts');
         await notificar(
-            staffIds.map((profileId) => ({
+            staffQueQuiereAviso.map((profileId) => ({
                 profile_id: profileId,
                 type: 'appointment',
                 title: 'Cita cancelada por el cliente',
@@ -863,14 +933,16 @@ export const confirmarCitaFinal = async (req, res) => {
             .eq('status', 'pending_confirmation');
         if (updateError) throw updateError;
 
-        await notificar([{
-            profile_id: appointment.client_id,
-            type: 'appointment',
-            title: '¡Tu cita quedó confirmada al 100%!',
-            body: 'La barbería confirmó tu cita. Te esperamos en tu horario reservado.',
-            action_url: '/mis-citas',
-            data: { appointmentId: appointment.id },
-        }]);
+        if (await clienteQuierePreferencia(appointment.client_id, 'appointment_confirmed_alerts')) {
+            await notificar([{
+                profile_id: appointment.client_id,
+                type: 'appointment',
+                title: '¡Tu cita quedó confirmada al 100%!',
+                body: 'La barbería confirmó tu cita. Te esperamos en tu horario reservado.',
+                action_url: '/mis-citas',
+                data: { appointmentId: appointment.id },
+            }]);
+        }
 
         await registrarAuditoria({
             barberiaId: appointment.barberia_id,
@@ -1052,6 +1124,75 @@ export const ocultarCita = async (req, res) => {
     }
 };
 
+// Igual que ocultarCita, pero del lado del cliente: quita una cita terminal de su
+// propio Historial sin borrar el registro real (la barbería conserva su contabilidad).
+export const ocultarCitaCliente = async (req, res) => {
+    try {
+        const { data: appointment, error: fetchError } = await supabaseAdmin
+            .from('appointments')
+            .select('id, client_id, status')
+            .eq('id', req.params.id)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!appointment) return res.status(404).json({ error: 'Cita no encontrada.' });
+        if (appointment.client_id !== req.user.id) {
+            return res.status(403).json({ error: 'Esta cita no te pertenece.' });
+        }
+        if (!ESTADOS_OCULTABLES.includes(appointment.status)) {
+            return res.status(409).json({ error: 'Solo se pueden ocultar citas canceladas, rechazadas, no asistidas o completadas.' });
+        }
+
+        const { error: updateError } = await supabaseAdmin
+            .from('appointments')
+            .update({ hidden_by_client_at: new Date().toISOString() })
+            .eq('id', appointment.id);
+        if (updateError) throw updateError;
+
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al ocultar la cita del historial:', error);
+        res.status(500).json({ error: 'No fue posible ocultar la cita.' });
+    }
+};
+
+// Igual que ocultarCita, pero solo para owner/admin desde Gestión de Agenda: aceptar o
+// rechazar una cita es trabajo del barbero (ver owner-agenda.jsx), así que su lista de
+// "Canceladas y rechazadas recientes" tiene su propio hidden_by_owner_at, independiente
+// de lo que el barbero oculte o no de su propia agenda.
+export const ocultarCitaOwner = async (req, res) => {
+    try {
+        const { data: appointment, error: fetchError } = await supabaseAdmin
+            .from('appointments')
+            .select('id, barberia_id, status')
+            .eq('id', req.params.id)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!appointment) return res.status(404).json({ error: 'Cita no encontrada.' });
+
+        const staffMembership = await esStaffDeLaBarberia(req.user.id, appointment.barberia_id);
+        if (!staffMembership || !['owner', 'admin'].includes(staffMembership.role)) {
+            return res.status(403).json({ error: 'Solo el dueño o un administrador puede ocultar citas de Gestión de Agenda.' });
+        }
+        if (staffMembership.barberias?.is_suspended) {
+            return res.status(403).json({ error: 'Esta barbería está temporalmente suspendida por falta de pago.' });
+        }
+        if (!ESTADOS_OCULTABLES.includes(appointment.status)) {
+            return res.status(409).json({ error: 'Solo se pueden ocultar citas canceladas, rechazadas, no asistidas o completadas.' });
+        }
+
+        const { error: updateError } = await supabaseAdmin
+            .from('appointments')
+            .update({ hidden_by_owner_at: new Date().toISOString() })
+            .eq('id', appointment.id);
+        if (updateError) throw updateError;
+
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al ocultar la cita del owner:', error);
+        res.status(500).json({ error: 'No fue posible ocultar la cita.' });
+    }
+};
+
 // El cliente no se presentó.
 export const marcarNoShow = async (req, res) => {
     try {
@@ -1101,4 +1242,113 @@ export const marcarNoShow = async (req, res) => {
 
 function round2(value) {
     return Math.round(value * 100) / 100;
+}
+
+// Corre una vez al día: le avisa al cliente de sus citas confirmadas para "mañana"
+// (siguiente día calendario) que todavía no tengan recordatorio mandado, y solo si
+// tiene activado el switch "Recordatorio de cita" en Ajustes. No existía ninguna
+// función que hiciera esto — el switch estaba conectado a nada.
+export async function enviarRecordatoriosDeCitas() {
+    const inicioManana = new Date();
+    inicioManana.setDate(inicioManana.getDate() + 1);
+    inicioManana.setHours(0, 0, 0, 0);
+    const finManana = new Date(inicioManana);
+    finManana.setHours(23, 59, 59, 999);
+
+    const { data: citas, error } = await supabaseAdmin
+        .from('appointments')
+        .select('id, client_id, scheduled_at, barberias(name), appointment_services(service_name)')
+        .eq('status', 'confirmed')
+        .is('reminder_sent_at', null)
+        .gte('scheduled_at', inicioManana.toISOString())
+        .lte('scheduled_at', finManana.toISOString());
+    if (error) {
+        console.error('No se pudieron buscar los recordatorios de citas:', error.message);
+        return;
+    }
+    if (!citas?.length) return;
+
+    for (const cita of citas) {
+        if (!(await clienteQuierePreferencia(cita.client_id, 'appointment_reminders'))) {
+            // No quiere recordatorios, pero igual se marca como "atendida" para no
+            // volver a evaluarla cada día hasta que pase la fecha.
+            await supabaseAdmin.from('appointments').update({ reminder_sent_at: new Date().toISOString() }).eq('id', cita.id);
+            continue;
+        }
+
+        const hora = new Date(cita.scheduled_at).toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit', hour12: true });
+        const { error: notifError } = await supabaseAdmin.from('notifications').insert({
+            profile_id: cita.client_id,
+            type: 'appointment',
+            title: '⏰ Tu cita es mañana',
+            body: `${cita.appointment_services?.[0]?.service_name ?? 'Tu servicio'} en ${cita.barberias?.name ?? 'la barbería'} a las ${hora}.`,
+            action_url: '/mis-citas',
+            data: { appointmentId: cita.id },
+        });
+        if (notifError) {
+            console.error('No se pudo enviar el recordatorio de cita:', notifError.message);
+            continue;
+        }
+        await supabaseAdmin.from('appointments').update({ reminder_sent_at: new Date().toISOString() }).eq('id', cita.id);
+    }
+}
+
+// Corre una vez al día, temprano: le manda a cada barbero con "Resumen diario" activado
+// (switch en Ajustes) un aviso con sus citas confirmadas de hoy. Igual que con
+// enviarRecordatoriosDeCitas, el switch no tenía ninguna función detrás.
+export async function enviarResumenDiario() {
+    const inicioHoy = new Date();
+    inicioHoy.setHours(0, 0, 0, 0);
+    const finHoy = new Date(inicioHoy);
+    finHoy.setHours(23, 59, 59, 999);
+
+    const { data: preferencias, error } = await supabaseAdmin
+        .from('barber_notification_preferences')
+        .select('membership_id')
+        .eq('daily_summary_alerts', true);
+    if (error) {
+        console.error('No se pudo buscar a quién mandarle el resumen diario:', error.message);
+        return;
+    }
+    if (!preferencias?.length) return;
+
+    const { data: memberships, error: membershipsError } = await supabaseAdmin
+        .from('barberia_memberships')
+        .select('id, profile_id')
+        .eq('is_active', true)
+        .in('id', preferencias.map((p) => p.membership_id));
+    if (membershipsError) {
+        console.error('No se pudo obtener el staff para el resumen diario:', membershipsError.message);
+        return;
+    }
+
+    for (const membership of memberships ?? []) {
+        const { data: citas, error: citasError } = await supabaseAdmin
+            .from('appointments')
+            .select('id, scheduled_at')
+            .eq('barber_membership_id', membership.id)
+            .eq('status', 'confirmed')
+            .gte('scheduled_at', inicioHoy.toISOString())
+            .lte('scheduled_at', finHoy.toISOString())
+            .order('scheduled_at', { ascending: true });
+        if (citasError) {
+            console.error('No se pudo obtener las citas del resumen diario:', citasError.message);
+            continue;
+        }
+
+        const cantidad = citas?.length ?? 0;
+        const body = cantidad === 0
+            ? 'No tienes citas confirmadas para hoy.'
+            : `Tienes ${cantidad} cita${cantidad === 1 ? '' : 's'} confirmada${cantidad === 1 ? '' : 's'} hoy. La primera es a las ${new Date(citas[0].scheduled_at).toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit', hour12: true })}.`;
+
+        const { error: notifError } = await supabaseAdmin.from('notifications').insert({
+            profile_id: membership.profile_id,
+            type: 'appointment',
+            title: '🗓️ Tu agenda de hoy',
+            body,
+            action_url: '/barbero/citas',
+            data: { cantidad },
+        });
+        if (notifError) console.error('No se pudo enviar el resumen diario:', notifError.message);
+    }
 }

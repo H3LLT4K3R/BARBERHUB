@@ -54,7 +54,7 @@ export const listarResenas = async (req, res) => {
     try {
         const { data: resenas, error } = await supabaseAdmin
             .from('reviews')
-            .select('id, rating, comment, owner_response, is_published, is_featured, created_at, barberia_id, barberias(name), profiles!client_id(full_name)')
+            .select('id, rating, barber_rating, comment, barber_comment, owner_response, is_published, is_featured, created_at, barberia_id, barberias(name), profiles!client_id(full_name), barberia_memberships(display_name)')
             .order('rating', { ascending: true })
             .order('created_at', { ascending: false });
         if (error) throw error;
@@ -149,11 +149,24 @@ export const crearBarberiaConDuenio = async (req, res) => {
         nombreDuenio, emailDuenio, passwordDuenio,
     } = req.body;
 
-    if (!nombreBarberia?.trim() || !direccion?.trim() || !ciudad || !estado || !zona) {
-        return res.status(400).json({ error: 'Faltan datos de la barbería (nombre, dirección, ciudad, estado, zona).' });
-    }
-    if (!nombreDuenio?.trim() || !emailDuenio?.trim() || !passwordDuenio) {
-        return res.status(400).json({ error: 'Faltan datos del dueño (nombre, correo, contraseña).' });
+    const camposRequeridos = [
+        [nombreBarberia, 'Nombre de la barbería'],
+        [telefono, 'Teléfono'],
+        [descripcion, 'Descripción'],
+        [direccion, 'Dirección'],
+        [estado, 'Estado'],
+        [ciudad, 'Ciudad'],
+        [zona, 'Zona'],
+        [nombreDuenio, 'Nombre del dueño'],
+        [emailDuenio, 'Correo del dueño'],
+        [passwordDuenio, 'Contraseña del dueño'],
+    ];
+    const camposFaltantes = camposRequeridos
+        .filter(([valor]) => !valor?.trim())
+        .map(([, etiqueta]) => etiqueta);
+
+    if (camposFaltantes.length > 0) {
+        return res.status(400).json({ error: `Completa estos campos: ${camposFaltantes.join(', ')}.` });
     }
     if (passwordDuenio.length < 8) {
         return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres.' });
@@ -233,5 +246,104 @@ export const crearBarberiaConDuenio = async (req, res) => {
         if (barberiaCreada) await supabaseAdmin.from('barberias').delete().eq('id', barberiaCreada.id);
         if (nuevoUsuario) await supabaseAdmin.auth.admin.deleteUser(nuevoUsuario.id);
         res.status(500).json({ error: error.message || 'No fue posible crear la barbería.' });
+    }
+};
+
+// Los 32 estados son fijos (no se dan de alta desde aquí, solo ciudades/zonas dentro
+// de ellos); misma lista que ESTADOS en frontend/src/modules/cliente/data/ubicaciones.js.
+const ESTADOS_VALIDOS = [
+    'Aguascalientes', 'Baja California', 'Baja California Sur', 'Campeche', 'Chiapas',
+    'Chihuahua', 'Ciudad de México', 'Coahuila', 'Colima', 'Durango', 'Estado de México',
+    'Guanajuato', 'Guerrero', 'Hidalgo', 'Jalisco', 'Michoacán', 'Morelos', 'Nayarit',
+    'Nuevo León', 'Oaxaca', 'Puebla', 'Querétaro', 'Quintana Roo', 'San Luis Potosí',
+    'Sinaloa', 'Sonora', 'Tabasco', 'Tamaulipas', 'Tlaxcala', 'Veracruz', 'Yucatán', 'Zacatecas',
+];
+
+// Ciudades y zonas para Explorar y el alta de barberías: antes vivían fijas en
+// ubicaciones.js, ahora se administran aquí para que el super admin las amplíe sin
+// necesitar un despliegue de código. La lectura la hace el frontend directo contra
+// Supabase (ciudades_read/zonas_read son públicas); solo la escritura pasa por aquí.
+// Busca lat/lng de "Ciudad, Estado, México" en Nominatim (geocodificador gratuito de
+// OpenStreetMap, mismo proveedor del mapa de Explorar) para que el super admin no
+// tenga que buscar coordenadas a mano al dar de alta una ciudad. Nominatim exige un
+// User-Agent identificable y máximo 1 solicitud por segundo (aquí solo se llama una
+// vez por ciudad nueva, muy por debajo de ese límite). Si falla o no encuentra nada,
+// la ciudad se crea igual sin coordenadas — el mapa simplemente no se moverá a ella
+// hasta que alguien las corrija.
+async function geocodificarCiudad(estado, ciudad) {
+    try {
+        const query = encodeURIComponent(`${ciudad}, ${estado}, México`);
+        const respuesta = await fetch(
+            `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1&countrycodes=mx`,
+            { headers: { 'User-Agent': 'BarberHub/1.0 (contacto: soporte@barberhub.app)' } }
+        );
+        if (!respuesta.ok) return null;
+        const resultados = await respuesta.json();
+        if (!resultados?.length) return null;
+        return { lat: Number(resultados[0].lat), lng: Number(resultados[0].lon) };
+    } catch (error) {
+        console.error('No se pudo geocodificar la ciudad:', error.message);
+        return null;
+    }
+}
+
+export const crearCiudad = async (req, res) => {
+    const { estado, ciudad } = req.body;
+    if (!estado || !ciudad?.trim()) {
+        return res.status(400).json({ error: 'Faltan estado o ciudad.' });
+    }
+    if (!ESTADOS_VALIDOS.includes(estado)) {
+        return res.status(400).json({ error: 'Estado inválido.' });
+    }
+
+    try {
+        const coordenadas = await geocodificarCiudad(estado, ciudad.trim());
+
+        const { data, error } = await supabaseAdmin
+            .from('ciudades')
+            .insert({ estado, ciudad: ciudad.trim(), lat: coordenadas?.lat ?? null, lng: coordenadas?.lng ?? null })
+            .select('id, estado, ciudad, lat, lng')
+            .single();
+        if (error) {
+            if (error.code === '23505') return res.status(409).json({ error: 'Esa ciudad ya existe en ese estado.' });
+            throw error;
+        }
+
+        res.status(201).json({ ciudad: data, coordenadasEncontradas: Boolean(coordenadas) });
+    } catch (error) {
+        console.error('Error al crear la ciudad:', error);
+        res.status(500).json({ error: 'No fue posible crear la ciudad.' });
+    }
+};
+
+export const crearZona = async (req, res) => {
+    const { ciudadId, zona } = req.body;
+    if (!ciudadId || !zona?.trim()) {
+        return res.status(400).json({ error: 'Faltan ciudadId o zona.' });
+    }
+
+    try {
+        const { data: ciudad, error: ciudadError } = await supabaseAdmin
+            .from('ciudades')
+            .select('id')
+            .eq('id', ciudadId)
+            .maybeSingle();
+        if (ciudadError) throw ciudadError;
+        if (!ciudad) return res.status(404).json({ error: 'Ciudad no encontrada.' });
+
+        const { data, error } = await supabaseAdmin
+            .from('zonas')
+            .insert({ ciudad_id: ciudadId, zona: zona.trim() })
+            .select('id, ciudad_id, zona')
+            .single();
+        if (error) {
+            if (error.code === '23505') return res.status(409).json({ error: 'Esa zona ya existe en esa ciudad.' });
+            throw error;
+        }
+
+        res.status(201).json({ zona: data });
+    } catch (error) {
+        console.error('Error al crear la zona:', error);
+        res.status(500).json({ error: 'No fue posible crear la zona.' });
     }
 };

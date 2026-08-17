@@ -10,6 +10,8 @@ import {
     completarCita,
     marcarNoShow,
     ocultarCita,
+    ocultarCitaCliente,
+    ocultarCitaOwner,
     subirComprobante,
     confirmarPagoManual,
     rechazarComprobante,
@@ -31,6 +33,8 @@ router.post('/:id/iniciar', requireUser, iniciarServicio); // barbero: el client
 router.post('/:id/completar', requireUser, completarCita); // barbero: servicio terminado, otorga puntos
 router.post('/:id/no-asistio', requireUser, marcarNoShow); // barbero: el cliente no llegó
 router.post('/:id/ocultar', requireUser, ocultarCita); // barbero/admin: oculta una cita terminal de su agenda (no la borra)
+router.post('/:id/ocultar-cliente', requireUser, ocultarCitaCliente); // cliente: oculta una cita terminal de su historial (no la borra)
+router.post('/:id/ocultar-owner', requireUser, ocultarCitaOwner); // owner/admin: oculta una cita terminal de Gestión de Agenda (no la borra)
 router.post('/:id/comprobante', requireUser, subirComprobante); // cliente: registra el comprobante del pago manual
 router.post('/:id/confirmar-pago', requireUser, confirmarPagoManual); // barbero/admin: revisó el comprobante, confirma el pago
 router.post('/:id/rechazar-comprobante', requireUser, rechazarComprobante); // barbero/admin: el comprobante no sirve, pide uno nuevo

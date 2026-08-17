@@ -165,6 +165,15 @@ export const desactivarMiMembresia = async (req, res) => {
             .eq('id', membership.id);
         if (updateError) throw updateError;
 
+        // Mientras esté desactivado, tampoco puede entrar como cliente (ver login.jsx) —
+        // no solo pierde el panel de barbero, pierde el acceso a la cuenta por completo
+        // hasta que el owner lo reactive desde Usuarios.
+        const { error: profileError } = await supabaseAdmin
+            .from('profiles')
+            .update({ is_active: false })
+            .eq('id', profileId);
+        if (profileError) throw profileError;
+
         const filas = (dueños ?? []).map((m) => ({
             profile_id: m.profile_id,
             type: 'system',

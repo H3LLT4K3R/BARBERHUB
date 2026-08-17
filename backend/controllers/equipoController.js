@@ -2,6 +2,8 @@ import { supabaseAdmin } from '../config/supabase.js';
 import { registrarAuditoria } from '../utils/auditoria.js';
 import { obtenerEmailsPorId } from '../utils/usuarios.js';
 
+const ESTADOS_ACTIVOS = ['pending_confirmation', 'pending_payment', 'confirmed', 'in_progress'];
+
 async function esOwner(userId, barberiaId) {
     const { data, error } = await supabaseAdmin
         .from('barberia_memberships')
@@ -163,5 +165,117 @@ export const restablecerPasswordStaff = async (req, res) => {
     } catch (error) {
         console.error('Error al restablecer la contraseña:', error);
         res.status(500).json({ error: 'No fue posible restablecer la contraseña.' });
+    }
+};
+
+// El owner activa/desactiva a un miembro de su equipo. Antes esto era un update directo
+// desde el frontend a barberia_memberships (RLS ya se lo permitía al owner), pero se
+// mueve aquí porque también hay que tocar profiles.is_active — RLS de profiles solo deja
+// a cada quien editar su propia fila (profiles_self), así que un owner nunca podría
+// hacerlo directo desde el navegador. Mientras esté desactivado, profiles.is_active=false
+// bloquea también su acceso como cliente (ver login.jsx), no solo su panel de staff.
+export const alternarActivoStaff = async (req, res) => {
+    const { membershipId } = req.params;
+    const { activar } = req.body;
+
+    if (typeof activar !== 'boolean') {
+        return res.status(400).json({ error: 'Falta activar (true/false).' });
+    }
+
+    try {
+        const { data: membership, error: fetchError } = await supabaseAdmin
+            .from('barberia_memberships')
+            .select('id, barberia_id, profile_id, is_active')
+            .eq('id', membershipId)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!membership) return res.status(404).json({ error: 'Cuenta no encontrada.' });
+
+        const esDuenio = await esOwner(req.user.id, membership.barberia_id);
+        if (!esDuenio) return res.status(403).json({ error: 'Solo el dueño puede activar/desactivar cuentas.' });
+
+        const { error: membershipError } = await supabaseAdmin
+            .from('barberia_memberships')
+            .update({ is_active: activar })
+            .eq('id', membership.id);
+        if (membershipError) throw membershipError;
+
+        const { error: profileError } = await supabaseAdmin
+            .from('profiles')
+            .update({ is_active: activar })
+            .eq('id', membership.profile_id);
+        if (profileError) throw profileError;
+
+        await registrarAuditoria({
+            barberiaId: membership.barberia_id,
+            actorId: req.user.id,
+            action: activar ? 'team.activate' : 'team.deactivate',
+            entityType: 'barberia_membership',
+            entityId: membership.id,
+            oldData: { is_active: membership.is_active },
+            newData: { is_active: activar },
+        });
+
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al activar/desactivar la cuenta:', error);
+        res.status(500).json({ error: 'No fue posible actualizar la cuenta.' });
+    }
+};
+
+// El owner elimina a un miembro de su equipo que ya no trabaja ahí: se borra por
+// completo (barberia_memberships y la cuenta de auth.users en cascada arrastra
+// profiles, notificaciones, etc.), sin dejar rastro ni reservar su correo. Sus citas
+// pasadas se conservan para la contabilidad de la barbería (appointments.barber_membership_id
+// queda en null, ver DB/add_appointments_barber_membership_set_null.sql), pero ya sin
+// ninguna cuenta ligada a ellas.
+export const eliminarCuentaStaff = async (req, res) => {
+    const { membershipId } = req.params;
+
+    try {
+        const { data: membership, error: fetchError } = await supabaseAdmin
+            .from('barberia_memberships')
+            .select('id, barberia_id, profile_id, display_name')
+            .eq('id', membershipId)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!membership) return res.status(404).json({ error: 'Cuenta no encontrada.' });
+
+        const esDuenio = await esOwner(req.user.id, membership.barberia_id);
+        if (!esDuenio) return res.status(403).json({ error: 'Solo el dueño puede eliminar cuentas.' });
+
+        const { count: citasFuturas, error: countError } = await supabaseAdmin
+            .from('appointments')
+            .select('id', { count: 'exact', head: true })
+            .eq('barber_membership_id', membership.id)
+            .in('status', ESTADOS_ACTIVOS)
+            .gte('scheduled_at', new Date().toISOString());
+        if (countError) throw countError;
+        if (citasFuturas > 0) {
+            return res.status(409).json({ error: `Tiene ${citasFuturas} cita(s) próxima(s) asignada(s). Reasígnalas o cancélalas antes de eliminarlo.` });
+        }
+
+        const { error: deleteError } = await supabaseAdmin
+            .from('barberia_memberships')
+            .delete()
+            .eq('id', membership.id);
+        if (deleteError) throw deleteError;
+
+        const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(membership.profile_id);
+        if (authError) throw authError;
+
+        await registrarAuditoria({
+            barberiaId: membership.barberia_id,
+            actorId: req.user.id,
+            action: 'team.remove',
+            entityType: 'barberia_membership',
+            entityId: membership.id,
+            oldData: { display_name: membership.display_name },
+        });
+
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al eliminar la cuenta:', error);
+        res.status(500).json({ error: 'No fue posible eliminar la cuenta.' });
     }
 };
