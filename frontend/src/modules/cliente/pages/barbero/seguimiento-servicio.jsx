@@ -8,7 +8,7 @@ import "../../styles/barbero/seguimiento-servicio.css";
 import BarberoModal from "./barbero-modal";
 
 // Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
-const ANTICIPO_FIJO_MXN = 100;
+const ANTICIPO_FIJO_MXN = 75;
 
 const PASOS = [
   { id: "reserva", label: "Reserva", icono: CalendarCheck },
@@ -58,22 +58,36 @@ export default function SeguimientoServicio() {
     const manana = new Date(hoy);
     manana.setDate(manana.getDate() + 1);
 
-    const { data: citas } = await supabase
-      .from("appointments")
-      .select(`
-        id, scheduled_at, status, total, client_note,
-        profiles!client_id(id, full_name, phone),
-        appointment_services(service_name)
-      `)
-      .eq("barberia_id", membership.barberia_id)
-      .in("status", ["confirmed", "in_progress"])
-      .gte("scheduled_at", hoy.toISOString())
-      .lt("scheduled_at", manana.toISOString())
-      .order("scheduled_at");
+    const columnas = `
+      id, scheduled_at, status, total, client_note,
+      profiles!client_id(id, full_name, phone),
+      appointment_services(service_name)
+    `;
 
-    const citaActual = (citas ?? []).find((c) => c.status === "in_progress")
-      ?? (citas ?? []).find((c) => c.status === "confirmed")
-      ?? null;
+    // Si ya está "en curso", es una cita que se está atendiendo AHORA MISMO — no
+    // importa qué scheduled_at tenga originalmente, no se le aplica el filtro de
+    // "hoy". Solo las "confirmed" (todavía sin empezar) se acotan al día de hoy,
+    // para mostrar el siguiente turno del día y no uno de dentro de semanas.
+    const [{ data: enCurso }, { data: confirmadasHoy }] = await Promise.all([
+      supabase
+        .from("appointments")
+        .select(columnas)
+        .eq("barberia_id", membership.barberia_id)
+        .eq("status", "in_progress")
+        .order("scheduled_at")
+        .limit(1),
+      supabase
+        .from("appointments")
+        .select(columnas)
+        .eq("barberia_id", membership.barberia_id)
+        .eq("status", "confirmed")
+        .gte("scheduled_at", hoy.toISOString())
+        .lt("scheduled_at", manana.toISOString())
+        .order("scheduled_at")
+        .limit(1),
+    ]);
+
+    const citaActual = enCurso?.[0] ?? confirmadasHoy?.[0] ?? null;
 
     let visitasPrevias = 0;
     // Si el cliente borró su cuenta por completo, profiles queda null (ver
@@ -185,7 +199,8 @@ export default function SeguimientoServicio() {
                 <div className={`ss-step-icon ${completado ? "completed" : ""} ${activo ? "active" : ""}`}><Icono size={19} /></div>
                 {indice < PASOS.length - 1 && <div className={`ss-step-line ${completado ? "completed" : ""}`} />}
               </div>
-              <strong className={activo ? "active" : ""}>{paso.label}</strong><span>Anticipo ${ANTICIPO_FIJO_MXN}</span>
+              <strong className={activo ? "active" : ""}>{paso.label}</strong>
+              {indice === 0 && <span>Anticipo ${ANTICIPO_FIJO_MXN}</span>}
             </div>
           );
         })}
@@ -196,9 +211,6 @@ export default function SeguimientoServicio() {
           <p className="ss-card-kicker">Servicio actual</p>
           <h3>{servicios.map((s) => s.service_name).join(" + ") || "Servicio"}</h3>
           <p><MapPin size={15} /> {barberia?.name} · {barberia?.city}</p>
-          <div className="ss-contact-actions">
-            <a href={`tel:${cita.profiles?.phone ?? ""}`}><Phone size={15} /> Llamar</a>
-          </div>
         </div>
         <div className="ss-service-controls">
           {cita.status !== "completed" && (

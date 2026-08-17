@@ -119,10 +119,26 @@
 }
 
 .profile-subtitle-geo {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 6px;
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 1px;
   font-weight: 600;
+}
+
+.profile-subtitle-geo span {
+  text-align: left;
+  max-width: 220px;
+}
+
+.profile-subtitle-geo .inline-geo-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
 
 .hidden-file-input {

@@ -313,6 +313,24 @@
   background-color: #333333;
 }
 
+.hc-boton-ocultar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--hc-texto-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  transition: background 0.2s, color 0.2s;
+}
+
+.hc-boton-ocultar:hover {
+  background-color: rgba(185, 28, 28, 0.1);
+  color: #b91c1c;
+}
+
 /* Badges de estado */
 .hc-badge-estado {
   font-size: 0.85rem;

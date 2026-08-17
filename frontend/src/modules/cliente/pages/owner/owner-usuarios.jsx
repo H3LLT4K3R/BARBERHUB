@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { UserPlus, Shield, Scissors, KeyRound, Eye, EyeOff } from "lucide-react";
+import { UserPlus, Shield, Scissors, KeyRound, Eye, EyeOff, Trash2 } from "lucide-react";
 import { supabase } from "../../../../lib/supabase.js";
 import { apiFetch } from "../../../../utils/api.js";
 import { evaluarPassword } from "../../../../utils/passwordStrength.js";
@@ -21,6 +21,7 @@ export default function OwnerUsuarios() {
   const [membershipPassword, setMembershipPassword] = useState(null);
   const [nuevaPassword, setNuevaPassword] = useState("");
   const [mostrarEditPassword, setMostrarEditPassword] = useState(false);
+  const [eliminandoId, setEliminandoId] = useState(null);
 
   const cargarEquipo = async (bid) => {
     const { miembros } = await apiFetch(`/equipo?barberiaId=${bid}`);
@@ -96,8 +97,37 @@ export default function OwnerUsuarios() {
   };
 
   const alternarActiva = async (cuenta) => {
-    await supabase.from("barberia_memberships").update({ is_active: !cuenta.is_active }).eq("id", cuenta.id);
-    await cargarEquipo(barberiaId);
+    setError("");
+    try {
+      await apiFetch(`/equipo/${cuenta.id}/activo`, {
+        method: "POST",
+        body: JSON.stringify({ activar: !cuenta.is_active }),
+      });
+      await cargarEquipo(barberiaId);
+    } catch (err) {
+      setError(err.message || "No fue posible actualizar la cuenta.");
+    }
+  };
+
+  const eliminarCuenta = async (cuenta) => {
+    const confirmacion = window.prompt(
+      `Esto elimina PERMANENTEMENTE la cuenta de "${cuenta.display_name ?? cuenta.email}": ya no podrá entrar ni como staff ni como cliente, y su correo queda libre. Sus citas pasadas se conservan para tu contabilidad, pero sin ninguna cuenta ligada a ellas. Esta acción no se puede deshacer.\n\nEscribe su nombre o correo exacto para confirmar:`
+    );
+    if (confirmacion !== (cuenta.display_name ?? cuenta.email) && confirmacion !== cuenta.email) {
+      if (confirmacion !== null) setError("El nombre no coincide. No se eliminó nada.");
+      return;
+    }
+
+    setEliminandoId(cuenta.id);
+    setError("");
+    try {
+      await apiFetch(`/equipo/${cuenta.id}`, { method: "DELETE" });
+      await cargarEquipo(barberiaId);
+    } catch (err) {
+      setError(err.message || "No fue posible eliminar la cuenta.");
+    } finally {
+      setEliminandoId(null);
+    }
   };
 
   const restablecerPassword = async () => {
@@ -255,6 +285,15 @@ export default function OwnerUsuarios() {
               <div className="account-actions-group">
                 <button className="action-icon-btn edit" onClick={() => { setMembershipPassword(cuenta); setNuevaPassword(""); setMostrarEditPassword(false); }} title="Restablecer contraseña">
                   <KeyRound size={16} />
+                </button>
+                <button
+                  className="action-icon-btn"
+                  onClick={() => eliminarCuenta(cuenta)}
+                  disabled={eliminandoId === cuenta.id}
+                  title="Eliminar del equipo"
+                  style={{ color: "#b91c1c" }}
+                >
+                  <Trash2 size={16} />
                 </button>
               </div>
             </div>

@@ -5,7 +5,7 @@ import { useActiveAccountGuard } from "../../../hooks/useActiveAccountGuard";
 import "../styles/pago-anticipo.css";
 
 // Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
-const ANTICIPO_FIJO_MXN = 100;
+const ANTICIPO_FIJO_MXN = 75;
 
 export default function PagoAnticipo() {
   useActiveAccountGuard();

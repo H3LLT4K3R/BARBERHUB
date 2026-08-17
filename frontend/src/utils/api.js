@@ -3,15 +3,6 @@ import { supabase } from "../lib/supabase.js";
 const TOKEN_KEY = "barberhub_token";
 const USER_KEY = "barberhub_user";
 
-export function getStoredUser() {
-  try {
-    const raw = localStorage.getItem(USER_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
 export function saveSession({ token, user }) {
   localStorage.setItem(TOKEN_KEY, token);
   localStorage.setItem(USER_KEY, JSON.stringify(user));

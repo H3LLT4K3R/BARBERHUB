@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarDays, Star, X } from "lucide-react";
+import { CalendarDays, Star, Trash2, X } from "lucide-react";
 import { supabase } from "../../../lib/supabase.js";
+import { apiFetch } from "../../../utils/api.js";
 import "../styles/historial-citas.css";
 
 const ESTADOS_FINALIZADOS = ["completed", "cancelled", "rejected", "no_show"];
@@ -54,6 +55,7 @@ export default function HistorialCitas() {
             reviews(id, rating, comment)
           `)
           .in("status", ESTADOS_FINALIZADOS)
+          .is("hidden_by_client_at", null)
           .order("scheduled_at", { ascending: false }),
         uid ? supabase.from("reviews").select("rating").eq("client_id", uid) : Promise.resolve({ data: [] }),
       ]);
@@ -99,10 +101,23 @@ export default function HistorialCitas() {
     }
     if (filtroPeriodo === "Todo") return true;
 
-    const dias = filtroPeriodo === "Esta semana" ? 7 : filtroPeriodo === "Este mes" ? 30 : 90;
-    const limite = new Date();
-    limite.setDate(limite.getDate() - dias);
-    return new Date(cita.scheduled_at) >= limite;
+    const fechaCita = new Date(cita.scheduled_at);
+    const ahora = new Date();
+
+    if (filtroPeriodo === "Esta semana") {
+      const limite = new Date(ahora);
+      limite.setDate(limite.getDate() - 7);
+      return fechaCita >= limite && fechaCita <= ahora;
+    }
+    if (filtroPeriodo === "Este mes") {
+      // Desde el día 1 del mes calendario actual, no "los últimos 30 días".
+      const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+      return fechaCita >= inicioMes && fechaCita <= ahora;
+    }
+    // "Últimos 3 meses"
+    const limite = new Date(ahora);
+    limite.setMonth(limite.getMonth() - 3);
+    return fechaCita >= limite && fechaCita <= ahora;
   });
 
   const manejarVolverAAgendar = () => {
@@ -119,6 +134,16 @@ export default function HistorialCitas() {
     }
   };
 
+  const ocultarDelHistorial = async (cita) => {
+    try {
+      await apiFetch(`/citas/${cita.id}/ocultar-cliente`, { method: "POST", body: JSON.stringify({}) });
+      setCitas((prev) => prev.filter((c) => c.id !== cita.id));
+      setCitaSeleccionada((prev) => (prev?.id === cita.id ? null : prev));
+    } catch (err) {
+      window.alert(err.message || "No fue posible ocultar la cita.");
+    }
+  };
+
   const manejarDejarResena = () => {
     if (!citaSeleccionada) return;
     navigate("/opinion-barberia-general", {
@@ -126,6 +151,7 @@ export default function HistorialCitas() {
         appointmentId: citaSeleccionada.id,
         barberiaId: citaSeleccionada.barberia_id,
         barberMembershipId: citaSeleccionada.barberia_memberships?.id,
+        barberoNombre: citaSeleccionada.barberia_memberships?.display_name,
         establecimiento: citaSeleccionada.barberias?.name,
       },
     });
@@ -217,6 +243,19 @@ export default function HistorialCitas() {
                       <span className={`hc-badge-estado ${ESTADO_CLASE[cita.status]}`}>
                         {ESTADO_LABEL[cita.status]}
                       </span>
+                      <button
+                        type="button"
+                        className="hc-boton-ocultar"
+                        title="Quitar del historial"
+                        aria-label="Quitar del historial"
+                        onClick={() => {
+                          if (window.confirm("¿Quitar esta cita de tu historial? Esto no afecta el registro de la barbería.")) {
+                            ocultarDelHistorial(cita);
+                          }
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </div>
                 </div>

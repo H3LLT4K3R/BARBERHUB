@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  User, MapPin, Trash2, Camera, Edit2, Check, Star, Image as ImageIcon,
+  User, MapPin, Trash2, Camera, Edit2, Check, Star, Image as ImageIcon, Scissors,
 } from "lucide-react";
 import { supabase } from "../../../../lib/supabase.js";
 import ImageLightbox from "../../components/image-lightbox";
@@ -51,6 +51,7 @@ export default function PerfilBarberiaBarbero() {
   );
   const [isEditingHours, setIsEditingHours] = useState(false);
   const [fotos, setFotos] = useState([]);
+  const [servicios, setServicios] = useState([]);
   const [stats, setStats] = useState({ rating: 0, totalOpiniones: 0 });
   const [guardando, setGuardando] = useState(false);
   const [subiendoFoto, setSubiendoFoto] = useState(false);
@@ -64,18 +65,19 @@ export default function PerfilBarberiaBarbero() {
     const userId = (await supabase.auth.getUser()).data.user?.id;
     const { data: membership } = await supabase
       .from("barberia_memberships")
-      .select("id, barberia_id, barberias(name, city)")
+      .select("id, barberia_id, barberias(name, city, address_line1, zone)")
       .eq("profile_id", userId)
       .eq("is_active", true)
       .maybeSingle();
 
     if (!membership) return null;
 
-    const [{ data: profile }, { data: disponibilidad }, { data: portafolio }, { data: reviews }] = await Promise.all([
+    const [{ data: profile }, { data: disponibilidad }, { data: portafolio }, { data: reviews }, { data: servicios }] = await Promise.all([
       supabase.from("profiles").select("full_name, avatar_path").eq("id", userId).single(),
       supabase.from("staff_availability").select("weekday, starts_at, ends_at").eq("membership_id", membership.id),
       supabase.from("barber_portfolio_images").select("id, image_path").eq("membership_id", membership.id).order("created_at", { ascending: false }),
       supabase.from("reviews").select("rating").eq("barber_membership_id", membership.id).eq("is_published", true),
+      supabase.from("services").select("id, name, price").eq("barberia_id", membership.barberia_id).eq("is_active", true).order("sort_order"),
     ]);
 
     const horariosCargados = DIAS_SEMANA.map((d) => {
@@ -93,6 +95,7 @@ export default function PerfilBarberiaBarbero() {
       profile,
       horarios: horariosCargados,
       portafolio: portafolio ?? [],
+      servicios: servicios ?? [],
       stats: {
         rating: calificaciones.length ? calificaciones.reduce((acc, r) => acc + r.rating, 0) / calificaciones.length : 0,
         totalOpiniones: calificaciones.length,
@@ -109,6 +112,7 @@ export default function PerfilBarberiaBarbero() {
     setAvatarPath(estado.profile?.avatar_path ?? null);
     setHorarios(estado.horarios);
     setFotos(estado.portafolio);
+    setServicios(estado.servicios);
     setStats(estado.stats);
     setCargando(false);
   };
@@ -235,6 +239,14 @@ export default function PerfilBarberiaBarbero() {
         if (deleteError) throw deleteError;
       }
 
+      // A partir de aquí este horario queda "personalizado": si la barbería cambia sus
+      // Horarios de atención más adelante, ya no le va a pisar este horario propio.
+      const { error: customizadoError } = await supabase
+        .from("barber_settings")
+        .update({ schedule_customized: true })
+        .eq("membership_id", membershipId);
+      if (customizadoError) throw customizadoError;
+
       setIsEditingHours(false);
       setMensaje("Cambios guardados correctamente.");
     } catch (err) {
@@ -307,7 +319,8 @@ export default function PerfilBarberiaBarbero() {
               </div>
 
               <p className="profile-subtitle-geo">
-                <MapPin className="inline-geo-icon" /> {barberia?.name} · {barberia?.city}
+                <MapPin className="inline-geo-icon" />
+                <span>{barberia?.name} · {[barberia?.address_line1, barberia?.zone, barberia?.city].filter(Boolean).join(", ")}</span>
               </p>
             </div>
 
@@ -320,7 +333,7 @@ export default function PerfilBarberiaBarbero() {
             </div>
           </div>
 
-          {/* COLUMNA 2: Horario individual + portafolio */}
+          {/* COLUMNA 2: Horario individual */}
           <div className="card-white-container layout-column" style={{ justifyContent: "space-between" }}>
             <div>
               <div className="mb-4 bg-black-50 p-3 rounded-xl border border-gray-100">
@@ -358,34 +371,54 @@ export default function PerfilBarberiaBarbero() {
                 </div>
               </div>
 
-              <h4 className="sub-section-title-large">Portafolio de trabajos</h4>
-              <div className="skills-image-display-grid">
-                {fotos.map((foto) => (
-                  <div key={foto.id} className="skill-photo-card">
-                    <div className="skill-image-wrapper">
-                      <img
-                        src={urlPublica(foto.image_path)}
-                        alt="Trabajo realizado"
-                        style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "pointer" }}
-                        onClick={() => setImagenAmpliada(urlPublica(foto.image_path))}
-                        title="Ver foto"
-                      />
+              <div className="premium-services-panel">
+                <h4 className="perfil-sub-section-title-large">Servicios de la barbería</h4>
+                <div className="services-cards-stack">
+                  {servicios.map((s) => (
+                    <div key={s.id} className="service-premium-row-card">
+                      <div className="service-inputs-group-block">
+                        <Scissors className="w-3.5 h-3.5 icon-gold" />
+                        <span className="premium-service-name-input">{s.name}</span>
+                        <span className="price-tag-prefix">$</span>
+                        <span className="premium-service-price-input">{s.price}</span>
+                      </div>
                     </div>
-                    <div className="skill-card-footer-info">
-                      <button type="button" className="delete-service-row-btn" onClick={() => eliminarFoto(foto)}><Trash2 size={14} /></button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                  {servicios.length === 0 && <p style={{ fontSize: 12, color: "#6b7280" }}>Todavía no hay servicios registrados.</p>}
+                </div>
               </div>
-              <input ref={fotoInputRef} type="file" accept="image/*" className="hidden-file-input" onChange={subirFotoPortafolio} />
-              <button type="button" className="clean-upload-trigger-btn" style={{ marginTop: 10 }} onClick={() => fotoInputRef.current?.click()} disabled={subiendoFoto}>
-                <ImageIcon size={13} /> {subiendoFoto ? "Subiendo..." : "Añadir foto de un trabajo"}
-              </button>
             </div>
 
             {mensaje && <p style={{ fontSize: 12, color: mensaje.includes("correctamente") ? "#15803d" : "#b91c1c", marginTop: 12 }}>{mensaje}</p>}
             <button className="btn-primary-gold mt-4" onClick={guardarCambios} disabled={guardando}>
               {guardando ? "Guardando..." : "Guardar Cambios"}
+            </button>
+          </div>
+
+          {/* COLUMNA 3: Portafolio de trabajos */}
+          <div className="card-white-container layout-column">
+            <h4 className="sub-section-title-large">Portafolio de trabajos</h4>
+            <div className="skills-image-display-grid">
+              {fotos.map((foto) => (
+                <div key={foto.id} className="skill-photo-card">
+                  <div className="skill-image-wrapper">
+                    <img
+                      src={urlPublica(foto.image_path)}
+                      alt="Trabajo realizado"
+                      style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "pointer" }}
+                      onClick={() => setImagenAmpliada(urlPublica(foto.image_path))}
+                      title="Ver foto"
+                    />
+                  </div>
+                  <div className="skill-card-footer-info">
+                    <button type="button" className="delete-service-row-btn" onClick={() => eliminarFoto(foto)}><Trash2 size={14} /></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <input ref={fotoInputRef} type="file" accept="image/*" className="hidden-file-input" onChange={subirFotoPortafolio} />
+            <button type="button" className="clean-upload-trigger-btn" style={{ marginTop: 10 }} onClick={() => fotoInputRef.current?.click()} disabled={subiendoFoto}>
+              <ImageIcon size={13} /> {subiendoFoto ? "Subiendo..." : "Añadir foto de un trabajo"}
             </button>
           </div>
 

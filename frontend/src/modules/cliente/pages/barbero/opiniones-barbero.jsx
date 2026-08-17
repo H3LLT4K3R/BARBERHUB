@@ -11,17 +11,18 @@ export default function OpinionesBarbero() {
   const [seleccionada, setSeleccionada] = useState(null);
   const [procesando, setProcesando] = useState(false);
   const [error, setError] = useState("");
+  const [puedeModerar, setPuedeModerar] = useState(false);
 
   async function obtenerOpiniones() {
     const uid = (await supabase.auth.getUser()).data.user?.id;
     const { data: membership } = await supabase
       .from("barberia_memberships")
-      .select("barberia_id")
+      .select("barberia_id, role")
       .eq("profile_id", uid)
       .eq("is_active", true)
       .maybeSingle();
 
-    if (!membership) return [];
+    if (!membership) return { data: [], puedeModerar: false };
 
     const { data } = await supabase
       .from("reviews")
@@ -29,21 +30,24 @@ export default function OpinionesBarbero() {
       .eq("barberia_id", membership.barberia_id)
       .order("created_at", { ascending: false });
 
-    return data ?? [];
+    return { data: data ?? [], puedeModerar: ["owner", "admin"].includes(membership.role) };
   }
 
   const cargar = async () => {
     setCargando(true);
-    setOpiniones(await obtenerOpiniones());
+    const { data, puedeModerar } = await obtenerOpiniones();
+    setOpiniones(data);
+    setPuedeModerar(puedeModerar);
     setCargando(false);
   };
 
   useEffect(() => {
     let cancelado = false;
     (async () => {
-      const data = await obtenerOpiniones();
+      const { data, puedeModerar } = await obtenerOpiniones();
       if (!cancelado) {
         setOpiniones(data);
+        setPuedeModerar(puedeModerar);
         setCargando(false);
       }
     })();
@@ -110,10 +114,12 @@ export default function OpinionesBarbero() {
                 <div className="bo-stars">{"★".repeat(seleccionada.rating)}{"☆".repeat(5 - seleccionada.rating)}</div>
                 <h3>{seleccionada.profiles?.full_name ?? "Cliente"}</h3>
                 <div className="bo-featured-actions">
-                  <button onClick={() => alternarPublicacion(seleccionada)} disabled={procesando}>
-                    {seleccionada.is_published ? <EyeOff size={14} /> : <Eye size={14} />}
-                    {seleccionada.is_published ? "Ocultar" : "Publicar"}
-                  </button>
+                  {puedeModerar && (
+                    <button className="bo-btn-ocultar" onClick={() => alternarPublicacion(seleccionada)} disabled={procesando}>
+                      {seleccionada.is_published ? <EyeOff size={14} /> : <Eye size={14} />}
+                      {seleccionada.is_published ? "Ocultar" : "Publicar"}
+                    </button>
+                  )}
                   {seleccionada.is_featured && (
                     <span style={{ fontSize: 13, color: "#92660c", fontWeight: 600 }}>✨ Destacada en landing por Barber Hub</span>
                   )}

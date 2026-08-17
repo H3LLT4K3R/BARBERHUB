@@ -52,7 +52,7 @@ export default function Login() {
 
       if (profile && profile.is_active === false) {
         await supabase.auth.signOut();
-        setError("Esta cuenta fue eliminada. Contacta a soporte si crees que se trata de un error.");
+        setError("Esta cuenta no está disponible. Contacta a soporte o al dueño de tu barbería si crees que se trata de un error.");
         return;
       }
 

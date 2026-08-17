@@ -2,6 +2,4 @@
 export {
   BARBERIA_DEMO,
   getBarberiaById,
-  generarSlots,
-  obtenerEstadoSlot,
 } from "./barberias";

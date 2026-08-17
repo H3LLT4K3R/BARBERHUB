@@ -245,6 +245,9 @@ export default function BarberiaPerfil() {
                 <span className={`bp-estado-dot ${barberia.abierto ? "abierto" : ""}`} aria-hidden />
                 {barberia.abierto ? "Abierto ahora" : "Cerrado"}
               </p>
+              {barberia.description && (
+                <p className="bp-descripcion">{barberia.description}</p>
+              )}
             </div>
           </div>
 

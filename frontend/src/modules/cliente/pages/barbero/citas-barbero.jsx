@@ -10,7 +10,7 @@ const ESTADOS_TERMINALES = ["cancelled", "rejected", "no_show"];
 const ESTADOS_OCULTABLES = ["cancelled", "rejected", "no_show", "completed"];
 const DIAS_SEMANA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 // Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
-const ANTICIPO_FIJO_MXN = 100;
+const ANTICIPO_FIJO_MXN = 75;
 
 function inicioDeSemana(offsetSemanas = 0) {
   const hoy = new Date();

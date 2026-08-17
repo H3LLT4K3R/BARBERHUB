@@ -12,7 +12,11 @@ import "../styles/mis-citas.css";
 
 const ESTADOS_ACTIVOS = ["pending_payment", "pending_confirmation", "confirmed", "in_progress"];
 // Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
-const ANTICIPO_FIJO_MXN = 100;
+const ANTICIPO_FIJO_MXN = 75;
+// TEMPORAL: deja ver el paso de "subir comprobante" aunque la barbería no tenga
+// payment_link_url configurado, para poder tomar capturas del flujo completo. Quitar
+// este flag (volver a false) para restaurar el comportamiento real.
+const MOSTRAR_SUBIR_COMPROBANTE_SIN_LINK = true;
 
 function infoEstado(cita) {
   const pagos = cita.payments ?? [];
@@ -344,17 +348,19 @@ export default function MisCitas() {
                     1. Paga el anticipo de <strong>${ANTICIPO_FIJO_MXN} MXN</strong> con el link de pago de{" "}
                     <strong>{citaPagar.barberias?.name ?? "la barbería"}</strong>:
                   </p>
-                  {citaPagar.barberias?.payment_link_url ? (
+                  {citaPagar.barberias?.payment_link_url || MOSTRAR_SUBIR_COMPROBANTE_SIN_LINK ? (
                     <>
-                      <a
-                        href={citaPagar.barberias.payment_link_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="boton-accion boton-comentario-gris"
-                        style={{ display: "inline-block", marginBottom: 16, textDecoration: "none", textAlign: "center" }}
-                      >
-                        Abrir link de pago
-                      </a>
+                      {citaPagar.barberias?.payment_link_url && (
+                        <a
+                          href={citaPagar.barberias.payment_link_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="boton-accion boton-comentario-gris"
+                          style={{ display: "inline-block", marginBottom: 16, textDecoration: "none", textAlign: "center" }}
+                        >
+                          Abrir link de pago
+                        </a>
+                      )}
                       <p>2. Ya que hayas pagado, sube tu comprobante:</p>
                       <input
                         ref={comprobanteInputRef}
