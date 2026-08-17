@@ -1,6 +1,6 @@
 import { useState, useEffect, cloneElement, isValidElement } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { CalendarDays, Map, Menu, X, LogOut, History, Heart, Bell, Settings, User, Search } from "lucide-react";
+import { CalendarDays, Map, Menu, LogOut, History, Heart, Bell, Settings, User, Search } from "lucide-react";
 import { clearSession } from "../../../utils/api";
 import { useActiveAccountGuard } from "../../../hooks/useActiveAccountGuard";
 import "../styles/sidebar-layout.css"; // Lo mantenemos por si tienes tipografías u otros estilos menores

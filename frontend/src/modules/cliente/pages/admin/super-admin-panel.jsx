@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, Building2, Eye, EyeOff, CreditCard, Ban, CheckCircle2, Trash2, Star } from "lucide-react";
+import { ShieldCheck, Building2, Eye, EyeOff, CreditCard, Ban, CheckCircle2, Trash2, Star, MapPin } from "lucide-react";
 import { supabase } from "../../../../lib/supabase.js";
 import { apiFetch, clearSession } from "../../../../utils/api.js";
 import { ESTADOS, ciudadesDe, zonasDe } from "../../data/ubicaciones.js";
 import { evaluarPassword } from "../../../../utils/passwordStrength.js";
 import PasswordStrength from "../../components/password-strength.jsx";
 import SuperAdminOpiniones from "./super-admin-opiniones.jsx";
+import SuperAdminUbicaciones from "./super-admin-ubicaciones.jsx";
 import "../../styles/owner/owner-usuarios.css";
 import "../../styles/owner/owner-seguridad.css";
 
@@ -15,6 +16,19 @@ const FORM_INICIAL = {
   estado: "", ciudad: "", zona: "",
   nombreDuenio: "", emailDuenio: "", passwordDuenio: "",
 };
+
+const CAMPOS_REQUERIDOS = [
+  { campo: "nombreBarberia", etiqueta: "Nombre de la barbería" },
+  { campo: "telefono", etiqueta: "Teléfono" },
+  { campo: "descripcion", etiqueta: "Descripción" },
+  { campo: "direccion", etiqueta: "Dirección" },
+  { campo: "estado", etiqueta: "Estado" },
+  { campo: "ciudad", etiqueta: "Ciudad" },
+  { campo: "zona", etiqueta: "Zona" },
+  { campo: "nombreDuenio", etiqueta: "Nombre del dueño" },
+  { campo: "emailDuenio", etiqueta: "Correo del dueño" },
+  { campo: "passwordDuenio", etiqueta: "Contraseña del dueño" },
+];
 
 export default function SuperAdminPanel() {
   const navigate = useNavigate();
@@ -33,6 +47,20 @@ export default function SuperAdminPanel() {
   const [linkGenerado, setLinkGenerado] = useState(null);
   const [eliminandoId, setEliminandoId] = useState(null);
   const [vista, setVista] = useState("barberias");
+  const [opcionesCiudad, setOpcionesCiudad] = useState([]);
+  const [opcionesZona, setOpcionesZona] = useState([]);
+
+  useEffect(() => {
+    let cancelado = false;
+    ciudadesDe(form.estado).then((lista) => { if (!cancelado) setOpcionesCiudad(lista); });
+    return () => { cancelado = true; };
+  }, [form.estado]);
+
+  useEffect(() => {
+    let cancelado = false;
+    zonasDe(form.estado, form.ciudad).then((lista) => { if (!cancelado) setOpcionesZona(lista); });
+    return () => { cancelado = true; };
+  }, [form.estado, form.ciudad]);
 
   const cargarBarberias = async () => {
     setCargandoLista(true);
@@ -77,12 +105,12 @@ export default function SuperAdminPanel() {
     setError("");
     setMensaje("");
 
-    if (!form.nombreBarberia.trim() || !form.direccion.trim() || !form.estado || !form.ciudad || !form.zona) {
-      setError("Completa nombre, dirección, estado, ciudad y zona de la barbería.");
-      return;
-    }
-    if (!form.nombreDuenio.trim() || !form.emailDuenio.trim() || !form.passwordDuenio) {
-      setError("Completa nombre, correo y contraseña del dueño.");
+    const camposFaltantes = CAMPOS_REQUERIDOS
+      .filter(({ campo }) => !form[campo].trim())
+      .map(({ etiqueta }) => etiqueta);
+
+    if (camposFaltantes.length > 0) {
+      setError(`Completa estos campos: ${camposFaltantes.join(", ")}.`);
       return;
     }
     const { valida } = evaluarPassword(form.passwordDuenio);
@@ -211,9 +239,13 @@ export default function SuperAdminPanel() {
         <button type="button" className={`role-toggle-btn ${vista === "opiniones" ? "is-selected" : ""}`} onClick={() => setVista("opiniones")}>
           <Star size={14} style={{ display: "inline", marginRight: 6, verticalAlign: "text-bottom" }} /> Opiniones
         </button>
+        <button type="button" className={`role-toggle-btn ${vista === "ubicaciones" ? "is-selected" : ""}`} onClick={() => setVista("ubicaciones")}>
+          <MapPin size={14} style={{ display: "inline", marginRight: 6, verticalAlign: "text-bottom" }} /> Ubicaciones
+        </button>
       </div>
 
       {vista === "opiniones" && <SuperAdminOpiniones />}
+      {vista === "ubicaciones" && <SuperAdminUbicaciones />}
 
       {vista === "barberias" && (
       <>
@@ -223,7 +255,7 @@ export default function SuperAdminPanel() {
           <h2 className="owner-usuarios-card-title">Registrar Nueva Barbería</h2>
         </div>
 
-        <form className="owner-usuarios-form" onSubmit={handleSubmit}>
+        <form className="owner-usuarios-form" onSubmit={handleSubmit} autoComplete="off">
           <div>
             <label className="owner-usuarios-label">Nombre de la barbería</label>
             <input type="text" className="owner-usuarios-input" placeholder="Ej. Barber Studio CDMX" value={form.nombreBarberia} onChange={(e) => actualizarCampo("nombreBarberia", e.target.value)} />
@@ -253,14 +285,14 @@ export default function SuperAdminPanel() {
               <label className="owner-usuarios-label">Ciudad</label>
               <select className="owner-usuarios-input" value={form.ciudad} onChange={(e) => actualizarCampo("ciudad", e.target.value)} disabled={!form.estado}>
                 <option value="">Selecciona</option>
-                {ciudadesDe(form.estado).map((ciudad) => <option key={ciudad} value={ciudad}>{ciudad}</option>)}
+                {opcionesCiudad.map((ciudad) => <option key={ciudad} value={ciudad}>{ciudad}</option>)}
               </select>
             </div>
             <div style={{ flex: 1 }}>
               <label className="owner-usuarios-label">Zona</label>
               <select className="owner-usuarios-input" value={form.zona} onChange={(e) => actualizarCampo("zona", e.target.value)} disabled={!form.ciudad}>
                 <option value="">Selecciona</option>
-                {zonasDe(form.estado, form.ciudad).map((zona) => <option key={zona} value={zona}>{zona}</option>)}
+                {opcionesZona.map((zona) => <option key={zona} value={zona}>{zona}</option>)}
               </select>
             </div>
           </div>
@@ -274,7 +306,7 @@ export default function SuperAdminPanel() {
           </div>
           <div>
             <label className="owner-usuarios-label">Correo electrónico</label>
-            <input type="email" className="owner-usuarios-input" placeholder="correo@ejemplo.com" value={form.emailDuenio} onChange={(e) => actualizarCampo("emailDuenio", e.target.value)} />
+            <input type="email" className="owner-usuarios-input" placeholder="correo@ejemplo.com" value={form.emailDuenio} onChange={(e) => actualizarCampo("emailDuenio", e.target.value)} autoComplete="off" />
           </div>
           <div>
             <label className="owner-usuarios-label">Contraseña de acceso</label>
@@ -286,6 +318,7 @@ export default function SuperAdminPanel() {
                 placeholder="Mínimo 8 caracteres"
                 value={form.passwordDuenio}
                 onChange={(e) => actualizarCampo("passwordDuenio", e.target.value)}
+                autoComplete="new-password"
               />
               <button type="button" onClick={() => setMostrarPassword(!mostrarPassword)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#9ca3af", display: "flex" }}>
                 {mostrarPassword ? <EyeOff size={20} /> : <Eye size={20} />}

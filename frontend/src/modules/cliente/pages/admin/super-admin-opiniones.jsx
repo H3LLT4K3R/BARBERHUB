@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDownUp, Sparkles, Star } from "lucide-react";
+import { ArrowDownUp, Sparkles } from "lucide-react";
 import { apiFetch } from "../../../../utils/api.js";
 
 function Estrellas({ rating }) {
@@ -15,6 +15,7 @@ export default function SuperAdminOpiniones() {
   const [resenas, setResenas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [orden, setOrden] = useState("peor-primero");
+  const [filtroEstrellas, setFiltroEstrellas] = useState("todas");
   const [procesandoId, setProcesandoId] = useState(null);
   const [error, setError] = useState("");
 
@@ -35,10 +36,11 @@ export default function SuperAdminOpiniones() {
   }, []);
 
   const resenasOrdenadas = useMemo(() => {
-    const copia = [...resenas];
+    const filtradas = filtroEstrellas === "todas" ? resenas : resenas.filter((r) => r.rating === filtroEstrellas);
+    const copia = [...filtradas];
     copia.sort((a, b) => (orden === "peor-primero" ? a.rating - b.rating : b.rating - a.rating));
     return copia;
-  }, [resenas, orden]);
+  }, [resenas, orden, filtroEstrellas]);
 
   const alternarDestacada = async (resena) => {
     setProcesandoId(resena.id);
@@ -72,6 +74,31 @@ export default function SuperAdminOpiniones() {
         Elige qué reseñas se muestran como testimonios en el landing page de Barber Hub.
       </p>
 
+      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+        <span style={{ fontSize: 13, color: "#6b7280", fontWeight: 600 }}>Filtrar por:</span>
+        <button
+          type="button"
+          className="action-icon-btn edit"
+          style={filtroEstrellas === "todas" ? { borderColor: "#D4AF37", color: "#111827" } : undefined}
+          onClick={() => setFiltroEstrellas("todas")}
+        >
+          Todas
+        </button>
+        {[5, 4, 3, 2, 1].map((num) => (
+          <button
+            key={num}
+            type="button"
+            className="action-icon-btn edit"
+            style={filtroEstrellas === num ? { borderColor: "#D4AF37", color: "#111827" } : undefined}
+            onClick={() => setFiltroEstrellas(num)}
+            aria-label={`Filtrar ${num} estrellas`}
+            title={`${num} estrellas`}
+          >
+            <Estrellas rating={num} />
+          </button>
+        ))}
+      </div>
+
       {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
 
       <div className="accounts-list-stack">
@@ -82,6 +109,11 @@ export default function SuperAdminOpiniones() {
               <div className="account-info-col">
                 <span className="account-name-text">{r.barberias?.name ?? "Barbería eliminada"}</span>
                 <span className="account-email-text">{r.profiles?.full_name ?? "Cliente"} · <Estrellas rating={r.rating} /> ({r.rating}/5)</span>
+                {r.barber_rating != null && (
+                  <span className="account-email-text">
+                    Barbero: {r.barberia_memberships?.display_name ?? "Sin nombre"} · <Estrellas rating={r.barber_rating} /> ({r.barber_rating}/5)
+                  </span>
+                )}
               </div>
               <div className="account-badges-group">
                 {!r.is_published && <span className="status-badge is-inactive"><div className="status-dot"></div> Oculta</span>}
@@ -90,6 +122,11 @@ export default function SuperAdminOpiniones() {
             </div>
 
             {r.comment && <p style={{ margin: 0, fontSize: 14, color: "#374151" }}>{r.comment}</p>}
+            {r.barber_comment && (
+              <p style={{ margin: 0, fontSize: 14, color: "#374151" }}>
+                <strong>Sobre {r.barberia_memberships?.display_name ?? "el barbero"}:</strong> {r.barber_comment}
+              </p>
+            )}
 
             <div>
               <button
@@ -105,7 +142,11 @@ export default function SuperAdminOpiniones() {
           </div>
         ))}
         {!cargando && resenasOrdenadas.length === 0 && (
-          <p style={{ textAlign: "center", color: "#6b7280", fontSize: 14, padding: 16 }}>Todavía no hay reseñas en la plataforma.</p>
+          <p style={{ textAlign: "center", color: "#6b7280", fontSize: 14, padding: 16 }}>
+            {filtroEstrellas === "todas"
+              ? "Todavía no hay reseñas en la plataforma."
+              : `No hay reseñas con ${filtroEstrellas} estrellas.`}
+          </p>
         )}
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link as LinkIcon, Send, CheckCircle, AlertCircle, CreditCard } from 'lucide-react';
+import { Link as LinkIcon, CheckCircle, AlertCircle, CreditCard } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase.js';
 import { apiFetch } from '../../../../utils/api.js';
 import '../../styles/owner/owner-control.css';
@@ -15,14 +15,14 @@ const ETIQUETA_SUSCRIPCION = {
 export default function ControlNegocioView() {
   const [barberiaId, setBarberiaId] = useState(null);
   const [linkPago, setLinkPago] = useState('');
-  const [estadoEnvio, setEstadoEnvio] = useState('idle');
+  const [guardandoLink, setGuardandoLink] = useState(false);
+  const [mensajeLink, setMensajeLink] = useState('');
   const [cargando, setCargando] = useState(true);
-  const [solicitud, setSolicitud] = useState(null);
   const [suscripcion, setSuscripcion] = useState(null);
 
-  const cargarEstadoSolicitud = async (bid) => {
-    const data = await apiFetch(`/estado-link/${bid}`);
-    setSolicitud(data);
+  const cargarLinkPago = async (bid) => {
+    const { data } = await supabase.from('barberias').select('payment_link_url').eq('id', bid).maybeSingle();
+    setLinkPago(data?.payment_link_url ?? '');
   };
 
   const cargarSuscripcion = async () => {
@@ -47,7 +47,7 @@ export default function ControlNegocioView() {
 
       setBarberiaId(membership?.barberia_id ?? null);
       if (membership?.barberia_id) {
-        await cargarEstadoSolicitud(membership.barberia_id);
+        await cargarLinkPago(membership.barberia_id);
         await cargarSuscripcion();
       }
       setCargando(false);
@@ -56,26 +56,24 @@ export default function ControlNegocioView() {
     cargar();
   }, []);
 
-  const enviarARevision = async (e) => {
+  const guardarLinkPago = async (e) => {
     e.preventDefault();
-    if (!linkPago.includes('mercadopago') && !linkPago.includes('mpago')) {
-      alert('Por favor ingresa un link válido de Mercado Pago (que contenga mercadopago o mpago.la).');
-      return;
-    }
     if (!barberiaId) return;
 
-    setEstadoEnvio('loading');
+    setGuardandoLink(true);
+    setMensajeLink('');
     try {
-      await apiFetch('/solicitar', {
-        method: 'POST',
-        body: JSON.stringify({ barberiaId, link: linkPago }),
-      });
-      setEstadoEnvio('success');
-      setLinkPago('');
-      await cargarEstadoSolicitud(barberiaId);
+      const { error } = await supabase
+        .from('barberias')
+        .update({ payment_link_url: linkPago.trim() || null })
+        .eq('id', barberiaId);
+      if (error) throw error;
+      setMensajeLink('Link guardado correctamente.');
     } catch (error) {
-      console.error('Fallo la conexión con el servidor:', error);
-      setEstadoEnvio('error');
+      console.error('No fue posible guardar el link de pago:', error);
+      setMensajeLink('No fue posible guardar el link. Intenta de nuevo.');
+    } finally {
+      setGuardandoLink(false);
     }
   };
 
@@ -153,90 +151,40 @@ export default function ControlNegocioView() {
         <div className="card-header-border">
           <h3>
             <LinkIcon className="icon-gold" size={24} />
-            Enlaces de Cobro Externos
+            Link de pago (Mercado Pago) para el anticipo
           </h3>
           <p>
-            Vincula tu link de Mercado Pago para procesar ventas. Por políticas de seguridad corporativa, nuestro equipo validará de forma remota las credenciales del enlace antes de su activación final en el sistema.
+            Crea un link de pago fijo por $75 MXN desde tu cuenta de Mercado Pago y pégalo aquí. Tus clientes lo usarán para pagar el anticipo; tú confirmas cada pago manualmente cuando suban su comprobante.
           </p>
         </div>
 
-        {solicitud?.estado === 'approved' && (
-          <div className="status-banner banner-success">
-            <CheckCircle size={20} className="banner-icon" />
-            <div className="banner-text">
-              <strong>Tu link ya está aprobado y activo.</strong>
-              <span>{solicitud.link}</span>
-            </div>
-          </div>
-        )}
-        {solicitud?.estado === 'pending_review' && (
-          <div className="status-banner">
-            <div className="banner-text">
-              <strong>Tu solicitud sigue en revisión.</strong>
-              <span>{solicitud.link}</span>
-            </div>
-          </div>
-        )}
-        {solicitud?.estado === 'rejected' && (
-          <div className="status-banner banner-error">
-            <AlertCircle size={20} className="banner-icon" />
-            <div className="banner-text">
-              <strong>Tu solicitud fue rechazada.</strong>
-              <span>Puedes enviar un nuevo link para revisión.</span>
-            </div>
-          </div>
-        )}
-        {solicitud?.estado === 'disabled' && (
-          <div className="status-banner banner-error">
-            <AlertCircle size={20} className="banner-icon" />
-            <div className="banner-text">
-              <strong>Tu link de cobro fue desactivado.</strong>
-              <span>Contacta a soporte o envía uno nuevo para revisión.</span>
-            </div>
-          </div>
-        )}
-
-        <form onSubmit={enviarARevision} className="control-form">
+        <form onSubmit={guardarLinkPago} className="control-form">
           <div className="form-row">
             <div className="input-group">
-              <label>URL de Checkout (Mercado Pago)</label>
+              <label>URL de pago (Mercado Pago)</label>
               <input
                 type="url"
-                required
                 className="form-input"
-                placeholder="Ej. https://mpago.la/xxxxxx"
+                placeholder="https://www.mercadopago.com.mx/...."
                 value={linkPago}
                 onChange={(e) => setLinkPago(e.target.value)}
-                disabled={estadoEnvio === 'loading'}
+                disabled={guardandoLink}
               />
             </div>
 
-            <button type="submit" disabled={estadoEnvio === 'loading' || !linkPago.trim()} className="btn-submit">
-              {estadoEnvio === 'loading' ? (
-                <span className="btn-content"><span className="spinner"></span>Enviando...</span>
+            <button type="submit" disabled={guardandoLink} className="btn-submit">
+              {guardandoLink ? (
+                <span className="btn-content"><span className="spinner"></span>Guardando...</span>
               ) : (
-                <span className="btn-content"><Send size={16} /> Enviar a Auditar</span>
+                <span className="btn-content">Guardar</span>
               )}
             </button>
           </div>
 
-          {estadoEnvio === 'success' && (
-            <div className="status-banner banner-success zoom-in">
-              <CheckCircle size={20} className="banner-icon" />
-              <div className="banner-text">
-                <strong>¡Solicitud de revisión generada!</strong>
-                <span>Se ha enviado una alerta automática al centro de soporte corporativo. Evaluaremos el link para asegurar que todo sea correcto y te notificaremos su aprobación.</span>
-              </div>
-            </div>
-          )}
-
-          {estadoEnvio === 'error' && (
-            <div className="status-banner banner-error zoom-in">
-              <AlertCircle size={20} className="banner-icon" />
-              <div className="banner-text">
-                <strong>Fallo de comunicación</strong>
-                <span>No fue posible registrar la alerta en la empresa central. Verifica tu conexión e intenta enviar el enlace nuevamente.</span>
-              </div>
+          {mensajeLink && (
+            <div className={`status-banner ${mensajeLink.startsWith('No fue posible') ? 'banner-error' : 'banner-success'} zoom-in`}>
+              {mensajeLink.startsWith('No fue posible') ? <AlertCircle size={20} className="banner-icon" /> : <CheckCircle size={20} className="banner-icon" />}
+              <div className="banner-text"><strong>{mensajeLink}</strong></div>
             </div>
           )}
         </form>

@@ -11,7 +11,10 @@ export default function OpinionBarberiaGeneral() {
   const { state } = useLocation();
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
+  const [barberRating, setBarberRating] = useState(5);
+  const [barberHoverRating, setBarberHoverRating] = useState(0);
   const [comentario, setComentario] = useState("");
+  const [comentarioBarbero, setComentarioBarbero] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
   const [error, setError] = useState("");
@@ -31,9 +34,12 @@ export default function OpinionBarberiaGeneral() {
     );
   }
 
+  const tieneBarbero = Boolean(state.barberMembershipId);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (rating === 0) return;
+    if (tieneBarbero && barberRating === 0) return;
 
     setEnviando(true);
     setError("");
@@ -45,7 +51,9 @@ export default function OpinionBarberiaGeneral() {
         barber_membership_id: state.barberMembershipId ?? null,
         client_id: (await supabase.auth.getUser()).data.user.id,
         rating,
+        barber_rating: tieneBarbero ? barberRating : null,
         comment: comentario.trim() || null,
+        barber_comment: tieneBarbero ? (comentarioBarbero.trim() || null) : null,
       });
       if (insertError) throw insertError;
 
@@ -75,41 +83,87 @@ export default function OpinionBarberiaGeneral() {
         <div className="opg-card">
           <form className="opg-form" onSubmit={handleSubmit}>
             <div className="opg-divider" />
-            <h2 className="opg-barberia-name">{state.establecimiento ?? "Tu barbería"}</h2>
-            <p className="opg-form-subtitle">Valora el servicio recibido</p>
 
-            <div className="opg-stars" role="radiogroup" aria-label="Calificación con estrellas">
-              {[1, 2, 3, 4, 5].map((starIndex) => {
-                const activeStar = hoverRating ? starIndex <= hoverRating : starIndex <= rating;
-                return (
-                  <button
-                    key={starIndex}
-                    type="button"
-                    className={`opg-star-btn ${activeStar ? "filled" : ""}`}
-                    onClick={() => setRating(starIndex)}
-                    onMouseEnter={() => setHoverRating(starIndex)}
-                    onMouseLeave={() => setHoverRating(0)}
-                    aria-label={`Calificar ${starIndex} de 5 estrellas`}
-                  >
-                    ★
-                  </button>
-                );
-              })}
-            </div>
+            <div className="opg-ratings-row">
+              <div className="opg-rating-block">
+                <h2 className="opg-barberia-name">{state.establecimiento ?? "Tu barbería"}</h2>
+                <p className="opg-form-subtitle">Valora el servicio recibido</p>
 
-            <div className="opg-comment-wrapper">
-              <textarea
-                className="opg-comment-textarea"
-                maxLength={maxCaracteres}
-                value={comentario}
-                onChange={(e) => setComentario(e.target.value)}
-                placeholder="Escribe tu comentario aquí... Comparte tu experiencia con el servicio, la atención o las instalaciones."
-                rows={5}
-                disabled={enviado}
-              />
-              <span className="opg-char-counter">
-                {comentario.length}/{maxCaracteres}
-              </span>
+                <div className="opg-stars" role="radiogroup" aria-label="Calificación de la barbería con estrellas">
+                  {[1, 2, 3, 4, 5].map((starIndex) => {
+                    const activeStar = hoverRating ? starIndex <= hoverRating : starIndex <= rating;
+                    return (
+                      <button
+                        key={starIndex}
+                        type="button"
+                        className={`opg-star-btn ${activeStar ? "filled" : ""}`}
+                        onClick={() => setRating(starIndex)}
+                        onMouseEnter={() => setHoverRating(starIndex)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        aria-label={`Calificar barbería ${starIndex} de 5 estrellas`}
+                      >
+                        ★
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="opg-comment-wrapper">
+                  <textarea
+                    className="opg-comment-textarea"
+                    maxLength={maxCaracteres}
+                    value={comentario}
+                    onChange={(e) => setComentario(e.target.value)}
+                    placeholder="Comparte tu experiencia con el servicio o las instalaciones..."
+                    rows={5}
+                    disabled={enviado}
+                  />
+                  <span className="opg-char-counter">
+                    {comentario.length}/{maxCaracteres}
+                  </span>
+                </div>
+              </div>
+
+              {tieneBarbero && (
+                <div className="opg-rating-block">
+                  <h2 className="opg-barberia-name">{state.barberoNombre ?? "Tu barbero"}</h2>
+                  <p className="opg-form-subtitle">Valora la atención del barbero</p>
+
+                  <div className="opg-stars" role="radiogroup" aria-label="Calificación del barbero con estrellas">
+                    {[1, 2, 3, 4, 5].map((starIndex) => {
+                      const activeStar = barberHoverRating ? starIndex <= barberHoverRating : starIndex <= barberRating;
+                      return (
+                        <button
+                          key={starIndex}
+                          type="button"
+                          className={`opg-star-btn ${activeStar ? "filled" : ""}`}
+                          onClick={() => setBarberRating(starIndex)}
+                          onMouseEnter={() => setBarberHoverRating(starIndex)}
+                          onMouseLeave={() => setBarberHoverRating(0)}
+                          aria-label={`Calificar barbero ${starIndex} de 5 estrellas`}
+                        >
+                          ★
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="opg-comment-wrapper">
+                    <textarea
+                      className="opg-comment-textarea"
+                      maxLength={maxCaracteres}
+                      value={comentarioBarbero}
+                      onChange={(e) => setComentarioBarbero(e.target.value)}
+                      placeholder={`Comparte tu experiencia con ${state.barberoNombre ?? "el barbero"}...`}
+                      rows={5}
+                      disabled={enviado}
+                    />
+                    <span className="opg-char-counter">
+                      {comentarioBarbero.length}/{maxCaracteres}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {error && <p style={{ color: "#b91c1c" }}>{error}</p>}

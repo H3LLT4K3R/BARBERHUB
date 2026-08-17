@@ -134,6 +134,14 @@
   box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.35);
 }
 
+.bp-descripcion {
+  font-size: 14px;
+  color: #d4d4d4;
+  line-height: 1.5;
+  margin-top: 10px;
+  max-width: 60ch;
+}
+
 /*botones de accion en el hero*/
 .bp-acciones-hero {
   display: flex;

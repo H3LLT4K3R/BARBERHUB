@@ -7,27 +7,58 @@ import 'leaflet/dist/leaflet.css';
 
 import { supabase } from "../../../lib/supabase.js";
 import { apiFetch } from "../../../utils/api.js";
-import { ESTADOS, ciudadesDe, zonasDe } from "../data/ubicaciones.js";
+import { ESTADOS, ciudadesDe, zonasDe, coordenadasDe } from "../data/ubicaciones.js";
 import { getOpenStreetMapUrl } from "../../../utils/openStreetMap.js";
 import "../styles/explorar.css";
 
 const CENTRO_MEXICO = [23.6345, -102.5528];
 
-const iconoBarberia = divIcon({
-  className: 'explorar-map-marker',
-  html: '<span aria-hidden="true">💈</span>',
-  iconSize: [34, 34],
-  iconAnchor: [17, 17],
-  popupAnchor: [0, -17],
-});
+function urlFotoBarberia(coverPath) {
+  if (!coverPath) return null;
+  return supabase.storage.from("perfiles").getPublicUrl(coverPath).data.publicUrl;
+}
 
-function AjustarVistaMapa({ barberias }) {
+// Ícono del pin en el mapa: si la barbería tiene foto de portada se muestra esa,
+// si no, cae al ícono genérico de la navaja/poste de barbería.
+function crearIconoBarberia(fotoUrl) {
+  const contenido = fotoUrl
+    ? `<img src="${fotoUrl}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`
+    : '<span aria-hidden="true">💈</span>';
+  return divIcon({
+    className: 'explorar-map-marker',
+    html: contenido,
+    iconSize: [34, 34],
+    iconAnchor: [17, 17],
+    popupAnchor: [0, -17],
+  });
+}
+
+const iconoBarberia = crearIconoBarberia(null);
+
+function AjustarVistaMapa({ barberias, coordenadasCiudad }) {
   const map = useMap();
 
   useEffect(() => {
     const puntos = barberias.filter((b) => b.lat != null && b.lng != null).map((b) => [b.lat, b.lng]);
-    if (puntos.length) map.fitBounds(puntos, { padding: [28, 28], maxZoom: 14 });
-  }, [barberias, map]);
+    // Cancela cualquier animación (flyTo/panTo) en curso antes de iniciar otra: si el
+    // efecto se dispara dos veces seguidas (p. ej. el filtro cambia y, poco después,
+    // llegan las coordenadas de la ciudad de forma asíncrona), llamar a flyTo de nuevo
+    // sin detener la anterior corrompe la animación interna de Leaflet y el mapa se
+    // queda congelado sin moverse nunca.
+    map.stop();
+    if (puntos.length) {
+      // Si hay barberías en el filtro actual, el mapa se ajusta a ellas (más útil
+      // que solo centrarse en la ciudad, ya que muestra a todas a la vez).
+      map.fitBounds(puntos, { padding: [28, 28], maxZoom: 14 });
+    } else if (coordenadasCiudad) {
+      // Todavía no hay barberías en esa ciudad/zona, pero sí sabemos dónde está:
+      // el mapa se mueve ahí de todos modos, para que la ciudad elegida en el
+      // filtro siempre tenga relación visual con el mapa.
+      map.flyTo([coordenadasCiudad.lat, coordenadasCiudad.lng], 13);
+    } else {
+      map.flyTo(CENTRO_MEXICO, 5);
+    }
+  }, [barberias, coordenadasCiudad, map]);
 
   return null;
 }
@@ -46,6 +77,27 @@ export default function Explorar({ searchQuery = "" }) {
   const [zona, setZona] = useState('');
   const [fecha, setFecha] = useState('');
   const [hora, setHora] = useState('');
+  const [opcionesCiudad, setOpcionesCiudad] = useState([]);
+  const [opcionesZona, setOpcionesZona] = useState([]);
+  const [coordenadasCiudad, setCoordenadasCiudad] = useState(null);
+
+  useEffect(() => {
+    let cancelado = false;
+    ciudadesDe(estado).then((lista) => { if (!cancelado) setOpcionesCiudad(lista); });
+    return () => { cancelado = true; };
+  }, [estado]);
+
+  useEffect(() => {
+    let cancelado = false;
+    zonasDe(estado, ciudad).then((lista) => { if (!cancelado) setOpcionesZona(lista); });
+    return () => { cancelado = true; };
+  }, [estado, ciudad]);
+
+  useEffect(() => {
+    let cancelado = false;
+    coordenadasDe(estado, ciudad).then((coords) => { if (!cancelado) setCoordenadasCiudad(coords); });
+    return () => { cancelado = true; };
+  }, [estado, ciudad]);
 
   useEffect(() => {
     let cancelado = false;
@@ -144,7 +196,7 @@ export default function Explorar({ searchQuery = "" }) {
                     disabled={!estado}
                   >
                     <option value="">Todas</option>
-                    {ciudadesDe(estado).map((c) => <option key={c} value={c}>{c}</option>)}
+                    {opcionesCiudad.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div className="explorar-filter-group">
@@ -156,7 +208,7 @@ export default function Explorar({ searchQuery = "" }) {
                     disabled={!ciudad}
                   >
                     <option value="">Todas</option>
-                    {zonasDe(estado, ciudad).map((z) => <option key={z} value={z}>{z}</option>)}
+                    {opcionesZona.map((z) => <option key={z} value={z}>{z}</option>)}
                   </select>
                 </div>
               </div>
@@ -181,7 +233,11 @@ export default function Explorar({ searchQuery = "" }) {
                   disabled={!fecha}
                 >
                   <option value="">Cualquier hora</option>
-                  {["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"].map((h) => (
+                  {[
+                    "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30",
+                    "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30",
+                    "17:00", "17:30", "18:00", "18:30", "19:00",
+                  ].map((h) => (
                     <option key={h} value={h}>{h}</option>
                   ))}
                 </select>
@@ -203,7 +259,13 @@ export default function Explorar({ searchQuery = "" }) {
                 <div key={b.id} className="explorar-barberia-card">
 
                   <div className="explorar-barberia-left-block">
-                    <div className="explorar-barberia-icon">💈</div>
+                    <div className="explorar-barberia-icon">
+                      {b.cover_path ? (
+                        <img src={urlFotoBarberia(b.cover_path)} alt="" />
+                      ) : (
+                        '💈'
+                      )}
+                    </div>
                     <div className="explorar-barberia-info">
                       <h3 className="explorar-barberia-name">{b.name}</h3>
                       <div className="explorar-barberia-rating">
@@ -288,9 +350,13 @@ export default function Explorar({ searchQuery = "" }) {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <AjustarVistaMapa barberias={barberiasFiltradas} />
+            <AjustarVistaMapa barberias={barberiasFiltradas} coordenadasCiudad={coordenadasCiudad} />
             {barberiasFiltradas.filter((b) => b.lat != null && b.lng != null).map((barberia) => (
-              <Marker key={barberia.id} position={[barberia.lat, barberia.lng]} icon={iconoBarberia}>
+              <Marker
+                key={barberia.id}
+                position={[barberia.lat, barberia.lng]}
+                icon={barberia.cover_path ? crearIconoBarberia(urlFotoBarberia(barberia.cover_path)) : iconoBarberia}
+              >
                 <Popup>
                   <strong>{barberia.name}</strong><br />
                   {barberia.address_line1}, {barberia.city}

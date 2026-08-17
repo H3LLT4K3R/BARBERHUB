@@ -8,7 +8,7 @@ import PageNavbar from "../components/page-navbar";
 import "../styles/datos-reserva.css";
 
 // Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
-const ANTICIPO_FIJO_MXN = 100;
+const ANTICIPO_FIJO_MXN = 75;
 
 export default function DatosReserva() {
   useActiveAccountGuard();

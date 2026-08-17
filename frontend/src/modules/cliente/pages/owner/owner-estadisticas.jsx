@@ -117,39 +117,80 @@ export default function EstadisticasView() {
     return () => { cancelado = true; };
   }, [barberiaId, periodo]);
 
+  const filaCSV = (campos) => campos.map((campo) => `"${String(campo).replace(/"/g, '""')}"`).join(",");
+
   const descargarExcelCompras = async () => {
     const anio = new Date().getFullYear();
     const fechaFiltro = `${anio}-${mesDescarga}-${diaDescarga}`;
     const inicio = `${fechaFiltro}T00:00:00`;
     const fin = `${fechaFiltro}T23:59:59`;
 
-    const { data } = await supabase
-      .from('inventory_movements')
-      .select('created_at, type, quantity, unit_cost, inventory_items!inner(name, barberia_id)')
-      .eq('inventory_items.barberia_id', barberiaId)
-      .gte('created_at', inicio)
-      .lte('created_at', fin);
+    const [{ data }, { data: articulos }] = await Promise.all([
+      supabase
+        .from('inventory_movements')
+        .select('created_at, type, quantity, unit_cost, inventory_items!inner(name, barberia_id)')
+        .eq('inventory_items.barberia_id', barberiaId)
+        .gte('created_at', inicio)
+        .lte('created_at', fin),
+      supabase
+        .from('inventory_items')
+        .select('sku, name, description, unit, stock_on_hand, reorder_level, unit_cost, is_active, suppliers(name)')
+        .eq('barberia_id', barberiaId)
+        .order('name'),
+    ]);
 
-    const encabezados = ["Fecha", "Artículo", "Tipo", "Cantidad", "Costo Unitario", "Costo Total"];
-    const filas = (data ?? []).map((m) => [
+    const filasInventario = (data ?? []).map((m) => filaCSV([
       new Date(m.created_at).toLocaleString('es-MX'),
       m.inventory_items?.name ?? '',
       m.type,
       m.quantity,
       m.unit_cost ?? '',
       m.unit_cost ? (Number(m.unit_cost) * Math.abs(m.quantity)).toFixed(2) : '',
-    ]);
+    ]));
 
-    const contenidoCSV = [
-      encabezados.join(","),
-      ...filas.map((fila) => fila.map((campo) => `"${String(campo).replace(/"/g, '""')}"`).join(",")),
-    ].join("\n");
+    const filasCatalogo = (articulos ?? []).map((a) => filaCSV([
+      a.sku ?? '',
+      a.name,
+      a.description ?? '',
+      a.unit,
+      a.stock_on_hand,
+      a.reorder_level,
+      a.unit_cost ?? '',
+      a.suppliers?.name ?? '',
+      a.is_active ? 'Sí' : 'No',
+    ]));
+
+    const etiquetaPeriodo = periodo === 'dia' ? 'Día' : periodo === 'semana' ? 'Semana' : 'Mes';
+
+    const secciones = [
+      "Movimientos de Inventario del " + new Date(fechaFiltro).toLocaleDateString('es-MX'),
+      filaCSV(["Fecha", "Artículo", "Tipo", "Cantidad", "Costo Unitario", "Costo Total"]),
+      ...filasInventario,
+      "",
+      "Catálogo de Inventario",
+      filaCSV(["SKU", "Artículo", "Descripción", "Unidad", "Stock Actual", "Nivel de Reorden", "Costo Unitario", "Proveedor", "Activo"]),
+      ...filasCatalogo,
+      "",
+      `Resumen de Ingresos (${etiquetaPeriodo})`,
+      filaCSV(["Ingresos Totales", "Clientes Atendidos", "Promedio por Cliente"]),
+      filaCSV([resumen.ingresos, resumen.clientes, resumen.promedio]),
+      "",
+      `Ingresos de la ${periodo === 'dia' ? 'jornada' : periodo}`,
+      filaCSV(["Periodo", "Ingresos"]),
+      ...graficaLinea.map((p) => filaCSV([p.label, p.val])),
+      "",
+      "Ingresos por categoría de servicio",
+      filaCSV(["Categoría", "Ingresos"]),
+      ...graficaBarras.map((b) => filaCSV([b.categoria, b.actual])),
+    ];
+
+    const contenidoCSV = secciones.join("\n");
 
     const blob = new Blob(["﻿" + contenidoCSV], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const enlace = document.createElement("a");
     enlace.href = url;
-    enlace.setAttribute("download", `Reporte_Inventario_${diaDescarga}_${mesDescarga}.csv`);
+    enlace.setAttribute("download", `Reporte_${diaDescarga}_${mesDescarga}.csv`);
     document.body.appendChild(enlace);
     enlace.click();
     document.body.removeChild(enlace);
@@ -230,8 +271,8 @@ export default function EstadisticasView() {
 
         <div className="export-section card-white" style={{ padding: '20px', borderRadius: '12px', marginTop: '20px' }}>
           <div className="export-info">
-            <h3>Exportar Reporte de Inventario</h3>
-            <p>Descarga los movimientos de inventario del día en formato Excel (CSV).</p>
+            <h3>Exportar Reporte</h3>
+            <p>Descarga los movimientos de inventario del día, el catálogo completo de artículos, y el resumen de ingresos y las gráficas de arriba, en formato Excel (CSV).</p>
           </div>
 
           <div className="export-controls">

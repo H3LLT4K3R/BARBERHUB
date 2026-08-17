@@ -165,21 +165,3 @@ export function getBarberiaById(id) {
 
 /** Compatibilidad con flujo de agenda en local */
 export const BARBERIA_DEMO = getBarberiaById("urban-cuts");
-
-export function generarSlots(barberia) {
-  const slots = [];
-  for (let h = barberia.slotInicio; h <= barberia.slotFin; h++) {
-    slots.push(`${String(h).padStart(2, "0")}:00`);
-    if (h < barberia.slotFin) {
-      slots.push(`${String(h).padStart(2, "0")}:30`);
-    }
-  }
-  return slots;
-}
-
-export function obtenerEstadoSlot(barberia, fechaKey, hora, horaSeleccionada) {
-  const ocupados = barberia.citasOcupadas[fechaKey] ?? [];
-  if (ocupados.includes(hora)) return "ocupado";
-  if (hora === horaSeleccionada) return "seleccionado";
-  return "disponible";
-}

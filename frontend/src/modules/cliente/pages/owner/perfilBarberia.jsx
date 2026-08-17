@@ -46,6 +46,20 @@ export default function PerfilBarberia() {
   const [subiendoFoto, setSubiendoFoto] = useState(false);
   const [errorFoto, setErrorFoto] = useState("");
   const fotoInputRef = useRef(null);
+  const [opcionesCiudad, setOpcionesCiudad] = useState([]);
+  const [opcionesZona, setOpcionesZona] = useState([]);
+
+  useEffect(() => {
+    let cancelado = false;
+    ciudadesDe(barberia?.state).then((lista) => { if (!cancelado) setOpcionesCiudad(lista); });
+    return () => { cancelado = true; };
+  }, [barberia?.state]);
+
+  useEffect(() => {
+    let cancelado = false;
+    zonasDe(barberia?.state, barberia?.city).then((lista) => { if (!cancelado) setOpcionesZona(lista); });
+    return () => { cancelado = true; };
+  }, [barberia?.state, barberia?.city]);
 
   useEffect(() => {
     let cancelado = false;
@@ -132,7 +146,6 @@ export default function PerfilBarberia() {
           state: barberia.state,
           city: barberia.city,
           zone: barberia.zone,
-          payment_link_url: barberia.payment_link_url || null,
         })
         .eq("id", barberia.id);
       if (updateError) throw updateError;
@@ -376,11 +389,11 @@ export default function PerfilBarberia() {
                 </select>
                 <select className="add-service-input-text" value={barberia.city ?? ""} onChange={(e) => actualizarCampoBarberia("city", e.target.value)} disabled={!barberia.state}>
                   <option value="">Ciudad</option>
-                  {ciudadesDe(barberia.state).map((ciudad) => <option key={ciudad} value={ciudad}>{ciudad}</option>)}
+                  {opcionesCiudad.map((ciudad) => <option key={ciudad} value={ciudad}>{ciudad}</option>)}
                 </select>
                 <select className="add-service-input-text" value={barberia.zone ?? ""} onChange={(e) => actualizarCampoBarberia("zone", e.target.value)} disabled={!barberia.city}>
                   <option value="">Zona</option>
-                  {zonasDe(barberia.state, barberia.city).map((zona) => <option key={zona} value={zona}>{zona}</option>)}
+                  {opcionesZona.map((zona) => <option key={zona} value={zona}>{zona}</option>)}
                 </select>
               </div>
 
@@ -418,23 +431,6 @@ export default function PerfilBarberia() {
                     onChange={(e) => actualizarCampoBarberia("phone", e.target.value)}
                     placeholder="Teléfono de contacto"
                   />
-
-                  <div style={{ marginTop: 12 }}>
-                    <label style={{ fontSize: 12, fontWeight: 700, color: "#374151", display: "block", marginBottom: 4 }}>
-                      Link de pago (Mercado Pago) para el anticipo
-                    </label>
-                    <input
-                      type="url"
-                      className="perfil-description-paragraph-text"
-                      style={{ width: "100%", border: "1px solid var(--color-border)", borderRadius: 8, padding: 8 }}
-                      value={barberia.payment_link_url ?? ""}
-                      onChange={(e) => actualizarCampoBarberia("payment_link_url", e.target.value)}
-                      placeholder="https://www.mercadopago.com.mx/...."
-                    />
-                    <p style={{ fontSize: 11, color: "#6b7280", marginTop: 4 }}>
-                      Crea un link de pago fijo por ${100} MXN desde tu cuenta de Mercado Pago y pégalo aquí. Tus clientes lo usarán para pagar el anticipo; tú confirmas cada pago manualmente cuando suban su comprobante.
-                    </p>
-                  </div>
 
                   <div className="mb-4 bg-black-50 p-3 rounded-xl border border-gray-100" style={{ marginTop: 12 }}>
                     <div className="flex justify-between items-center mb-3">

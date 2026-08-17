@@ -114,6 +114,31 @@ export default function AjustesBarbero() {
     }
   };
 
+  // "Aceptar nuevas citas" necesita un manejo aparte: la base de datos exige que
+  // accepting_appointments sea true si auto_accept_appointments está prendido. Si el
+  // barbero apaga "Aceptar nuevas citas" mientras "Confirmación automática" sigue
+  // prendida, hay que apagar también esta última en el mismo update, o el guardado
+  // falla por esa restricción.
+  const toggleAcceptingAppointments = async () => {
+    if (!membership) return;
+    const anterior = { acceptingAppointments: settings.acceptingAppointments, autoAccept: settings.autoAccept };
+    const nextAccepting = !anterior.acceptingAppointments;
+    const nextAutoAccept = nextAccepting ? anterior.autoAccept : false;
+
+    setSettings((prev) => ({ ...prev, acceptingAppointments: nextAccepting, autoAccept: nextAutoAccept }));
+    const { error } = await supabase
+      .from("barber_settings")
+      .update({ accepting_appointments: nextAccepting, auto_accept_appointments: nextAutoAccept })
+      .eq("membership_id", membership.id);
+
+    if (error) {
+      setSettings((prev) => ({ ...prev, acceptingAppointments: anterior.acceptingAppointments, autoAccept: anterior.autoAccept }));
+      setNotice("No fue posible guardar el cambio.");
+    } else if (nextAutoAccept !== anterior.autoAccept) {
+      setNotice("También se apagó la confirmación automática: requiere que estés aceptando citas.");
+    }
+  };
+
   const saveProfile = async () => {
     const nombre = profile.name.trim();
     if (!nombre) {
@@ -246,7 +271,7 @@ export default function AjustesBarbero() {
 
           <article className="ba-card">
             <div className="ba-card-title"><Clock3 size={20} /><div><h3>Agenda de trabajo</h3><p>Estas opciones se aplicarán a tus próximas citas.</p></div></div>
-            <Toggle label="Aceptar nuevas citas" description="Permite que los clientes vean horarios disponibles contigo." checked={settings.acceptingAppointments} onChange={() => updateBarberSetting("acceptingAppointments", "accepting_appointments", "barber_settings")} />
+            <Toggle label="Aceptar nuevas citas" description="Permite que los clientes vean horarios disponibles contigo." checked={settings.acceptingAppointments} onChange={toggleAcceptingAppointments} />
             <Toggle label="Confirmación automática" description="Las citas se confirmarán sin revisión manual." checked={settings.autoAccept} onChange={() => updateBarberSetting("autoAccept", "auto_accept_appointments", "barber_settings")} last />
           </article>
 
