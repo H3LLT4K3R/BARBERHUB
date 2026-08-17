@@ -685,8 +685,10 @@ select
   st_x(b.location::geometry) as lng,
   coalesce((select round(avg(r.rating)::numeric, 1) from public.reviews r where r.barberia_id = b.id and r.is_published), 0) as rating,
   (select count(*) from public.reviews r where r.barberia_id = b.id and r.is_published) as total_opiniones,
-  (select min(s.price) from public.services s where s.barberia_id = b.id and s.is_active) as precio_desde
+  (select min(s.price) from public.services s where s.barberia_id = b.id and s.is_active) as precio_desde,
+  b.zone,
+  (select m.storage_path from public.barberia_media m where m.barberia_id = b.id and m.is_cover) as cover_path
 from public.barberias b
-where b.is_published;
+where b.is_published and not b.is_suspended;
 
 grant select on public.barberias_public to anon, authenticated;

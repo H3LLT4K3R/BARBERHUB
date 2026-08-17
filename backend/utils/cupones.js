@@ -17,6 +17,22 @@ function exigirUuid(valor, etiqueta) {
     if (!UUID_RE.test(valor)) throw errorHttp(`${etiqueta} inválido.`, 400);
 }
 
+// Respeta el switch "Nuevos cupones" de ajustes.jsx. Cada perfil tiene su fila
+// garantizada por un trigger al crearse; si por algo faltara, se asume que no quiere
+// promociones (new_coupon_alerts arranca en false por default para clientes nuevos).
+async function clienteQuiereCuponAlerts(clientId) {
+    const { data, error } = await supabaseAdmin
+        .from('client_notification_preferences')
+        .select('new_coupon_alerts')
+        .eq('profile_id', clientId)
+        .maybeSingle();
+    if (error) {
+        console.error('No se pudo consultar la preferencia de notificación:', error.message);
+        return false;
+    }
+    return data ? data.new_coupon_alerts === true : false;
+}
+
 async function contarVisitasYGasto(clientId, barberiaId) {
     const { data, error } = await supabaseAdmin
         .from('appointments')
@@ -188,6 +204,7 @@ export async function otorgarCuponesElegibles(barberiaId, clientId) {
     if (!pendientes.length) return;
 
     const { visitas, gasto } = await contarVisitasYGasto(clientId, barberiaId);
+    const quiereNotificacion = await clienteQuiereCuponAlerts(clientId);
 
     const ahora = new Date();
     for (const cupon of pendientes) {
@@ -207,15 +224,17 @@ export async function otorgarCuponesElegibles(barberiaId, clientId) {
             continue;
         }
 
-        const { error: notifError } = await supabaseAdmin.from('notifications').insert({
-            profile_id: clientId,
-            type: 'promotion',
-            title: '🎉 Tienes un cupón disponible',
-            body: `${cupon.description || cupon.code}. Tienes ${cupon.redemption_window_days} días para usarlo.`,
-            action_url: '/mis-citas',
-            data: { couponId: cupon.id, couponCode: cupon.code },
-        });
-        if (notifError) console.error('No se pudo notificar el cupón:', notifError.message);
+        if (quiereNotificacion) {
+            const { error: notifError } = await supabaseAdmin.from('notifications').insert({
+                profile_id: clientId,
+                type: 'promotion',
+                title: '🎉 Tienes un cupón disponible',
+                body: `${cupon.description || cupon.code}. Tienes ${cupon.redemption_window_days} días para usarlo.`,
+                action_url: '/mis-citas',
+                data: { couponId: cupon.id, couponCode: cupon.code },
+            });
+            if (notifError) console.error('No se pudo notificar el cupón:', notifError.message);
+        }
     }
 }
 
