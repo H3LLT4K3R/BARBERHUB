@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link as LinkIcon, CheckCircle, AlertCircle, CreditCard } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase.js';
 import { apiFetch } from '../../../../utils/api.js';
 import '../../styles/owner/owner-control.css';
 
 const ETIQUETA_SUSCRIPCION = {
-  sin_suscripcion: 'Todavía no tienes una suscripción configurada.',
-  pendiente: 'Falta que autorices el cobro mensual.',
+  sin_suscripcion: 'Todavía no tienes una suscripción activa.',
+  pendiente_revision: 'Tu comprobante está en revisión.',
   activa: 'Tu suscripción está activa.',
   pausada: 'Tu suscripción está pausada.',
   cancelada: 'Tu suscripción fue cancelada.',
@@ -19,6 +19,10 @@ export default function ControlNegocioView() {
   const [mensajeLink, setMensajeLink] = useState('');
   const [cargando, setCargando] = useState(true);
   const [suscripcion, setSuscripcion] = useState(null);
+  const [subiendoComprobante, setSubiendoComprobante] = useState(false);
+  const [errorComprobante, setErrorComprobante] = useState('');
+  const [nombreArchivoComprobante, setNombreArchivoComprobante] = useState('');
+  const comprobanteInputRef = useRef(null);
 
   const cargarLinkPago = async (bid) => {
     const { data } = await supabase.from('barberias').select('payment_link_url').eq('id', bid).maybeSingle();
@@ -77,6 +81,46 @@ export default function ControlNegocioView() {
     }
   };
 
+  const subirComprobanteSuscripcion = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file || !barberiaId) return;
+    setNombreArchivoComprobante(file.name);
+
+    const tiposPermitidos = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!tiposPermitidos.includes(file.type)) {
+      setErrorComprobante('Solo se aceptan imágenes JPG, PNG, WEBP o GIF.');
+      setNombreArchivoComprobante('');
+      event.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorComprobante('La imagen no puede pesar más de 5 MB.');
+      setNombreArchivoComprobante('');
+      event.target.value = '';
+      return;
+    }
+
+    setSubiendoComprobante(true);
+    setErrorComprobante('');
+    try {
+      const path = `suscripciones/${barberiaId}/${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage.from('comprobantes').upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      await apiFetch(`/suscripciones/${barberiaId}/comprobante`, {
+        method: 'POST',
+        body: JSON.stringify({ proofPath: path }),
+      });
+
+      await cargarSuscripcion();
+    } catch (error) {
+      setErrorComprobante(error.message || 'No fue posible enviar el comprobante.');
+    } finally {
+      setSubiendoComprobante(false);
+      event.target.value = '';
+    }
+  };
+
   if (cargando) {
     return <div className="control-wrapper"><p>Cargando...</p></div>;
   }
@@ -92,7 +136,7 @@ export default function ControlNegocioView() {
         <p>Configuración general y métodos de cobro de la sucursal.</p>
       </div>
 
-      {suscripcion && suscripcion.subscription_status !== 'sin_suscripcion' && (
+      {suscripcion && (
         <div className="control-card">
           <div className="card-header-border">
             <h3>
@@ -106,7 +150,7 @@ export default function ControlNegocioView() {
             <div className="status-banner banner-success">
               <CheckCircle size={20} className="banner-icon" />
               <div className="banner-text">
-                <strong>Suscripción activa · ${suscripcion.subscription_amount} MXN/mes</strong>
+                <strong>Suscripción activa{suscripcion.subscription_amount ? ` · $${suscripcion.subscription_amount} MXN/mes` : ''}</strong>
                 {suscripcion.subscription_next_payment && (
                   <span>Próximo cobro: {new Date(suscripcion.subscription_next_payment).toLocaleDateString('es-MX')}</span>
                 )}
@@ -114,15 +158,75 @@ export default function ControlNegocioView() {
             </div>
           )}
 
-          {suscripcion.subscription_status === 'pendiente' && suscripcion.initPoint && (
+          {suscripcion.subscription_status === 'pendiente_revision' && (
             <div className="status-banner">
               <div className="banner-text">
-                <strong>Autoriza tu cobro mensual de ${suscripcion.subscription_amount} MXN.</strong>
-                <span>
-                  <a href={suscripcion.initPoint} target="_blank" rel="noreferrer">Autorizar con Mercado Pago</a>
-                </span>
+                <strong>Tu comprobante ya se envió.</strong>
+                <span>Lo estamos revisando; tu suscripción se activa en cuanto se confirme el pago.</span>
               </div>
             </div>
+          )}
+
+          {suscripcion.subscription_status === 'sin_suscripcion' && (
+            suscripcion.platformPaymentLink ? (
+              <>
+                <div className="status-banner">
+                  <div className="banner-text">
+                    <strong>Paga tu suscripción mensual con el link de Mercado Pago de la plataforma.</strong>
+                    <a
+                      href={suscripcion.platformPaymentLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn-submit"
+                      style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none", marginTop: 10 }}
+                    >
+                      Pagar con Mercado Pago
+                    </a>
+                  </div>
+                </div>
+                <div className="control-form" style={{ marginTop: 12 }}>
+                  <div className="input-group">
+                    <label>Ya que hayas pagado, sube tu comprobante</label>
+                    <input
+                      ref={comprobanteInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={subirComprobanteSuscripcion}
+                      disabled={subiendoComprobante}
+                      style={{ display: 'none' }}
+                    />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        className="btn-submit"
+                        onClick={() => comprobanteInputRef.current?.click()}
+                        disabled={subiendoComprobante}
+                      >
+                        {subiendoComprobante ? 'Subiendo...' : 'Elegir archivo'}
+                      </button>
+                      <span style={{ fontSize: 13, color: '#6b7280' }}>
+                        {nombreArchivoComprobante || 'Ninguna imagen seleccionada'}
+                      </span>
+                    </div>
+                  </div>
+                  {subiendoComprobante && <p>Enviando comprobante...</p>}
+                  {errorComprobante && (
+                    <div className="status-banner banner-error zoom-in">
+                      <AlertCircle size={20} className="banner-icon" />
+                      <div className="banner-text"><strong>{errorComprobante}</strong></div>
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="status-banner banner-error">
+                <AlertCircle size={20} className="banner-icon" />
+                <div className="banner-text">
+                  <strong>Todavía no hay un link de pago configurado.</strong>
+                  <span>Contacta a soporte para activar tu suscripción.</span>
+                </div>
+              </div>
+            )
           )}
 
           {(suscripcion.subscription_status === 'pausada' || suscripcion.subscription_status === 'cancelada') && (
@@ -154,7 +258,7 @@ export default function ControlNegocioView() {
             Link de pago (Mercado Pago) para el anticipo
           </h3>
           <p>
-            Crea un link de pago fijo por $75 MXN desde tu cuenta de Mercado Pago y pégalo aquí. Tus clientes lo usarán para pagar el anticipo; tú confirmas cada pago manualmente cuando suban su comprobante.
+            Crea un link de pago fijo por $100 MXN desde tu cuenta de Mercado Pago y pégalo aquí. Tus clientes lo usarán para pagar el anticipo; tú confirmas cada pago manualmente cuando suban su comprobante.
           </p>
         </div>
 

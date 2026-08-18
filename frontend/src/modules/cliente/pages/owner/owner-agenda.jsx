@@ -2,11 +2,12 @@ import { useEffect, useState } from "react";
 import { Receipt, Trash2 } from "lucide-react";
 import { supabase } from "../../../../lib/supabase.js";
 import { apiFetch } from "../../../../utils/api.js";
+import { horaDeCita, fechaYHora, aNaiveISOString } from "../../../../utils/fechaCita.js";
 import BarberoModal from "../barbero/barbero-modal.jsx";
 import "../../styles/owner/owner-agenda.css";
 
 // Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
-const ANTICIPO_FIJO_MXN = 75;
+const ANTICIPO_FIJO_MXN = 100;
 
 export default function OwnerAgenda() {
   const [barberiaId, setBarberiaId] = useState(null);
@@ -45,8 +46,8 @@ export default function OwnerAgenda() {
         .select("id, scheduled_at, total, profiles!client_id(full_name), barberia_memberships(display_name), appointment_services(service_name)")
         .eq("barberia_id", bid)
         .in("status", ["confirmed", "in_progress"])
-        .gte("scheduled_at", hoyInicio.toISOString())
-        .lte("scheduled_at", hoyFin.toISOString())
+        .gte("scheduled_at", aNaiveISOString(hoyInicio))
+        .lte("scheduled_at", aNaiveISOString(hoyFin))
         .order("scheduled_at"),
       supabase
         .from("appointments")
@@ -169,7 +170,7 @@ export default function OwnerAgenda() {
             <div className="card-details-box">
               <p><strong>Servicio solicitado:</strong> {cita.appointment_services?.[0]?.service_name ?? "-"}</p>
               <p><strong>Barbero solicitado:</strong> {cita.barberia_memberships?.display_name ?? "Cualquiera"}</p>
-              <p><strong>Horario:</strong> {new Date(cita.scheduled_at).toLocaleString("es-MX")}</p>
+              <p><strong>Horario:</strong> {fechaYHora(cita.scheduled_at)}</p>
             </div>
 
             <button className="btn-ready" disabled>Pendiente de respuesta del barbero</button>
@@ -186,7 +187,7 @@ export default function OwnerAgenda() {
             <div className="agendada-row" key={cita.id}>
               <div className="agendada-info">
                 <strong>{cita.profiles?.full_name ?? "Cliente"} ({cita.appointment_services?.[0]?.service_name ?? "Servicio"})</strong>
-                <p>{new Date(cita.scheduled_at).toLocaleString("es-MX")} • Asignado a: {cita.barberia_memberships?.display_name ?? "Cualquiera"}</p>
+                <p>{fechaYHora(cita.scheduled_at)} • Asignado a: {cita.barberia_memberships?.display_name ?? "Cualquiera"}</p>
               </div>
 
               <div className="agendada-finances">
@@ -211,7 +212,7 @@ export default function OwnerAgenda() {
             <div className="agendada-row" key={agendada.id}>
               <div className="agendada-info">
                 <strong>{agendada.profiles?.full_name ?? "Cliente"} ({agendada.appointment_services?.[0]?.service_name ?? "Servicio"})</strong>
-                <p>{new Date(agendada.scheduled_at).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })} • Asignado a: {agendada.barberia_memberships?.display_name ?? "Cualquiera"}</p>
+                <p>{horaDeCita(agendada.scheduled_at)} • Asignado a: {agendada.barberia_memberships?.display_name ?? "Cualquiera"}</p>
               </div>
 
               <div className="agendada-finances">
@@ -234,7 +235,7 @@ export default function OwnerAgenda() {
               <div className="agendada-info">
                 <strong>{cita.profiles?.full_name ?? "Cliente"} ({cita.appointment_services?.[0]?.service_name ?? "Servicio"})</strong>
                 <p>
-                  {new Date(cita.scheduled_at).toLocaleString("es-MX")} ·{" "}
+                  {fechaYHora(cita.scheduled_at)} ·{" "}
                   {cita.status === "cancelled" ? "Cancelada por el cliente" : cita.status === "rejected" ? "Rechazada por la barbería" : "No asistió"}
                   {cita.cancellation_reason ? ` — ${cita.cancellation_reason}` : ""}
                 </p>

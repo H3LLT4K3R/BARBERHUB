@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Receipt, Trash2, UsersRound } from "lucide-react";
 import { supabase } from "../../../../lib/supabase.js";
 import { apiFetch } from "../../../../utils/api.js";
+import { horaDeCita, esMismoDia, aNaiveISOString } from "../../../../utils/fechaCita.js";
 import "../../styles/barbero/citas-barbero.css";
 import BarberoModal from "./barbero-modal";
 
@@ -10,7 +11,7 @@ const ESTADOS_TERMINALES = ["cancelled", "rejected", "no_show"];
 const ESTADOS_OCULTABLES = ["cancelled", "rejected", "no_show", "completed"];
 const DIAS_SEMANA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 // Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
-const ANTICIPO_FIJO_MXN = 75;
+const ANTICIPO_FIJO_MXN = 100;
 
 function inicioDeSemana(offsetSemanas = 0) {
   const hoy = new Date();
@@ -147,16 +148,15 @@ export default function CitasBarbero() {
     return () => { cancelado = true; };
   }, []);
 
-  const citasDelDia = citas.filter((c) => {
-    const fecha = new Date(c.scheduled_at);
-    return fecha.toDateString() === dias[diaActivo].toDateString();
-  });
+  const citasDelDia = citas.filter((c) => esMismoDia(c.scheduled_at, dias[diaActivo]));
 
   const finSemana = new Date(dias[6]);
   finSemana.setHours(23, 59, 59, 999);
+  const inicioSemanaNaive = new Date(aNaiveISOString(dias[0]));
+  const finSemanaNaive = new Date(aNaiveISOString(finSemana));
   const citasDeLaSemana = citas.filter((c) => {
     const fecha = new Date(c.scheduled_at);
-    return fecha >= dias[0] && fecha <= finSemana && ESTADOS_ACTIVOS.includes(c.status);
+    return fecha >= inicioSemanaNaive && fecha <= finSemanaNaive && ESTADOS_ACTIVOS.includes(c.status);
   });
 
   const ejecutarAccion = async (tipo, cita, motivoTexto) => {
@@ -293,7 +293,7 @@ export default function CitasBarbero() {
         {citasDelDia.length === 0 && <p>No hay citas para este día.</p>}
         {citasDelDia.map((cita) => {
           const estado = infoEstado(cita);
-          const hora = new Date(cita.scheduled_at).toTimeString().slice(0, 5);
+          const hora = horaDeCita(cita.scheduled_at);
           const acciones = accionesParaCita(cita);
           const pagoEnRevision = (cita.payments ?? []).some((p) => p.status === "pending_review");
 

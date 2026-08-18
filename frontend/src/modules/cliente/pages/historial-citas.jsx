@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { CalendarDays, Star, Trash2, X } from "lucide-react";
 import { supabase } from "../../../lib/supabase.js";
 import { apiFetch } from "../../../utils/api.js";
+import { aNaiveISOString } from "../../../utils/fechaCita.js";
 import "../styles/historial-citas.css";
 
 const ESTADOS_FINALIZADOS = ["completed", "cancelled", "rejected", "no_show"];
@@ -101,23 +102,28 @@ export default function HistorialCitas() {
     }
     if (filtroPeriodo === "Todo") return true;
 
+    // scheduled_at se guarda en crudo (sin conversión de zona horaria, ver
+    // frontend/src/utils/fechaCita.js), así que hay que comparar contra el equivalente
+    // "crudo" de las fechas límite (reales, del navegador) — no directo, o el filtro
+    // queda desfasado por la zona horaria del navegador.
     const fechaCita = new Date(cita.scheduled_at);
     const ahora = new Date();
+    const ahoraNaive = new Date(aNaiveISOString(ahora));
 
     if (filtroPeriodo === "Esta semana") {
       const limite = new Date(ahora);
       limite.setDate(limite.getDate() - 7);
-      return fechaCita >= limite && fechaCita <= ahora;
+      return fechaCita >= new Date(aNaiveISOString(limite)) && fechaCita <= ahoraNaive;
     }
     if (filtroPeriodo === "Este mes") {
       // Desde el día 1 del mes calendario actual, no "los últimos 30 días".
       const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
-      return fechaCita >= inicioMes && fechaCita <= ahora;
+      return fechaCita >= new Date(aNaiveISOString(inicioMes)) && fechaCita <= ahoraNaive;
     }
     // "Últimos 3 meses"
     const limite = new Date(ahora);
     limite.setMonth(limite.getMonth() - 3);
-    return fechaCita >= limite && fechaCita <= ahora;
+    return fechaCita >= new Date(aNaiveISOString(limite)) && fechaCita <= ahoraNaive;
   });
 
   const manejarVolverAAgendar = () => {

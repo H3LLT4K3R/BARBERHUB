@@ -17,7 +17,7 @@ export const listarBarberias = async (req, res) => {
     try {
         const { data: barberias, error } = await supabaseAdmin
             .from('barberias')
-            .select('id, name, city, state, zone, is_published, is_suspended, subscription_status, subscription_amount, created_at')
+            .select('id, name, city, state, zone, is_published, is_suspended, subscription_status, subscription_amount, subscription_proof_image_path, created_at')
             .order('created_at', { ascending: false });
         if (error) throw error;
 
@@ -345,5 +345,56 @@ export const crearZona = async (req, res) => {
     } catch (error) {
         console.error('Error al crear la zona:', error);
         res.status(500).json({ error: 'No fue posible crear la zona.' });
+    }
+};
+
+// El super admin registra una imagen ya subida a Storage (bucket "perfiles", carpeta
+// landing/...) como parte de la ruleta del landing.
+export const agregarImagenGaleria = async (req, res) => {
+    const { imagePath, caption } = req.body;
+    if (!imagePath?.trim()) {
+        return res.status(400).json({ error: 'Falta imagePath.' });
+    }
+    if (!imagePath.startsWith('landing/')) {
+        return res.status(400).json({ error: 'La imagen debe vivir en la carpeta landing/.' });
+    }
+
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('landing_gallery_images')
+            .insert({ image_path: imagePath.trim(), caption: caption?.trim() || null })
+            .select('id, image_path, caption, created_at')
+            .single();
+        if (error) throw error;
+
+        res.status(201).json({ imagen: data });
+    } catch (error) {
+        console.error('Error al agregar la imagen a la galería:', error);
+        res.status(500).json({ error: 'No fue posible agregar la imagen.' });
+    }
+};
+
+// El super admin borra una imagen de la galería (y de Storage).
+export const eliminarImagenGaleria = async (req, res) => {
+    const { imagenId } = req.params;
+
+    try {
+        const { data: imagen, error: fetchError } = await supabaseAdmin
+            .from('landing_gallery_images')
+            .select('id, image_path')
+            .eq('id', imagenId)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!imagen) return res.status(404).json({ error: 'Imagen no encontrada.' });
+
+        const { error: deleteError } = await supabaseAdmin.from('landing_gallery_images').delete().eq('id', imagenId);
+        if (deleteError) throw deleteError;
+
+        await supabaseAdmin.storage.from('perfiles').remove([imagen.image_path]);
+
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al eliminar la imagen de la galería:', error);
+        res.status(500).json({ error: 'No fue posible eliminar la imagen.' });
     }
 };

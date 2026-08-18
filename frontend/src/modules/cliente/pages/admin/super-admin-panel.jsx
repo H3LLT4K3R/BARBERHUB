@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShieldCheck, Building2, Eye, EyeOff, CreditCard, Ban, CheckCircle2, Trash2, Star, MapPin } from "lucide-react";
+import { ShieldCheck, Building2, Eye, EyeOff, Ban, CheckCircle2, Trash2, Star, MapPin, Receipt, Link as LinkIcon, Image as ImageIcon } from "lucide-react";
 import { supabase } from "../../../../lib/supabase.js";
 import { apiFetch, clearSession } from "../../../../utils/api.js";
 import { ESTADOS, ciudadesDe, zonasDe } from "../../data/ubicaciones.js";
@@ -8,6 +8,8 @@ import { evaluarPassword } from "../../../../utils/passwordStrength.js";
 import PasswordStrength from "../../components/password-strength.jsx";
 import SuperAdminOpiniones from "./super-admin-opiniones.jsx";
 import SuperAdminUbicaciones from "./super-admin-ubicaciones.jsx";
+import SuperAdminGaleria from "./super-admin-galeria.jsx";
+import BarberoModal from "../barbero/barbero-modal.jsx";
 import "../../styles/owner/owner-usuarios.css";
 import "../../styles/owner/owner-seguridad.css";
 
@@ -41,14 +43,17 @@ export default function SuperAdminPanel() {
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
-  const [barberiaCobro, setBarberiaCobro] = useState(null);
-  const [montoCobro, setMontoCobro] = useState("");
-  const [enviandoCobro, setEnviandoCobro] = useState(false);
-  const [linkGenerado, setLinkGenerado] = useState(null);
   const [eliminandoId, setEliminandoId] = useState(null);
   const [vista, setVista] = useState("barberias");
   const [opcionesCiudad, setOpcionesCiudad] = useState([]);
   const [opcionesZona, setOpcionesZona] = useState([]);
+  const [linkPlataforma, setLinkPlataforma] = useState("");
+  const [guardandoLinkPlataforma, setGuardandoLinkPlataforma] = useState(false);
+  const [mensajeLinkPlataforma, setMensajeLinkPlataforma] = useState("");
+  const [comprobanteRevisar, setComprobanteRevisar] = useState(null);
+  const [comprobanteUrl, setComprobanteUrl] = useState("");
+  const [motivoRechazoComprobante, setMotivoRechazoComprobante] = useState("");
+  const [procesandoComprobante, setProcesandoComprobante] = useState(false);
 
   useEffect(() => {
     let cancelado = false;
@@ -82,10 +87,19 @@ export default function SuperAdminPanel() {
       }
       setAutorizado(true);
       setVerificando(false);
+      // Fetches independientes: si falla la config del link de pago, no debe bloquear
+      // la lista de barberías (ya pasó: un 404 temporal en /suscripciones/config dejó el
+      // panel entero en "Cargando..." para siempre por culpa de un Promise.all conjunto).
       const { barberias: data } = await apiFetch("/admin/barberias");
       if (!cancelado) {
         setBarberias(data ?? []);
         setCargandoLista(false);
+      }
+      try {
+        const config = await apiFetch("/suscripciones/config");
+        if (!cancelado) setLinkPlataforma(config?.subscriptionPaymentLinkUrl ?? "");
+      } catch (err) {
+        console.error("No fue posible cargar la configuración de la plataforma:", err);
       }
     })();
     return () => { cancelado = true; };
@@ -147,28 +161,6 @@ export default function SuperAdminPanel() {
     }
   };
 
-  const handleConfigurarCobro = async (barberiaId) => {
-    if (!montoCobro || Number(montoCobro) <= 0) {
-      setError("Ingresa un monto mensual válido.");
-      return;
-    }
-    setEnviandoCobro(true);
-    setError("");
-    try {
-      const resultado = await apiFetch("/suscripciones", {
-        method: "POST",
-        body: JSON.stringify({ barberiaId, monto: Number(montoCobro) }),
-      });
-      setLinkGenerado(resultado.initPoint);
-      setMontoCobro("");
-      await cargarBarberias();
-    } catch (err) {
-      setError(err.message || "No fue posible configurar el cobro.");
-    } finally {
-      setEnviandoCobro(false);
-    }
-  };
-
   const handleSuspension = async (barberiaId, suspender) => {
     setError("");
     try {
@@ -179,6 +171,63 @@ export default function SuperAdminPanel() {
       await cargarBarberias();
     } catch (err) {
       setError(err.message || "No fue posible actualizar la barbería.");
+    }
+  };
+
+  const handleGuardarLinkPlataforma = async (e) => {
+    e.preventDefault();
+    setGuardandoLinkPlataforma(true);
+    setMensajeLinkPlataforma("");
+    try {
+      await apiFetch("/suscripciones/config", {
+        method: "PUT",
+        body: JSON.stringify({ subscriptionPaymentLinkUrl: linkPlataforma.trim() || null }),
+      });
+      setMensajeLinkPlataforma("Link guardado correctamente.");
+    } catch (err) {
+      setMensajeLinkPlataforma(err.message || "No fue posible guardar el link.");
+    } finally {
+      setGuardandoLinkPlataforma(false);
+    }
+  };
+
+  const abrirRevisionComprobante = async (barberia) => {
+    setError("");
+    setMotivoRechazoComprobante("");
+    setComprobanteRevisar(barberia);
+    setComprobanteUrl("");
+    if (!barberia.subscription_proof_image_path) return;
+    const { data, error: urlError } = await supabase.storage
+      .from("comprobantes")
+      .createSignedUrl(barberia.subscription_proof_image_path, 300);
+    if (!urlError) setComprobanteUrl(data.signedUrl);
+  };
+
+  const handleConfirmarComprobante = async (barberia) => {
+    setProcesandoComprobante(true);
+    setError("");
+    try {
+      await apiFetch(`/suscripciones/${barberia.id}/confirmar`, { method: "POST", body: JSON.stringify({}) });
+      setComprobanteRevisar(null);
+      await cargarBarberias();
+    } catch (err) {
+      setError(err.message || "No fue posible confirmar el pago.");
+    } finally {
+      setProcesandoComprobante(false);
+    }
+  };
+
+  const handleRechazarComprobante = async (barberia, motivo) => {
+    setProcesandoComprobante(true);
+    setError("");
+    try {
+      await apiFetch(`/suscripciones/${barberia.id}/rechazar`, { method: "POST", body: JSON.stringify({ motivo: motivo || "" }) });
+      setComprobanteRevisar(null);
+      await cargarBarberias();
+    } catch (err) {
+      setError(err.message || "No fue posible rechazar el comprobante.");
+    } finally {
+      setProcesandoComprobante(false);
     }
   };
 
@@ -242,13 +291,46 @@ export default function SuperAdminPanel() {
         <button type="button" className={`role-toggle-btn ${vista === "ubicaciones" ? "is-selected" : ""}`} onClick={() => setVista("ubicaciones")}>
           <MapPin size={14} style={{ display: "inline", marginRight: 6, verticalAlign: "text-bottom" }} /> Ubicaciones
         </button>
+        <button type="button" className={`role-toggle-btn ${vista === "galeria" ? "is-selected" : ""}`} onClick={() => setVista("galeria")}>
+          <ImageIcon size={14} style={{ display: "inline", marginRight: 6, verticalAlign: "text-bottom" }} /> Galería
+        </button>
       </div>
 
       {vista === "opiniones" && <SuperAdminOpiniones />}
       {vista === "ubicaciones" && <SuperAdminUbicaciones />}
+      {vista === "galeria" && <SuperAdminGaleria />}
 
       {vista === "barberias" && (
       <>
+      <div className="owner-usuarios-card" style={{ marginBottom: "2rem" }}>
+        <div className="owner-usuarios-card-header">
+          <LinkIcon size={24} color="#D4AF37" />
+          <h2 className="owner-usuarios-card-title">Cobro de suscripción</h2>
+        </div>
+        <p style={{ color: "#6b7280", fontSize: 14, marginTop: -8, marginBottom: 12 }}>
+          Crea un link de pago desde tu cuenta de Mercado Pago y pégalo aquí. Los dueños de las barberías lo usarán para pagar su suscripción mensual; tú confirmas cada pago manualmente cuando suban su comprobante.
+        </p>
+        <form onSubmit={handleGuardarLinkPlataforma} style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <input
+            type="url"
+            className="owner-usuarios-input"
+            style={{ flex: 1, minWidth: 240 }}
+            placeholder="https://www.mercadopago.com.mx/...."
+            value={linkPlataforma}
+            onChange={(e) => setLinkPlataforma(e.target.value)}
+            disabled={guardandoLinkPlataforma}
+          />
+          <button type="submit" className="owner-usuarios-submit-btn" style={{ marginTop: 0, padding: "12px 24px", maxWidth: 160 }} disabled={guardandoLinkPlataforma}>
+            {guardandoLinkPlataforma ? "Guardando..." : "Guardar"}
+          </button>
+        </form>
+        {mensajeLinkPlataforma && (
+          <p style={{ color: mensajeLinkPlataforma.startsWith("No fue posible") ? "#b91c1c" : "#15803d", fontSize: 13, marginTop: 8 }}>
+            {mensajeLinkPlataforma}
+          </p>
+        )}
+      </div>
+
       <div className="owner-usuarios-card" style={{ marginBottom: "2rem" }}>
         <div className="owner-usuarios-card-header">
           <Building2 size={24} color="#D4AF37" />
@@ -358,25 +440,9 @@ export default function SuperAdminPanel() {
 
               {b.duenio && (
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                  {barberiaCobro === b.id ? (
-                    <>
-                      <input
-                        type="number"
-                        min="1"
-                        className="owner-usuarios-input"
-                        style={{ maxWidth: 140 }}
-                        placeholder="Monto mensual"
-                        value={montoCobro}
-                        onChange={(e) => setMontoCobro(e.target.value)}
-                      />
-                      <button type="button" className="action-icon-btn edit" onClick={() => handleConfigurarCobro(b.id)} disabled={enviandoCobro}>
-                        {enviandoCobro ? "..." : "Generar link"}
-                      </button>
-                      <button type="button" className="action-icon-btn edit" onClick={() => { setBarberiaCobro(null); setMontoCobro(""); }}>Cancelar</button>
-                    </>
-                  ) : (
-                    <button type="button" className="action-icon-btn edit" onClick={() => { setBarberiaCobro(b.id); setLinkGenerado(null); }} title="Configurar cobro mensual">
-                      <CreditCard size={16} />
+                  {b.subscription_status === "pendiente_revision" && (
+                    <button type="button" className="action-icon-btn edit" onClick={() => abrirRevisionComprobante(b)} title="Revisar comprobante de suscripción">
+                      <Receipt size={16} /> Revisar comprobante
                     </button>
                   )}
 
@@ -404,12 +470,6 @@ export default function SuperAdminPanel() {
                   <Trash2 size={16} /> {eliminandoId === b.id ? "Eliminando..." : "Eliminar"}
                 </button>
               </div>
-
-              {barberiaCobro === b.id && linkGenerado && (
-                <p style={{ fontSize: 12, color: "#15803d", wordBreak: "break-all" }}>
-                  Link para que el dueño autorice el cobro: <a href={linkGenerado} target="_blank" rel="noreferrer">{linkGenerado}</a>
-                </p>
-              )}
             </div>
           ))}
           {!cargandoLista && barberias.length === 0 && (
@@ -417,6 +477,38 @@ export default function SuperAdminPanel() {
           )}
         </div>
       </div>
+
+      <BarberoModal
+        open={Boolean(comprobanteRevisar)}
+        title="Revisar comprobante de suscripción"
+        onClose={() => setComprobanteRevisar(null)}
+        footer={
+          <>
+            <button className="bm-secondary" onClick={() => handleRechazarComprobante(comprobanteRevisar, motivoRechazoComprobante)} disabled={procesandoComprobante}>
+              Rechazar
+            </button>
+            <button className="bm-primary" onClick={() => handleConfirmarComprobante(comprobanteRevisar)} disabled={procesandoComprobante}>
+              Confirmar pago recibido
+            </button>
+          </>
+        }
+      >
+        <p style={{ margin: "0 0 10px" }}>
+          <strong>{comprobanteRevisar?.name}</strong>
+          {comprobanteRevisar?.duenio && <> — Dueño: {comprobanteRevisar.duenio.nombre}</>}
+        </p>
+        {comprobanteUrl ? (
+          <img src={comprobanteUrl} alt="Comprobante de pago" style={{ width: "100%", borderRadius: 8, border: "1px solid #e5e7eb" }} />
+        ) : (
+          <p style={{ color: "#6b7280" }}>Cargando comprobante...</p>
+        )}
+        <textarea
+          style={{ marginTop: 10, width: "100%", border: "1px solid #e5e7eb", borderRadius: 8, padding: 8 }}
+          value={motivoRechazoComprobante}
+          onChange={(e) => setMotivoRechazoComprobante(e.target.value)}
+          placeholder="Si vas a rechazarlo, explica por qué (opcional)…"
+        />
+      </BarberoModal>
       </>
       )}
     </div>

@@ -5,6 +5,7 @@ import {
   BarChart, Bar,
 } from 'recharts';
 import { supabase } from '../../../../lib/supabase.js';
+import { aNaiveISOString } from '../../../../utils/fechaCita.js';
 import '../../styles/owner/owner-estadisticas.css';
 
 const DIAS_CORTOS = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
@@ -76,7 +77,7 @@ export default function EstadisticasView() {
           .select('id, scheduled_at, total, appointment_services(service_name, unit_price, quantity)')
           .eq('barberia_id', barberiaId)
           .eq('status', 'completed')
-          .gte('scheduled_at', inicio.toISOString()),
+          .gte('scheduled_at', aNaiveISOString(inicio)),
       ]);
 
       if (cancelado) return;

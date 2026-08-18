@@ -64,7 +64,8 @@ export default function SuperAdminOpiniones() {
         <h3 className="sub-section-title-large" style={{ margin: 0 }}>Opiniones de toda la plataforma</h3>
         <button
           type="button"
-          className="action-icon-btn edit"
+          className="owner-usuarios-submit-btn"
+          style={{ maxWidth: 180, marginTop: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
           onClick={() => setOrden((prev) => (prev === "peor-primero" ? "mejor-primero" : "peor-primero"))}
         >
           <ArrowDownUp size={14} /> {orden === "peor-primero" ? "Peor primero" : "Mejor primero"}
@@ -76,27 +77,27 @@ export default function SuperAdminOpiniones() {
 
       <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
         <span style={{ fontSize: 13, color: "#6b7280", fontWeight: 600 }}>Filtrar por:</span>
-        <button
-          type="button"
-          className="action-icon-btn edit"
-          style={filtroEstrellas === "todas" ? { borderColor: "#D4AF37", color: "#111827" } : undefined}
-          onClick={() => setFiltroEstrellas("todas")}
-        >
-          Todas
-        </button>
-        {[5, 4, 3, 2, 1].map((num) => (
+        <div className="role-toggle-group" style={{ marginBottom: 0 }}>
           <button
-            key={num}
             type="button"
-            className="action-icon-btn edit"
-            style={filtroEstrellas === num ? { borderColor: "#D4AF37", color: "#111827" } : undefined}
-            onClick={() => setFiltroEstrellas(num)}
-            aria-label={`Filtrar ${num} estrellas`}
-            title={`${num} estrellas`}
+            className={`role-toggle-btn ${filtroEstrellas === "todas" ? "is-selected" : ""}`}
+            onClick={() => setFiltroEstrellas("todas")}
           >
-            <Estrellas rating={num} />
+            Todas
           </button>
-        ))}
+          {[5, 4, 3, 2, 1].map((num) => (
+            <button
+              key={num}
+              type="button"
+              className={`role-toggle-btn ${filtroEstrellas === num ? "is-selected" : ""}`}
+              onClick={() => setFiltroEstrellas(num)}
+              aria-label={`Filtrar ${num} estrellas`}
+              title={`${num} estrellas`}
+            >
+              <Estrellas rating={num} />
+            </button>
+          ))}
+        </div>
       </div>
 
       {error && <p style={{ color: "#b91c1c" }}>{error}</p>}
@@ -131,7 +132,8 @@ export default function SuperAdminOpiniones() {
             <div>
               <button
                 type="button"
-                className="action-icon-btn edit"
+                className="owner-usuarios-submit-btn"
+                style={{ maxWidth: 200, marginTop: 0, padding: "8px 16px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
                 onClick={() => alternarDestacada(r)}
                 disabled={procesandoId === r.id || !r.is_published}
                 title={!r.is_published ? "La reseña está oculta; el dueño debe publicarla primero" : undefined}

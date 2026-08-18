@@ -15,6 +15,7 @@ import {
     subirComprobante,
     confirmarPagoManual,
     rechazarComprobante,
+    obtenerResumenFidelidad,
 } from '../controllers/citasController.js';
 import { validarCuponPreview } from '../controllers/cuponesController.js';
 import { requireUser } from '../middleware/auth.js';
@@ -23,6 +24,7 @@ import { limiterSensible } from '../middleware/rateLimit.js';
 const router = express.Router();
 
 router.get('/disponibilidad', obtenerDisponibilidad); // pública: se puede explorar sin sesión
+router.get('/fidelidad/resumen', requireUser, obtenerResumenFidelidad); // owner/admin: puntos otorgados este mes
 router.post('/validar-cupon', limiterSensible, requireUser, validarCuponPreview); // limita fuerza bruta de códigos
 router.post('/', limiterSensible, requireUser, crearCita); // limita fuerza bruta de cupones y saturación de horarios
 router.post('/:id/cancelar', requireUser, cancelarCita); // cliente: cancela su cita (reembolsa si ya pagó)

@@ -127,7 +127,7 @@ export default function SuperAdminUbicaciones() {
               value={nuevaCiudad}
               onChange={(e) => setNuevaCiudad(e.target.value)}
             />
-            <button type="submit" className="action-icon-btn edit" disabled={creandoCiudad || !nuevaCiudad.trim()}>
+            <button type="submit" className="owner-usuarios-submit-btn" style={{ maxWidth: 130, marginTop: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} disabled={creandoCiudad || !nuevaCiudad.trim()}>
               <Plus size={16} /> Agregar
             </button>
           </form>
@@ -169,7 +169,7 @@ export default function SuperAdminUbicaciones() {
                   value={nuevaZona}
                   onChange={(e) => setNuevaZona(e.target.value)}
                 />
-                <button type="submit" className="action-icon-btn edit" disabled={creandoZona || !nuevaZona.trim()}>
+                <button type="submit" className="owner-usuarios-submit-btn" style={{ maxWidth: 130, marginTop: 0, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }} disabled={creandoZona || !nuevaZona.trim()}>
                   <Plus size={16} /> Agregar
                 </button>
               </form>
