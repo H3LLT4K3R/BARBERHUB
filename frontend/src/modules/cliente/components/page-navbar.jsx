@@ -7,6 +7,7 @@ export default function PageNavbar() {
       <BrandLogo
         className="page-nav-logo-btn"
         imgClassName="page-nav-logo-img"
+        interactive={false}
       />
     </nav>
   );

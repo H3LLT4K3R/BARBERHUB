@@ -8,13 +8,13 @@ import {
   Star,
   Clock,
   Check,
-  MessageCircle,
   Scissors,
   Trash2,
   UsersRound,
 } from "lucide-react";
 import { supabase } from "../../../../lib/supabase.js";
 import { apiFetch } from "../../../../utils/api.js";
+import { horaDeCita, fechaCorta, esMismoDia, aNaiveISOString } from "../../../../utils/fechaCita.js";
 import "../../styles/barbero/dashboard-barbero.css";
 import BarberoModal from "./barbero-modal";
 
@@ -100,8 +100,8 @@ export default function DashboardBarbero() {
         .from("appointments")
         .select("id, scheduled_at, status, total, client_note, updated_at, client_id, hidden_by_barber_at, profiles!client_id(full_name, phone), appointment_services(service_name), payments(status)")
         .eq("barberia_id", membership.barberia_id)
-        .gte("scheduled_at", inicioSemana.toISOString())
-        .lt("scheduled_at", finSemana.toISOString())
+        .gte("scheduled_at", aNaiveISOString(inicioSemana))
+        .lt("scheduled_at", aNaiveISOString(finSemana))
         .is("hidden_by_barber_at", null)
         .order("scheduled_at"),
       supabase
@@ -122,7 +122,7 @@ export default function DashboardBarbero() {
     ]);
 
     const idsHoy = [...new Set((citas ?? [])
-      .filter((c) => new Date(c.scheduled_at).toDateString() === hoy.toDateString())
+      .filter((c) => esMismoDia(c.scheduled_at, hoy))
       .map((c) => c.client_id))];
 
     let clientesNuevos = 0;
@@ -134,7 +134,7 @@ export default function DashboardBarbero() {
         .select("client_id")
         .eq("barberia_id", membership.barberia_id)
         .in("client_id", idsHoy)
-        .lt("scheduled_at", inicioDelDia(hoy).toISOString());
+        .lt("scheduled_at", aNaiveISOString(inicioDelDia(hoy)));
       const conHistorial = new Set((previas ?? []).map((p) => p.client_id));
       clientesNuevos = idsHoy.filter((id) => !conHistorial.has(id)).length;
 
@@ -188,9 +188,9 @@ export default function DashboardBarbero() {
     return () => { cancelado = true; };
   }, []);
 
-  const citasHoy = citasSemana.filter((c) => new Date(c.scheduled_at).toDateString() === hoy.toDateString());
+  const citasHoy = citasSemana.filter((c) => esMismoDia(c.scheduled_at, hoy));
   const citasDelDia = citasSemana.filter(
-    (c) => new Date(c.scheduled_at).toDateString() === dias[diaActivo].toDateString() && !ESTADOS_CANCELADOS.includes(c.status)
+    (c) => esMismoDia(c.scheduled_at, dias[diaActivo]) && !ESTADOS_CANCELADOS.includes(c.status)
   );
 
   const agendadasHoy = citasHoy.filter((c) => ESTADOS_ACTIVOS.includes(c.status) || c.status === "completed").length;
@@ -203,8 +203,9 @@ export default function DashboardBarbero() {
 
   // Se busca en toda la semana cargada (no solo "hoy") para mostrar la cita más
   // cercana ya agendada, aunque sea en un día posterior.
+  const hoyNaive = new Date(aNaiveISOString(hoy));
   const siguienteTurno = citasSemana
-    .filter((c) => (c.status === "confirmed" || c.status === "in_progress") && new Date(c.scheduled_at) >= hoy)
+    .filter((c) => (c.status === "confirmed" || c.status === "in_progress") && new Date(c.scheduled_at) >= hoyNaive)
     .sort((a, b) => new Date(a.scheduled_at) - new Date(b.scheduled_at))[0];
 
   const metricas = [
@@ -290,7 +291,7 @@ export default function DashboardBarbero() {
             </div>
             {siguienteTurno && (
               <span style={{ backgroundColor: '#1e293b', color: '#f8fafc', padding: '6px 14px', borderRadius: '20px', fontSize: '0.9rem', fontWeight: 'bold' }}>
-                {new Date(siguienteTurno.scheduled_at).toTimeString().slice(0, 5)}
+                {diaYHoraCorta(siguienteTurno.scheduled_at)}
               </span>
             )}
           </div>
@@ -325,15 +326,6 @@ export default function DashboardBarbero() {
               </div>
 
               <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                {siguienteTurno.profiles?.phone && (
-                  <button
-                    style={{ padding: '12px', backgroundColor: '#f1f5f9', color: '#0f172a', borderRadius: '8px', border: 'none', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }}
-                    onClick={() => { window.location.href = `tel:${siguienteTurno.profiles.phone}`; }}
-                    title="Llamar al cliente"
-                  >
-                    <MessageCircle size={20} />
-                  </button>
-                )}
                 <button
                   style={{ flex: 1, padding: '12px', backgroundColor: '#0f172a', color: 'white', borderRadius: '8px', border: 'none', fontWeight: '600', cursor: 'pointer', fontSize: '0.95rem' }}
                   onClick={() => ejecutarAccion(siguienteTurno.status === "in_progress" ? "completar" : "iniciar", siguienteTurno)}
@@ -379,7 +371,7 @@ export default function DashboardBarbero() {
                 className={`bd-appointment ${cita.status === "completed" || cita.status === "confirmed" || cita.status === "in_progress" ? "bd-appointment--confirmada" : "bd-appointment--pendiente"}`}
                 key={cita.id}
               >
-                <time>{new Date(cita.scheduled_at).toTimeString().slice(0, 5)}</time>
+                <time>{horaDeCita(cita.scheduled_at)}</time>
                 <div>
                   <strong>{cita.profiles?.full_name ?? "Cliente"} <span>·</span> {cita.appointment_services?.[0]?.service_name ?? "Servicio"}</strong>
                   <small>${Number(cita.total).toFixed(2)}</small>
@@ -421,7 +413,7 @@ export default function DashboardBarbero() {
                     <h4 style={{ color: '#0f172a' }}>{registro.profiles?.full_name ?? "Cliente"}</h4>
                     <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '500' }}>
                       <Clock size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                      {new Date(registro.scheduled_at).toLocaleDateString("es-MX", { day: "numeric", month: "short" })} · {new Date(registro.scheduled_at).toTimeString().slice(0, 5)}
+                      {fechaCorta(registro.scheduled_at)} · {horaDeCita(registro.scheduled_at)}
                     </span>
                   </div>
                   <p style={{ color: '#475569' }}>{registro.appointment_services?.[0]?.service_name ?? "Servicio"}</p>
@@ -473,7 +465,7 @@ export default function DashboardBarbero() {
           </div>
           <h3 style={{ margin: '0 0 5px 0', fontSize: '1.3rem' }}>{citaSeleccionada?.profiles?.full_name ?? "Cliente"}</h3>
           <p style={{ margin: 0, color: '#64748b', fontWeight: '500' }}>
-            {citaSeleccionada?.appointment_services?.[0]?.service_name ?? "Servicio"} — {citaSeleccionada && new Date(citaSeleccionada.scheduled_at).toTimeString().slice(0, 5)}
+            {citaSeleccionada?.appointment_services?.[0]?.service_name ?? "Servicio"} — {citaSeleccionada && horaDeCita(citaSeleccionada.scheduled_at)}
           </p>
         </div>
 

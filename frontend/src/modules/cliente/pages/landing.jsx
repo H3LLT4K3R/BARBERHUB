@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../../lib/supabase.js";
 import {
-  IconSearch,
   IconMapPin,
   IconAdjustmentsHorizontal,
   IconLayoutDashboard,
@@ -18,9 +17,6 @@ import {
 } from "@tabler/icons-react";
 import BrandLogo from "../components/brand-logo";
 import "../styles/landing.css";
-
-// datos
-const CHIPS = ["Corte clásico", "Degradado / Fade", "Ritual de barba", "Perfilado"];
 
 const EXP_CARDS = [
   {
@@ -66,10 +62,9 @@ function Stars({ count = 5 }) {
 
 // Landing
 export default function Landing() {
-  const [query, setQuery] = useState("");
-  const [coords, setCoords] = useState(null);
-  const [geoStatus, setGeoStatus] = useState("idle");
   const [testimonios, setTestimonios] = useState([]);
+  const [fotosCarrusel, setFotosCarrusel] = useState([]);
+  const [indiceActivo, setIndiceActivo] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -91,53 +86,39 @@ export default function Landing() {
     };
   }, []);
 
-  const solicitarUbicacion = () => {
-    if (!navigator.geolocation) {
-      setGeoStatus("error");
-      return;
-    }
+  // Imágenes de servicios curadas por el super admin (Panel > Galería), para la ruleta
+  // del hero — no dependen de que ningún barbero suba nada.
+  useEffect(() => {
+    let cancelado = false;
 
-    setGeoStatus("loading");
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setCoords({
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        });
-        setGeoStatus("granted");
-      },
-      () => {
-        setGeoStatus("denied");
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      }
-    );
-  };
+    supabase
+      .from("landing_gallery_images")
+      .select("id, image_path, caption")
+      .order("created_at", { ascending: false })
+      .limit(12)
+      .then(({ data }) => {
+        if (cancelado) return;
+        setFotosCarrusel(
+          (data ?? []).map((foto) => ({
+            id: foto.id,
+            name: foto.caption ?? "",
+            url: supabase.storage.from("perfiles").getPublicUrl(foto.image_path).data.publicUrl,
+          }))
+        );
+      });
 
-  const buscarBarberias = (termino = query) => {
-    const params = new URLSearchParams();
-    if (termino.trim()) params.set("q", termino.trim());
-    if (coords) {
-      params.set("lat", String(coords.lat));
-      params.set("lng", String(coords.lng));
-    }
-    const qs = params.toString();
-    navigate(qs ? `/explorar?${qs}` : "/explorar");
-  };
+    return () => {
+      cancelado = true;
+    };
+  }, []);
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      buscarBarberias();
-    }
-  };
-
-  const handleChipClick = (chipText) => {
-    setQuery(chipText);
-    buscarBarberias(chipText);
-  };
+  useEffect(() => {
+    if (fotosCarrusel.length < 2) return;
+    const id = setInterval(() => {
+      setIndiceActivo((i) => (i + 1) % fotosCarrusel.length);
+    }, 4500);
+    return () => clearInterval(id);
+  }, [fotosCarrusel.length]);
 
   return (
     <>
@@ -166,49 +147,32 @@ export default function Landing() {
           ve distancias reales y agenda en segundos.
         </p>
 
-        {/* Buscador */}
-        <div className="lp-search-wrap">
-          <IconSearch size={18} color="#aaaaaa" className="lp-search-icon" />
-          <input
-            className="lp-search-input"
-            type="text"
-            placeholder="¿Qué servicio buscas?"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-          <div className="lp-search-sep" />
-          <button
-            type="button"
-            className="lp-search-loc"
-            onClick={solicitarUbicacion}
-            disabled={geoStatus === "loading"}
-            title="Usar mi ubicación"
-          >
-            <IconMapPin size={15} color="#b87252" />
-            {geoStatus === "loading"
-              ? "Obteniendo..."
-              : geoStatus === "granted"
-                ? "Ubicación activada"
-                : "Mi ubicación actual"}
-          </button>
-          <button
-            className="lp-btn-search"
-            onClick={() => buscarBarberias()}
-          >
-            Buscar Barberías
-          </button>
-        </div>
-
-        {/* Chips */}
-        <div className="lp-chips-row">
-          <span className="lp-chips-label">Búsquedas frecuentes:</span>
-          {CHIPS.map((c) => (
-            <button key={c} className="lp-chip" onClick={() => handleChipClick(c)}>
-              {c}
-            </button>
-          ))}
-        </div>
+        {/* Ruleta de fotos de barberías reales de la plataforma */}
+        {fotosCarrusel.length > 0 && (
+          <div className="lp-carousel">
+            <div className="lp-carousel-track">
+              {fotosCarrusel.map((foto, i) => (
+                <div key={foto.id} className={`lp-carousel-slide${i === indiceActivo ? " is-active" : ""}`}>
+                  <img src={foto.url} alt={foto.name || "Servicio de barbería"} />
+                  {foto.name && <span className="lp-carousel-caption">{foto.name}</span>}
+                </div>
+              ))}
+            </div>
+            {fotosCarrusel.length > 1 && (
+              <div className="lp-carousel-dots">
+                {fotosCarrusel.map((foto, i) => (
+                  <button
+                    key={foto.id}
+                    type="button"
+                    className={`lp-carousel-dot${i === indiceActivo ? " is-active" : ""}`}
+                    onClick={() => setIndiceActivo(i)}
+                    aria-label={`Ver imagen ${i + 1}${foto.name ? `: ${foto.name}` : ""}`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       {/* dos experiencias */}

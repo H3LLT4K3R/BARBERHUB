@@ -9,7 +9,7 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
 
 // Anticipo fijo para todas las citas (por ahora, sin importar el precio del servicio).
 // El resto del total se liquida directamente en el local.
-const ANTICIPO_FIJO_MXN = 75;
+const ANTICIPO_FIJO_MXN = 100;
 
 // Un cliente solo puede pagar una cita que sea suya; un miembro de la barbería no puede pagarla en su nombre.
 async function getAppointmentForPayer(appointmentId, userId) {

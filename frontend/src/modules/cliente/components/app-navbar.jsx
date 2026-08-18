@@ -7,6 +7,7 @@ export default function AppNavbar() {
       <BrandLogo
         className="app-nav-logo-btn"
         imgClassName="app-nav-logo-img"
+        interactive={false}
       />
     </nav>
   );

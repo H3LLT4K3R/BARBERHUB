@@ -1,80 +1,106 @@
-import { PreApproval } from 'mercadopago';
-import { mercadoPagoClient } from '../config/mercadopago.js';
 import { supabaseAdmin } from '../config/supabase.js';
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
+// Las notificaciones son informativas: un fallo aquí no debe romper el flujo principal.
+async function notificar(filas) {
+    if (!filas.length) return;
+    const { error } = await supabaseAdmin.from('notifications').insert(filas);
+    if (error) console.error('No se pudieron crear notificaciones:', error.message);
+}
 
-// El super admin captura el monto mensual (todavía no hay un precio único definido para todas
-// las barberías) y genera el link de Mercado Pago para que el dueño autorice el cobro recurrente.
-export const crearSuscripcion = async (req, res) => {
-    const { barberiaId, monto } = req.body;
-
-    if (!barberiaId || !monto || Number(monto) <= 0) {
-        return res.status(400).json({ error: 'Faltan barberiaId o un monto mensual válido.' });
+async function obtenerSuperAdminIds() {
+    const { data, error } = await supabaseAdmin.from('profiles').select('id').eq('is_super_admin', true);
+    if (error) {
+        console.error('No se pudo obtener la lista de super admins:', error.message);
+        return [];
     }
+    return (data ?? []).map((p) => p.id);
+}
 
+// El super admin consulta/edita el link de pago de Mercado Pago de la plataforma (uno solo,
+// usado para cobrar la suscripción mensual a todas las barberías).
+export const obtenerConfigPlataforma = async (req, res) => {
     try {
-        const { data: barberia, error: barberiaError } = await supabaseAdmin
-            .from('barberias')
-            .select('id, name')
-            .eq('id', barberiaId)
+        const { data, error } = await supabaseAdmin
+            .from('platform_settings')
+            .select('subscription_payment_link_url')
+            .eq('id', true)
             .maybeSingle();
-        if (barberiaError) throw barberiaError;
-        if (!barberia) return res.status(404).json({ error: 'Barbería no encontrada.' });
-
-        const { data: membership } = await supabaseAdmin
-            .from('barberia_memberships')
-            .select('profile_id')
-            .eq('barberia_id', barberiaId)
-            .eq('role', 'owner')
-            .eq('is_active', true)
-            .maybeSingle();
-        if (!membership) return res.status(409).json({ error: 'Esta barbería todavía no tiene un dueño asignado.' });
-
-        const { data: usuario } = await supabaseAdmin.auth.admin.getUserById(membership.profile_id);
-        const emailDuenio = usuario?.user?.email;
-        if (!emailDuenio) return res.status(500).json({ error: 'No fue posible obtener el correo del dueño.' });
-
-        // El back_url de una suscripción (a diferencia del checkout de un solo pago) exige una
-        // URL https real; en desarrollo local usamos un placeholder para no romper la creación.
-        const backUrl = FRONTEND_URL.startsWith('https://') ? `${FRONTEND_URL}/owner-control` : 'https://www.mercadopago.com.mx';
-
-        const preapproval = await new PreApproval(mercadoPagoClient).create({
-            body: {
-                reason: `Suscripción mensual Barber Hub - ${barberia.name}`,
-                external_reference: barberia.id,
-                payer_email: emailDuenio,
-                back_url: backUrl,
-                notification_url: `${BACKEND_URL}/api/pagos/mp/webhook`,
-                auto_recurring: {
-                    frequency: 1,
-                    frequency_type: 'months',
-                    transaction_amount: Number(monto),
-                    currency_id: 'MXN',
-                },
-                status: 'pending',
-            },
-        });
-
-        const { error: updateError } = await supabaseAdmin
-            .from('barberias')
-            .update({
-                mp_preapproval_id: preapproval.id,
-                subscription_amount: Number(monto),
-                subscription_status: 'pendiente',
-            })
-            .eq('id', barberiaId);
-        if (updateError) throw updateError;
-
-        res.json({ initPoint: preapproval.init_point, preapprovalId: preapproval.id });
+        if (error) throw error;
+        res.json({ subscriptionPaymentLinkUrl: data?.subscription_payment_link_url ?? null });
     } catch (error) {
-        console.error('Error al crear la suscripción:', error);
-        res.status(500).json({ error: error.message || 'No fue posible crear la suscripción.' });
+        console.error('Error al obtener la configuración de la plataforma:', error);
+        res.status(500).json({ error: 'No fue posible obtener la configuración.' });
     }
 };
 
-// El owner consulta el estado de la suscripción de su propia barbería.
+export const actualizarConfigPlataforma = async (req, res) => {
+    const { subscriptionPaymentLinkUrl } = req.body;
+    try {
+        const { error } = await supabaseAdmin
+            .from('platform_settings')
+            .update({ subscription_payment_link_url: (subscriptionPaymentLinkUrl || '').trim() || null })
+            .eq('id', true);
+        if (error) throw error;
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al actualizar la configuración de la plataforma:', error);
+        res.status(500).json({ error: 'No fue posible guardar el link.' });
+    }
+};
+
+// El owner ya pagó con el link manual de la plataforma y sube su comprobante (la imagen ya
+// se subió a Storage desde el frontend; aquí solo se registra la ruta y se avisa al super admin).
+export const subirComprobanteSuscripcion = async (req, res) => {
+    const { barberiaId } = req.params;
+    const { proofPath } = req.body;
+    if (!proofPath) {
+        return res.status(400).json({ error: 'Falta proofPath.' });
+    }
+    // El path debe vivir dentro de la carpeta de ESTA barbería (suscripciones/{id}/...), igual
+    // que el comprobante de citas está acotado a su propia carpeta — ver subirComprobante en
+    // citasController.js.
+    if (!proofPath.startsWith(`suscripciones/${barberiaId}/`)) {
+        return res.status(400).json({ error: 'El comprobante no corresponde a esta barbería.' });
+    }
+
+    try {
+        const { data: membership } = await supabaseAdmin
+            .from('barberia_memberships')
+            .select('barberia_id')
+            .eq('barberia_id', barberiaId)
+            .eq('profile_id', req.user.id)
+            .eq('role', 'owner')
+            .eq('is_active', true)
+            .maybeSingle();
+        if (!membership) return res.status(403).json({ error: 'No eres el dueño de esta barbería.' });
+
+        const { error: updateError } = await supabaseAdmin
+            .from('barberias')
+            .update({ subscription_proof_image_path: proofPath, subscription_status: 'pendiente_revision' })
+            .eq('id', barberiaId);
+        if (updateError) throw updateError;
+
+        const superAdminIds = await obtenerSuperAdminIds();
+        await notificar(
+            superAdminIds.map((profileId) => ({
+                profile_id: profileId,
+                type: 'payment',
+                title: 'Comprobante de suscripción recibido',
+                body: 'Una barbería subió su comprobante de pago mensual. Revísalo para activar su suscripción.',
+                action_url: '/super-admin',
+                data: { barberiaId },
+            }))
+        );
+
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al registrar el comprobante de suscripción:', error);
+        res.status(500).json({ error: 'No fue posible registrar el comprobante.' });
+    }
+};
+
+// El owner consulta el estado de la suscripción de su propia barbería (y el link de pago
+// vigente de la plataforma, para mostrarlo si todavía no tiene suscripción activa).
 export const obtenerEstadoSuscripcion = async (req, res) => {
     try {
         const { data: membership } = await supabaseAdmin
@@ -86,23 +112,121 @@ export const obtenerEstadoSuscripcion = async (req, res) => {
             .maybeSingle();
         if (!membership) return res.status(404).json({ error: 'No perteneces a ninguna barbería como dueño.' });
 
-        const { data: barberia, error } = await supabaseAdmin
-            .from('barberias')
-            .select('subscription_status, subscription_amount, subscription_next_payment, mp_preapproval_id, is_suspended')
-            .eq('id', membership.barberia_id)
-            .single();
+        const [{ data: barberia, error }, { data: config }] = await Promise.all([
+            supabaseAdmin
+                .from('barberias')
+                .select('subscription_status, subscription_amount, subscription_next_payment, is_suspended')
+                .eq('id', membership.barberia_id)
+                .single(),
+            supabaseAdmin.from('platform_settings').select('subscription_payment_link_url').eq('id', true).maybeSingle(),
+        ]);
         if (error) throw error;
 
-        let initPoint = null;
-        if (barberia.subscription_status === 'pendiente' && barberia.mp_preapproval_id) {
-            const preapproval = await new PreApproval(mercadoPagoClient).get({ id: barberia.mp_preapproval_id });
-            initPoint = preapproval.init_point;
-        }
-
-        res.json({ ...barberia, initPoint });
+        res.json({
+            ...barberia,
+            barberiaId: membership.barberia_id,
+            platformPaymentLink: config?.subscription_payment_link_url ?? null,
+        });
     } catch (error) {
         console.error('Error al obtener el estado de la suscripción:', error);
         res.status(500).json({ error: 'No fue posible obtener el estado de la suscripción.' });
+    }
+};
+
+// El super admin revisó el comprobante y confirma que el pago sí llegó: activa la suscripción.
+export const confirmarComprobanteSuscripcion = async (req, res) => {
+    const { barberiaId } = req.params;
+    try {
+        const { data: barberia, error: fetchError } = await supabaseAdmin
+            .from('barberias')
+            .select('id, subscription_status, subscription_amount')
+            .eq('id', barberiaId)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!barberia) return res.status(404).json({ error: 'Barbería no encontrada.' });
+        if (barberia.subscription_status !== 'pendiente_revision') {
+            return res.status(409).json({ error: 'No hay ningún comprobante pendiente de revisión.' });
+        }
+
+        const proximoPago = new Date();
+        proximoPago.setMonth(proximoPago.getMonth() + 1);
+
+        const { error: updateError } = await supabaseAdmin
+            .from('barberias')
+            .update({ subscription_status: 'activa', subscription_next_payment: proximoPago.toISOString() })
+            .eq('id', barberiaId);
+        if (updateError) throw updateError;
+
+        const { data: duenio } = await supabaseAdmin
+            .from('barberia_memberships')
+            .select('profile_id')
+            .eq('barberia_id', barberiaId)
+            .eq('role', 'owner')
+            .eq('is_active', true)
+            .maybeSingle();
+        if (duenio) {
+            await notificar([{
+                profile_id: duenio.profile_id,
+                type: 'payment',
+                title: 'Suscripción activada',
+                body: 'Confirmamos tu pago mensual. Tu suscripción ya está activa.',
+                action_url: '/owner/control',
+                data: { barberiaId },
+            }]);
+        }
+
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al confirmar el comprobante de suscripción:', error);
+        res.status(500).json({ error: 'No fue posible confirmar el pago.' });
+    }
+};
+
+// El super admin rechaza el comprobante (no se ve claro, monto incorrecto, etc.); el owner
+// puede subir uno nuevo.
+export const rechazarComprobanteSuscripcion = async (req, res) => {
+    const { barberiaId } = req.params;
+    const { motivo } = req.body;
+    try {
+        const { data: barberia, error: fetchError } = await supabaseAdmin
+            .from('barberias')
+            .select('id, subscription_status')
+            .eq('id', barberiaId)
+            .maybeSingle();
+        if (fetchError) throw fetchError;
+        if (!barberia) return res.status(404).json({ error: 'Barbería no encontrada.' });
+        if (barberia.subscription_status !== 'pendiente_revision') {
+            return res.status(409).json({ error: 'No hay ningún comprobante pendiente de revisión.' });
+        }
+
+        const { error: updateError } = await supabaseAdmin
+            .from('barberias')
+            .update({ subscription_status: 'sin_suscripcion', subscription_proof_image_path: null })
+            .eq('id', barberiaId);
+        if (updateError) throw updateError;
+
+        const { data: duenio } = await supabaseAdmin
+            .from('barberia_memberships')
+            .select('profile_id')
+            .eq('barberia_id', barberiaId)
+            .eq('role', 'owner')
+            .eq('is_active', true)
+            .maybeSingle();
+        if (duenio) {
+            await notificar([{
+                profile_id: duenio.profile_id,
+                type: 'payment',
+                title: 'Tu comprobante de suscripción no pudo verificarse',
+                body: motivo || 'Revisa que la imagen sea clara y el monto correcto, y súbelo de nuevo.',
+                action_url: '/owner/control',
+                data: { barberiaId },
+            }]);
+        }
+
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al rechazar el comprobante de suscripción:', error);
+        res.status(500).json({ error: 'No fue posible rechazar el comprobante.' });
     }
 };
 

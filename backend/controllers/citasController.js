@@ -9,7 +9,7 @@ const BLOCKING_STATUSES = ['pending_confirmation', 'confirmed', 'in_progress'];
 // Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
 // Duplica la constante de mercadoPagoController.js — el flujo manual no depende del
 // flujo automático de Mercado Pago, que se deja intacto pero sin usarse.
-const ANTICIPO_FIJO_MXN = 75;
+const ANTICIPO_FIJO_MXN = 100;
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -113,6 +113,64 @@ async function tieneAccesoModulo(userId, barberiaId, moduleCode, needManage = tr
     return data === true;
 }
 
+// Calcula la ventana de minutos (0-1439) en que la barbería/barbero puede recibir citas
+// para una fecha y weekday dados, combinando business_hours, staff_availability (si se
+// especifica un barbero) y excepciones puntuales de fecha. Devuelve {windowStart:null,
+// windowEnd:null} si está cerrado. Compartida entre obtenerDisponibilidad y crearCita,
+// para que la reserva real respete exactamente las mismas reglas que la lista de
+// horarios sugeridos (antes crearCita no validaba nada de esto).
+async function calcularVentanaDisponible(barberiaId, barberMembershipId, fecha, weekday) {
+    const { data: businessHours, error: hoursError } = await supabaseAdmin
+        .from('business_hours')
+        .select('opens_at, closes_at, is_closed')
+        .eq('barberia_id', barberiaId)
+        .eq('weekday', weekday)
+        .maybeSingle();
+    if (hoursError) throw hoursError;
+
+    let windowStart = businessHours && !businessHours.is_closed ? timeToMinutes(businessHours.opens_at) : null;
+    let windowEnd = businessHours && !businessHours.is_closed ? timeToMinutes(businessHours.closes_at) : null;
+
+    if (barberMembershipId) {
+        const { data: staffAvailability, error: staffError } = await supabaseAdmin
+            .from('staff_availability')
+            .select('starts_at, ends_at')
+            .eq('membership_id', barberMembershipId)
+            .eq('weekday', weekday)
+            .maybeSingle();
+        if (staffError) throw staffError;
+
+        if (!staffAvailability) {
+            windowStart = null; // el barbero no trabaja ese día
+        } else {
+            windowStart = Math.max(windowStart ?? 0, timeToMinutes(staffAvailability.starts_at));
+            windowEnd = Math.min(windowEnd ?? 24 * 60, timeToMinutes(staffAvailability.ends_at));
+        }
+    }
+
+    const { data: exceptions, error: exceptionsError } = await supabaseAdmin
+        .from('availability_exceptions')
+        .select('membership_id, starts_at, ends_at, is_closed')
+        .eq('barberia_id', barberiaId)
+        .eq('exception_date', fecha)
+        .or(barberMembershipId ? `membership_id.is.null,membership_id.eq.${barberMembershipId}` : 'membership_id.is.null');
+    if (exceptionsError) throw exceptionsError;
+
+    for (const exception of exceptions ?? []) {
+        if (exception.is_closed) {
+            windowStart = null;
+        } else if (windowStart !== null) {
+            windowStart = Math.max(windowStart, timeToMinutes(exception.starts_at));
+            windowEnd = Math.min(windowEnd, timeToMinutes(exception.ends_at));
+        }
+    }
+
+    if (windowStart === null || windowEnd === null || windowStart >= windowEnd) {
+        return { windowStart: null, windowEnd: null };
+    }
+    return { windowStart, windowEnd };
+}
+
 // -------------------- DISPONIBILIDAD --------------------
 export const obtenerDisponibilidad = async (req, res) => {
     const { barberiaId, barberMembershipId, fecha, duracionMinutos } = req.query;
@@ -141,52 +199,9 @@ export const obtenerDisponibilidad = async (req, res) => {
             return res.status(404).json({ error: 'Barbería no encontrada.' });
         }
 
-        const { data: businessHours, error: hoursError } = await supabaseAdmin
-            .from('business_hours')
-            .select('opens_at, closes_at, is_closed')
-            .eq('barberia_id', barberiaId)
-            .eq('weekday', weekday)
-            .maybeSingle();
-        if (hoursError) throw hoursError;
+        const { windowStart, windowEnd } = await calcularVentanaDisponible(barberiaId, barberMembershipId, fecha, weekday);
 
-        let windowStart = businessHours && !businessHours.is_closed ? timeToMinutes(businessHours.opens_at) : null;
-        let windowEnd = businessHours && !businessHours.is_closed ? timeToMinutes(businessHours.closes_at) : null;
-
-        if (barberMembershipId) {
-            const { data: staffAvailability, error: staffError } = await supabaseAdmin
-                .from('staff_availability')
-                .select('starts_at, ends_at')
-                .eq('membership_id', barberMembershipId)
-                .eq('weekday', weekday)
-                .maybeSingle();
-            if (staffError) throw staffError;
-
-            if (!staffAvailability) {
-                windowStart = null; // el barbero no trabaja ese día
-            } else {
-                windowStart = Math.max(windowStart ?? 0, timeToMinutes(staffAvailability.starts_at));
-                windowEnd = Math.min(windowEnd ?? 24 * 60, timeToMinutes(staffAvailability.ends_at));
-            }
-        }
-
-        const { data: exceptions, error: exceptionsError } = await supabaseAdmin
-            .from('availability_exceptions')
-            .select('membership_id, starts_at, ends_at, is_closed')
-            .eq('barberia_id', barberiaId)
-            .eq('exception_date', fecha)
-            .or(barberMembershipId ? `membership_id.is.null,membership_id.eq.${barberMembershipId}` : 'membership_id.is.null');
-        if (exceptionsError) throw exceptionsError;
-
-        for (const exception of exceptions ?? []) {
-            if (exception.is_closed) {
-                windowStart = null;
-            } else if (windowStart !== null) {
-                windowStart = Math.max(windowStart, timeToMinutes(exception.starts_at));
-                windowEnd = Math.min(windowEnd, timeToMinutes(exception.ends_at));
-            }
-        }
-
-        if (windowStart === null || windowEnd === null || windowStart >= windowEnd) {
+        if (windowStart === null || windowEnd === null) {
             return res.json({ fecha, slots: [] });
         }
 
@@ -229,6 +244,11 @@ export const crearCita = async (req, res) => {
 
     if (!barberiaId || !scheduledAt || !Array.isArray(serviceIds) || serviceIds.length === 0) {
         return res.status(400).json({ error: 'Faltan barberiaId, scheduledAt o serviceIds.' });
+    }
+    // barberMembershipId se interpola directo en un filtro .or() dentro de
+    // calcularVentanaDisponible más abajo — mismo chequeo defensivo que obtenerDisponibilidad.
+    if (barberMembershipId && !UUID_RE.test(barberMembershipId)) {
+        return res.status(400).json({ error: 'barberMembershipId inválido.' });
     }
 
     try {
@@ -319,6 +339,25 @@ export const crearCita = async (req, res) => {
 
         const subtotal = round2(lineItems.reduce((sum, item) => sum + item.unit_price * item.quantity, 0));
         const totalDuration = lineItems.reduce((sum, item) => sum + item.duration_minutes * item.quantity, 0);
+
+        // La cita debe caer dentro del horario de atención (y, si se eligió un barbero
+        // específico, también dentro de su horario individual, sin excepciones que lo
+        // cierren) — antes esto solo se aplicaba en la lista de horarios sugeridos
+        // (obtenerDisponibilidad); llamando este endpoint directo se podía crear una cita
+        // fuera de horario sin que nada lo bloqueara.
+        const inicioCita = new Date(scheduledAt);
+        if (Number.isNaN(inicioCita.getTime())) {
+            return res.status(400).json({ error: 'scheduledAt inválido.' });
+        }
+        const fechaCita = scheduledAt.slice(0, 10);
+        const weekdayCita = new Date(`${fechaCita}T00:00:00Z`).getUTCDay();
+        const inicioMinutosCita = inicioCita.getUTCHours() * 60 + inicioCita.getUTCMinutes();
+        const finMinutosCita = inicioMinutosCita + totalDuration;
+
+        const ventana = await calcularVentanaDisponible(barberiaId, barberMembershipId || null, fechaCita, weekdayCita);
+        if (ventana.windowStart === null || inicioMinutosCita < ventana.windowStart || finMinutosCita > ventana.windowEnd) {
+            return res.status(409).json({ error: 'Ese horario está fuera del horario de atención de la barbería.' });
+        }
 
         let discountTotal = 0;
         let coupon = null;
@@ -1024,6 +1063,40 @@ async function otorgarPuntosFidelidad(barberiaId, profileId, appointmentId, mont
     });
     if (ledgerError) console.error('No se pudieron otorgar los puntos de fidelidad:', ledgerError.message);
 }
+
+// El owner/admin consulta cuántos puntos se otorgaron este mes. loyalty_ledger no tiene
+// políticas RLS de lectura para nadie (ver comentario arriba), así que el frontend no puede
+// leerla directo — tiene que pasar por aquí, con la llave de servicio.
+export const obtenerResumenFidelidad = async (req, res) => {
+    try {
+        const staffMembership = await supabaseAdmin
+            .from('barberia_memberships')
+            .select('barberia_id')
+            .eq('profile_id', req.user.id)
+            .in('role', ['owner', 'admin'])
+            .eq('is_active', true)
+            .maybeSingle();
+        if (staffMembership.error) throw staffMembership.error;
+        if (!staffMembership.data) return res.status(403).json({ error: 'No perteneces a ninguna barbería como dueño o administrador.' });
+
+        const inicioMes = new Date();
+        inicioMes.setDate(1);
+        inicioMes.setHours(0, 0, 0, 0);
+
+        const { data: ledger, error: ledgerError } = await supabaseAdmin
+            .from('loyalty_ledger')
+            .select('points_delta')
+            .eq('barberia_id', staffMembership.data.barberia_id)
+            .gte('created_at', inicioMes.toISOString());
+        if (ledgerError) throw ledgerError;
+
+        const puntosDelMes = (ledger ?? []).reduce((acc, l) => acc + l.points_delta, 0);
+        res.json({ puntosDelMes });
+    } catch (error) {
+        console.error('Error al obtener el resumen de fidelidad:', error);
+        res.status(500).json({ error: 'No fue posible obtener el resumen de fidelidad.' });
+    }
+};
 
 // El barbero marca la cita como completada: otorga puntos y pide una reseña.
 export const completarCita = async (req, res) => {

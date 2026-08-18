@@ -22,12 +22,12 @@ const PASOS = [
   {
     num: 3,
     titulo: "Permite tu ubicación",
-    desc: "Para mostrarte barberías en tu radio de 5 km.",
+    desc: "Actívala cuando quieras para encontrar las barberías más cerca de ti.",
   },
   {
     num: 4,
     titulo: "Empieza a explorar",
-    desc: "Agenda tu primera cita y conviértete en cliente VIP.",
+    desc: "Agenda tu primera cita y descubre las mejores barberías de tu zona.",
   },
 ];
 

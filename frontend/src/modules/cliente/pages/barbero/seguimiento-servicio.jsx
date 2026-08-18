@@ -4,11 +4,12 @@ import {
 } from "lucide-react";
 import { supabase } from "../../../../lib/supabase.js";
 import { apiFetch } from "../../../../utils/api.js";
+import { aNaiveISOString } from "../../../../utils/fechaCita.js";
 import "../../styles/barbero/seguimiento-servicio.css";
 import BarberoModal from "./barbero-modal";
 
 // Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
-const ANTICIPO_FIJO_MXN = 75;
+const ANTICIPO_FIJO_MXN = 100;
 
 const PASOS = [
   { id: "reserva", label: "Reserva", icono: CalendarCheck },
@@ -23,10 +24,13 @@ function pasoDeEstado(status) {
   return 1; // confirmed
 }
 
+// timeZone: "UTC" fuerza a que se lea la hora tal cual se guardó (los dígitos ya son la
+// hora local de la barbería, sin conversión — ver fechaCita.js), en vez de que el
+// navegador la vuelva a convertir a su propia zona horaria.
 function formatearFechaHora(scheduledAt) {
   const fecha = new Date(scheduledAt);
-  const fechaTexto = fecha.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" });
-  const horaTexto = fecha.toLocaleTimeString("es-MX", { hour: "numeric", minute: "2-digit", hour12: true });
+  const fechaTexto = fecha.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+  const horaTexto = fecha.toLocaleTimeString("es-MX", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "UTC" });
   return { fechaTexto: fechaTexto.charAt(0).toUpperCase() + fechaTexto.slice(1), horaTexto };
 }
 
@@ -81,8 +85,8 @@ export default function SeguimientoServicio() {
         .select(columnas)
         .eq("barberia_id", membership.barberia_id)
         .eq("status", "confirmed")
-        .gte("scheduled_at", hoy.toISOString())
-        .lt("scheduled_at", manana.toISOString())
+        .gte("scheduled_at", aNaiveISOString(hoy))
+        .lt("scheduled_at", aNaiveISOString(manana))
         .order("scheduled_at")
         .limit(1),
     ]);

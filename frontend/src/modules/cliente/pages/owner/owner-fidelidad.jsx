@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Gift, Award, Percent } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase.js';
+import { apiFetch } from '../../../../utils/api.js';
 import '../../styles/owner/owner-finanzas.css';
 
 export default function OwnerFidelidad() {
@@ -27,13 +28,12 @@ export default function OwnerFidelidad() {
         return;
       }
 
-      const inicioMes = new Date();
-      inicioMes.setDate(1);
-      inicioMes.setHours(0, 0, 0, 0);
-
-      const [{ count: totalTarjetas }, { data: ledger }, { data: coupons }] = await Promise.all([
+      const [{ count: totalTarjetas }, resumenFidelidad, { data: coupons }] = await Promise.all([
         supabase.from('loyalty_accounts').select('*', { count: 'exact', head: true }).eq('barberia_id', membership.barberia_id),
-        supabase.from('loyalty_ledger').select('points_delta').eq('barberia_id', membership.barberia_id).gte('created_at', inicioMes.toISOString()),
+        // loyalty_ledger no tiene políticas RLS de lectura para nadie (solo el backend la
+        // toca) — hay que pedir el resumen por API en vez de leerla directo, si no siempre
+        // da 0 aunque sí se hayan otorgado puntos.
+        apiFetch('/citas/fidelidad/resumen').catch(() => ({ puntosDelMes: 0 })),
         supabase
           .from('coupons')
           .select('id, code, description, discount_type, discount_value, is_active, coupon_redemptions(id)')
@@ -42,7 +42,7 @@ export default function OwnerFidelidad() {
       ]);
 
       setTarjetasActivas(totalTarjetas ?? 0);
-      setPuntosDelMes((ledger ?? []).reduce((acc, l) => acc + l.points_delta, 0));
+      setPuntosDelMes(resumenFidelidad?.puntosDelMes ?? 0);
       setCupones(coupons ?? []);
       setCargando(false);
     }

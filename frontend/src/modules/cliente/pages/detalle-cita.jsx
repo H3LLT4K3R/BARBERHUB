@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CalendarDays, Clock, MapPin, DollarSign, ArrowLeft, FileText, CheckCircle, Printer } from "lucide-react";
 import { supabase } from "../../../lib/supabase.js";
+import { horaDeCita } from "../../../utils/fechaCita.js";
 import "../styles/detalle-cita.css";
 
 const ESTADOS_LABELS = {
@@ -18,8 +19,13 @@ const ESTADOS_LABELS = {
 function formatearFecha(fechaISO) {
   const dias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
   const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-  const fecha = new Date(fechaISO);
-  return `${dias[fecha.getDay()]}, ${fecha.getDate()} de ${meses[fecha.getMonth()]} del ${fecha.getFullYear()}`;
+  // OJO: `new Date("YYYY-MM-DD")` (fecha sin hora) se interpreta como medianoche UTC, no
+  // local — usar luego getDay()/getDate() (locales) sobre eso corre el día un día hacia
+  // atrás en cualquier zona horaria detrás de UTC (México incluido). Se arma el Date con
+  // el constructor local (año, mes, día) para no toparse con esa ambigüedad.
+  const [anio, mes, dia] = fechaISO.split("-").map(Number);
+  const fecha = new Date(anio, mes - 1, dia);
+  return `${dias[fecha.getDay()]}, ${dia} de ${meses[mes - 1]} del ${anio}`;
 }
 
 export default function DetalleCita() {
@@ -70,9 +76,8 @@ export default function DetalleCita() {
     );
   }
 
-  const fechaObj = new Date(cita.scheduled_at);
-  const fechaISO = fechaObj.toISOString().slice(0, 10);
-  const hora = fechaObj.toTimeString().slice(0, 5);
+  const fechaISO = cita.scheduled_at.slice(0, 10);
+  const hora = horaDeCita(cita.scheduled_at);
 
   return (
     <div className="dc-pagina">

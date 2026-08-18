@@ -5,7 +5,7 @@ import { useActiveAccountGuard } from "../../../hooks/useActiveAccountGuard";
 import "../styles/pago-anticipo.css";
 
 // Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
-const ANTICIPO_FIJO_MXN = 75;
+const ANTICIPO_FIJO_MXN = 100;
 
 export default function PagoAnticipo() {
   useActiveAccountGuard();
@@ -42,7 +42,13 @@ export default function PagoAnticipo() {
     anticipo: `$${ANTICIPO_FIJO_MXN} ${state.moneda}`,
   };
 
-  const scheduledAt = new Date(`${state.fecha}T${state.hora}:00`).toISOString();
+  // OJO: no usar `new Date(...).toISOString()` aquí — eso interpreta fecha+hora en la
+  // zona horaria del navegador y las convierte a UTC real, desfasando la hora que el
+  // cliente eligió. El resto del sistema (business_hours, staff_availability, la lista
+  // de horarios de obtenerDisponibilidad, y la validación de horario en crearCita) trata
+  // los dígitos de la hora como la hora local de la barbería tal cual, sin conversión —
+  // así que aquí hay que mandar esos mismos dígitos, no una hora distinta.
+  const scheduledAt = `${state.fecha}T${state.hora}:00.000Z`;
 
   const aplicarCupon = async () => {
     if (!codigoCupon.trim()) return;
