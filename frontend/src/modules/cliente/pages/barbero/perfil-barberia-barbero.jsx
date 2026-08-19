@@ -339,8 +339,12 @@ export default function PerfilBarberiaBarbero() {
               <div className="mb-4 bg-black-50 p-3 rounded-xl border border-gray-100">
                 <div className="flex justify-between items-center mb-3">
                   <h4 className="sub-section-title m-0">Mi horario de trabajo</h4>
-                  <button onClick={() => setIsEditingHours(!isEditingHours)} className={`modern-hours-toggle-btn ${isEditingHours ? "editing-active" : ""}`}>
-                    {isEditingHours ? <><Check className="w-3 h-3" /> Listo</> : <><Edit2 className="w-3 h-3" /> Modificar</>}
+                  <button
+                    onClick={() => (isEditingHours ? guardarCambios() : setIsEditingHours(true))}
+                    disabled={guardando}
+                    className={`modern-hours-toggle-btn ${isEditingHours ? "editing-active" : ""}`}
+                  >
+                    {isEditingHours ? <><Check className="w-3 h-3" /> {guardando ? "Guardando..." : "Listo"}</> : <><Edit2 className="w-3 h-3" /> Modificar</>}
                   </button>
                 </div>
                 <div className="working-hours-list-text">

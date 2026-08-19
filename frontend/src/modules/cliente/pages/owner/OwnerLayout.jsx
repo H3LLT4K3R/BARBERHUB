@@ -47,6 +47,7 @@ export default function OwnerLayout({ children }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [esOwner, setEsOwner]   = useState(true);
   const [modulosBloqueados, setModulosBloqueados] = useState(new Set());
+  const [cargandoPermisos, setCargandoPermisos] = useState(true);
 
   useSuspensionGuard();
 
@@ -59,7 +60,7 @@ export default function OwnerLayout({ children }) {
   useEffect(() => {
     async function cargarPermisosNav() {
       const uid = (await supabase.auth.getUser()).data.user?.id;
-      if (!uid) return;
+      if (!uid) { setCargandoPermisos(false); return; }
       const { data: membership } = await supabase
         .from("barberia_memberships")
         .select("id, role")
@@ -67,10 +68,11 @@ export default function OwnerLayout({ children }) {
         .eq("is_active", true)
         .in("role", ["owner", "admin"])
         .maybeSingle();
-      if (!membership) return;
+      if (!membership) { setCargandoPermisos(false); return; }
 
       setEsOwner(membership.role === "owner");
       setModulosBloqueados(await obtenerModulosBloqueados(membership.id, membership.role));
+      setCargandoPermisos(false);
     }
     cargarPermisosNav();
   }, []);
@@ -83,6 +85,13 @@ export default function OwnerLayout({ children }) {
 
   const isActive = (href) => location.pathname.startsWith(href);
   const paginaActual = navItems.find((item) => isActive(item.href));
+
+  // El filtro de arriba solo esconde el enlace del menú; sin esto, alguien con un
+  // módulo bloqueado podía seguir viendo la página completa entrando por URL directa
+  // (o aterrizando ahí por defecto al iniciar sesión). Se busca en NAV_ITEMS sin
+  // filtrar porque paginaActual ya no incluye los ítems bloqueados.
+  const itemDeRutaActual = NAV_ITEMS.find((item) => isActive(item.href));
+  const moduloBloqueado = !esOwner && Boolean(itemDeRutaActual?.module) && modulosBloqueados.has(itemDeRutaActual.module);
 
   const handleLogout = async () => {
     await clearSession();
@@ -165,7 +174,14 @@ export default function OwnerLayout({ children }) {
 
         {/* CONTENIDO */}
         <main className="ow-content">
-          {children}
+          {cargandoPermisos ? (
+            <p style={{ padding: 24, color: "#6b7280" }}>Cargando...</p>
+          ) : moduloBloqueado ? (
+            <div style={{ padding: 40, textAlign: "center" }}>
+              <p style={{ fontSize: 16, fontWeight: 600, color: "#111", margin: "0 0 6px" }}>No tienes acceso a este módulo</p>
+              <p style={{ color: "#6b7280", margin: 0 }}>El dueño de la barbería restringió tu acceso a esta sección desde Seguridad de la Plataforma.</p>
+            </div>
+          ) : children}
         </main>
 
       </div>

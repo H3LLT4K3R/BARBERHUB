@@ -36,6 +36,7 @@ export default function BarberoLayout({ children, titulo = "" }) {
   const [open, setOpen]       = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [modulosBloqueados, setModulosBloqueados] = useState(new Set());
+  const [cargandoPermisos, setCargandoPermisos] = useState(true);
 
   useSuspensionGuard();
 
@@ -48,7 +49,7 @@ export default function BarberoLayout({ children, titulo = "" }) {
   useEffect(() => {
     async function cargarPermisosNav() {
       const uid = (await supabase.auth.getUser()).data.user?.id;
-      if (!uid) return;
+      if (!uid) { setCargandoPermisos(false); return; }
       const { data: membership } = await supabase
         .from("barberia_memberships")
         .select("id, role")
@@ -56,8 +57,9 @@ export default function BarberoLayout({ children, titulo = "" }) {
         .eq("role", "barber")
         .eq("is_active", true)
         .maybeSingle();
-      if (!membership) return;
+      if (!membership) { setCargandoPermisos(false); return; }
       setModulosBloqueados(await obtenerModulosBloqueados(membership.id, membership.role));
+      setCargandoPermisos(false);
     }
     cargarPermisosNav();
   }, []);
@@ -68,6 +70,11 @@ export default function BarberoLayout({ children, titulo = "" }) {
   });
 
   const isActive = (href) => location.pathname.startsWith(href);
+
+  // El filtro de arriba solo esconde el enlace del menú; sin esto, alguien con un
+  // módulo bloqueado podía seguir viendo la página completa entrando por URL directa.
+  const itemDeRutaActual = NAV_ITEMS.find((item) => isActive(item.href));
+  const moduloBloqueado = Boolean(itemDeRutaActual?.module) && modulosBloqueados.has(itemDeRutaActual.module);
 
   const handleLogout = async () => {
     await clearSession();
@@ -150,7 +157,14 @@ export default function BarberoLayout({ children, titulo = "" }) {
 
         {/* CONTENIDO */}
         <main className="bl-content">
-          {children}
+          {cargandoPermisos ? (
+            <p style={{ padding: 24, color: "#6b7280" }}>Cargando...</p>
+          ) : moduloBloqueado ? (
+            <div style={{ padding: 40, textAlign: "center" }}>
+              <p style={{ fontSize: 16, fontWeight: 600, color: "#111", margin: "0 0 6px" }}>No tienes acceso a este módulo</p>
+              <p style={{ color: "#6b7280", margin: 0 }}>El dueño de la barbería restringió tu acceso a esta sección desde Seguridad de la Plataforma.</p>
+            </div>
+          ) : children}
         </main>
 
       </div>

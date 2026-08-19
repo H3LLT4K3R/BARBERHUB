@@ -348,6 +348,34 @@ export const crearZona = async (req, res) => {
     }
 };
 
+// Borra una ciudad agregada por error. Las zonas hijas se van en cascada (ver
+// DB/add_ciudades_zonas.sql), así que no hace falta borrarlas aparte.
+export const eliminarCiudad = async (req, res) => {
+    const { ciudadId } = req.params;
+
+    try {
+        const { error } = await supabaseAdmin.from('ciudades').delete().eq('id', ciudadId);
+        if (error) throw error;
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al eliminar la ciudad:', error);
+        res.status(500).json({ error: 'No fue posible eliminar la ciudad.' });
+    }
+};
+
+export const eliminarZona = async (req, res) => {
+    const { zonaId } = req.params;
+
+    try {
+        const { error } = await supabaseAdmin.from('zonas').delete().eq('id', zonaId);
+        if (error) throw error;
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('Error al eliminar la zona:', error);
+        res.status(500).json({ error: 'No fue posible eliminar la zona.' });
+    }
+};
+
 // El super admin registra una imagen ya subida a Storage (bucket "perfiles", carpeta
 // landing/...) como parte de la ruleta del landing.
 export const agregarImagenGaleria = async (req, res) => {

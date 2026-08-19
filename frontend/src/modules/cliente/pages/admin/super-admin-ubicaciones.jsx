@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MapPin, Plus } from "lucide-react";
+import { MapPin, Plus, Trash2 } from "lucide-react";
 import { apiFetch } from "../../../../utils/api.js";
 import { supabase } from "../../../../lib/supabase.js";
 import { ESTADOS, invalidarCacheUbicaciones } from "../../data/ubicaciones.js";
@@ -10,12 +10,14 @@ export default function SuperAdminUbicaciones() {
   const [cargandoCiudades, setCargandoCiudades] = useState(true);
   const [nuevaCiudad, setNuevaCiudad] = useState("");
   const [creandoCiudad, setCreandoCiudad] = useState(false);
+  const [borrandoCiudadId, setBorrandoCiudadId] = useState(null);
 
   const [ciudadSeleccionada, setCiudadSeleccionada] = useState(null);
   const [zonas, setZonas] = useState([]);
   const [cargandoZonas, setCargandoZonas] = useState(false);
   const [nuevaZona, setNuevaZona] = useState("");
   const [creandoZona, setCreandoZona] = useState(false);
+  const [borrandoZonaId, setBorrandoZonaId] = useState(null);
 
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
@@ -96,6 +98,40 @@ export default function SuperAdminUbicaciones() {
     }
   };
 
+  const eliminarCiudad = async (c) => {
+    if (!window.confirm(`¿Borrar "${c.ciudad}"? Esto también borra sus zonas.`)) return;
+    setBorrandoCiudadId(c.id);
+    setError("");
+    setMensaje("");
+    try {
+      await apiFetch(`/admin/ciudades/${c.id}`, { method: "DELETE" });
+      invalidarCacheUbicaciones();
+      await cargarCiudades(estado);
+      setMensaje("Ciudad eliminada.");
+    } catch (err) {
+      setError(err.message || "No fue posible eliminar la ciudad.");
+    } finally {
+      setBorrandoCiudadId(null);
+    }
+  };
+
+  const eliminarZona = async (z) => {
+    if (!window.confirm(`¿Borrar la zona "${z.zona}"?`)) return;
+    setBorrandoZonaId(z.id);
+    setError("");
+    setMensaje("");
+    try {
+      await apiFetch(`/admin/zonas/${z.id}`, { method: "DELETE" });
+      invalidarCacheUbicaciones();
+      await cargarZonas(ciudadSeleccionada.id);
+      setMensaje("Zona eliminada.");
+    } catch (err) {
+      setError(err.message || "No fue posible eliminar la zona.");
+    } finally {
+      setBorrandoZonaId(null);
+    }
+  };
+
   return (
     <div className="card-white-container">
       <div className="owner-usuarios-card-header">
@@ -134,20 +170,33 @@ export default function SuperAdminUbicaciones() {
           <div className="accounts-list-stack">
             {cargandoCiudades && <p style={{ color: "#6b7280", fontSize: 14, padding: 8 }}>Cargando...</p>}
             {!cargandoCiudades && ciudades.map((c) => (
-              <button
+              <div
                 key={c.id}
-                type="button"
                 className="account-row-card"
                 style={{
-                  width: "100%",
-                  textAlign: "left",
-                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
                   border: ciudadSeleccionada?.id === c.id ? "1.5px solid #D4AF37" : "1px solid transparent",
                 }}
-                onClick={() => seleccionarCiudad(c)}
               >
-                {c.ciudad}
-              </button>
+                <button
+                  type="button"
+                  style={{ flex: 1, textAlign: "left", cursor: "pointer", border: "none", background: "none", padding: 0 }}
+                  onClick={() => seleccionarCiudad(c)}
+                >
+                  {c.ciudad}
+                </button>
+                <button
+                  type="button"
+                  title="Eliminar ciudad"
+                  disabled={borrandoCiudadId === c.id}
+                  onClick={() => eliminarCiudad(c)}
+                  style={{ border: "none", background: "none", color: "#b91c1c", cursor: "pointer", display: "flex", alignItems: "center", padding: 4 }}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             ))}
             {!cargandoCiudades && ciudades.length === 0 && (
               <p style={{ color: "#6b7280", fontSize: 14, padding: 8 }}>Todavía no hay ciudades en este estado.</p>
@@ -176,7 +225,18 @@ export default function SuperAdminUbicaciones() {
               <div className="accounts-list-stack">
                 {cargandoZonas && <p style={{ color: "#6b7280", fontSize: 14, padding: 8 }}>Cargando...</p>}
                 {!cargandoZonas && zonas.map((z) => (
-                  <div key={z.id} className="account-row-card">{z.zona}</div>
+                  <div key={z.id} className="account-row-card" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ flex: 1 }}>{z.zona}</span>
+                    <button
+                      type="button"
+                      title="Eliminar zona"
+                      disabled={borrandoZonaId === z.id}
+                      onClick={() => eliminarZona(z)}
+                      style={{ border: "none", background: "none", color: "#b91c1c", cursor: "pointer", display: "flex", alignItems: "center", padding: 4 }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 ))}
                 {!cargandoZonas && zonas.length === 0 && (
                   <p style={{ color: "#6b7280", fontSize: 14, padding: 8 }}>Todavía no hay zonas en esta ciudad.</p>

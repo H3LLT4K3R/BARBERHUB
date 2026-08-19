@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Gift, Award, Percent } from 'lucide-react';
+import { Gift, Award, Percent, Trash2 } from 'lucide-react';
 import { supabase } from '../../../../lib/supabase.js';
 import { apiFetch } from '../../../../utils/api.js';
 import '../../styles/owner/owner-finanzas.css';
@@ -11,6 +11,31 @@ export default function OwnerFidelidad() {
   const [tarjetasActivas, setTarjetasActivas] = useState(0);
   const [puntosDelMes, setPuntosDelMes] = useState(0);
   const [cupones, setCupones] = useState([]);
+  const [barberiaId, setBarberiaId] = useState(null);
+  const [actualizandoId, setActualizandoId] = useState(null);
+
+  const recargarCupones = async (bid) => {
+    const { data: coupons } = await supabase
+      .from('coupons')
+      .select('id, code, description, discount_type, discount_value, is_active, coupon_redemptions(id)')
+      .eq('barberia_id', bid)
+      .order('created_at', { ascending: false });
+    setCupones(coupons ?? []);
+  };
+
+  const alternarActivoCupon = async (cupon) => {
+    setActualizandoId(cupon.id);
+    const { error } = await supabase.from('coupons').update({ is_active: !cupon.is_active }).eq('id', cupon.id);
+    if (!error) await recargarCupones(barberiaId);
+    setActualizandoId(null);
+  };
+
+  const eliminarCupon = async (cupon) => {
+    setActualizandoId(cupon.id);
+    const { error } = await supabase.from('coupons').delete().eq('id', cupon.id);
+    if (!error) await recargarCupones(barberiaId);
+    setActualizandoId(null);
+  };
 
   useEffect(() => {
     async function cargar() {
@@ -27,6 +52,8 @@ export default function OwnerFidelidad() {
         setCargando(false);
         return;
       }
+
+      setBarberiaId(membership.barberia_id);
 
       const [{ count: totalTarjetas }, resumenFidelidad, { data: coupons }] = await Promise.all([
         supabase.from('loyalty_accounts').select('*', { count: 'exact', head: true }).eq('barberia_id', membership.barberia_id),
@@ -108,6 +135,26 @@ export default function OwnerFidelidad() {
                   <p className="valor-negativo">
                     -{cupon.discount_type === 'percent' ? `${cupon.discount_value}%` : `$${cupon.discount_value}`}
                   </p>
+                </div>
+                <div style={{ display: 'flex', gap: 6, marginLeft: 12 }}>
+                  <button
+                    type="button"
+                    className="owner-usuarios-submit-btn"
+                    style={{ maxWidth: 110, marginTop: 0, padding: '6px 10px', fontSize: 12, background: cupon.is_active ? '#e5e7eb' : '#111827', color: cupon.is_active ? '#111' : '#fff' }}
+                    disabled={actualizandoId === cupon.id}
+                    onClick={() => alternarActivoCupon(cupon)}
+                  >
+                    {cupon.is_active ? 'Desactivar' : 'Activar'}
+                  </button>
+                  <button
+                    type="button"
+                    title="Eliminar cupón"
+                    disabled={actualizandoId === cupon.id}
+                    onClick={() => eliminarCupon(cupon)}
+                    style={{ border: 'none', background: 'none', color: '#b91c1c', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 6 }}
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               </div>
             ))}
