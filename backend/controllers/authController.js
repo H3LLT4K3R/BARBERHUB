@@ -26,29 +26,27 @@ export const solicitarRecuperacion = async (req, res) => {
             return res.json({ ok: true });
         }
 
-        try {
-            await transporter.sendMail({
-                from: `"Barber Hub" <${MAIL_USER}>`,
-                to: email.trim(),
-                subject: 'Recupera tu contraseña de Barber Hub',
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
-                        <h2 style="color: #111;">Barber Hub</h2>
-                        <p>Recibimos una solicitud para restablecer tu contraseña.</p>
-                        <p>Haz clic en el siguiente botón para elegir una nueva contraseña. Si tú no solicitaste esto, puedes ignorar este correo.</p>
-                        <a href="${data.properties.action_link}"
-                           style="display: inline-block; padding: 14px 24px; background-color: #c9a227; color: #111; text-decoration: none; font-weight: bold; border-radius: 8px; margin-top: 12px;">
-                           Restablecer contraseña
-                        </a>
-                        <p style="color: #888; font-size: 13px; margin-top: 24px;">Este enlace expira en 1 hora.</p>
-                    </div>
-                `,
-            });
-        } catch (mailError) {
-            console.error('Error al enviar el correo de recuperación:', mailError);
-        }
-
         res.json({ ok: true });
+
+        transporter.sendMail({
+            from: `"Barber Hub" <${MAIL_USER}>`,
+            to: email.trim(),
+            subject: 'Recupera tu contraseña de Barber Hub',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+                    <h2 style="color: #111;">Barber Hub</h2>
+                    <p>Recibimos una solicitud para restablecer tu contraseña.</p>
+                    <p>Haz clic en el siguiente botón para elegir una nueva contraseña. Si tú no solicitaste esto, puedes ignorar este correo.</p>
+                    <a href="${data.properties.action_link}"
+                       style="display: inline-block; padding: 14px 24px; background-color: #c9a227; color: #111; text-decoration: none; font-weight: bold; border-radius: 8px; margin-top: 12px;">
+                       Restablecer contraseña
+                    </a>
+                    <p style="color: #888; font-size: 13px; margin-top: 24px;">Este enlace expira en 1 hora.</p>
+                </div>
+            `,
+        }).catch((mailError) => {
+            console.error('Error al enviar el correo de recuperación:', mailError);
+        });
     } catch (error) {
         console.error('Error al procesar la recuperación de contraseña:', error);
         res.status(500).json({ error: 'No fue posible procesar la solicitud.' });
@@ -91,28 +89,29 @@ export const registrarUsuario = async (req, res) => {
             await supabaseAdmin.from('profiles').update({ phone: phone.trim() }).eq('id', data.user.id);
         }
 
-        try {
-            await transporter.sendMail({
-                from: `"Barber Hub" <${MAIL_USER}>`,
-                to: email.trim(),
-                subject: 'Confirma tu cuenta de Barber Hub',
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
-                        <h2 style="color: #111;">Barber Hub</h2>
-                        <p>¡Gracias por registrarte! Confirma tu correo para activar tu cuenta.</p>
-                        <a href="${data.properties.action_link}"
-                           style="display: inline-block; padding: 14px 24px; background-color: #c9a227; color: #111; text-decoration: none; font-weight: bold; border-radius: 8px; margin-top: 12px;">
-                           Confirmar mi cuenta
-                        </a>
-                        <p style="color: #888; font-size: 13px; margin-top: 24px;">Si tú no creaste esta cuenta, puedes ignorar este correo.</p>
-                    </div>
-                `,
-            });
-        } catch (mailError) {
-            console.error('Error al enviar el correo de confirmación:', mailError);
-        }
-
+        // La cuenta ya existe: responder de inmediato. El envío del correo puede tardar
+        // varios segundos y no debe hacer esperar al cliente ni arriesgar que el proxy
+        // corte la respuesta (502) aunque la cuenta sí se haya creado.
         res.status(201).json({ ok: true });
+
+        transporter.sendMail({
+            from: `"Barber Hub" <${MAIL_USER}>`,
+            to: email.trim(),
+            subject: 'Confirma tu cuenta de Barber Hub',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+                    <h2 style="color: #111;">Barber Hub</h2>
+                    <p>¡Gracias por registrarte! Confirma tu correo para activar tu cuenta.</p>
+                    <a href="${data.properties.action_link}"
+                       style="display: inline-block; padding: 14px 24px; background-color: #c9a227; color: #111; text-decoration: none; font-weight: bold; border-radius: 8px; margin-top: 12px;">
+                       Confirmar mi cuenta
+                    </a>
+                    <p style="color: #888; font-size: 13px; margin-top: 24px;">Si tú no creaste esta cuenta, puedes ignorar este correo.</p>
+                </div>
+            `,
+        }).catch((mailError) => {
+            console.error('Error al enviar el correo de confirmación:', mailError);
+        });
     } catch (error) {
         console.error('Error al registrar usuario:', error);
         res.status(500).json({ error: 'No fue posible crear la cuenta.' });
