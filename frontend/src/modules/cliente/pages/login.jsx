@@ -103,6 +103,12 @@ export default function Login() {
   return (
     <div className="login-pagina">
       <div className="login-columna-izquierda">
+        <img
+          className="login-banner"
+          src="/banner-login.svg"
+          alt="Barber Hub: encuentra tu barbería ideal en segundos"
+        />
+        <img className="login-logo-central" src="/logo.png" alt="Barber Hub" />
         <div className="login-overlay" />
         <div className="login-contenido-izquierdo">
           <BrandLogo className="login-logo-boton" imgClassName="login-logo" />
