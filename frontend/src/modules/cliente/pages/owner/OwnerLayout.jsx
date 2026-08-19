@@ -60,7 +60,12 @@ export default function OwnerLayout({ children }) {
   useEffect(() => {
     async function cargarPermisosNav() {
       const uid = (await supabase.auth.getUser()).data.user?.id;
-      if (!uid) { setCargandoPermisos(false); return; }
+      if (!uid) {
+        // Sin sesión: antes esto renderizaba el panel completo con datos vacíos
+        // en vez de mandar a iniciar sesión.
+        navigate("/login", { replace: true, state: { redirigirA: location.pathname } });
+        return;
+      }
       const { data: membership } = await supabase
         .from("barberia_memberships")
         .select("id, role")
@@ -68,13 +73,21 @@ export default function OwnerLayout({ children }) {
         .eq("is_active", true)
         .in("role", ["owner", "admin"])
         .maybeSingle();
-      if (!membership) { setCargandoPermisos(false); return; }
+      if (!membership) {
+        // Con sesión pero sin membresía de owner/admin en ninguna barbería (ej. un
+        // cliente que entra por URL directa a /owner-finanzas): antes también
+        // renderizaba el panel vacío en vez de sacarlo de una sección que no le
+        // corresponde.
+        navigate("/explorar", { replace: true });
+        return;
+      }
 
       setEsOwner(membership.role === "owner");
       setModulosBloqueados(await obtenerModulosBloqueados(membership.id, membership.role));
       setCargandoPermisos(false);
     }
     cargarPermisosNav();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const navItems = NAV_ITEMS.filter((item) => {

@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { CalendarDays, Map, Menu, LogOut, History, Heart, Bell, Settings, User, Search } from "lucide-react";
 import { clearSession } from "../../../utils/api";
 import { useActiveAccountGuard } from "../../../hooks/useActiveAccountGuard";
+import { useRequireAuth } from "../../../hooks/useRequireAuth";
 import "../styles/sidebar-layout.css"; // Lo mantenemos por si tienes tipografías u otros estilos menores
 
 const NAV_ITEMS = [
@@ -16,6 +17,7 @@ const NAV_ITEMS = [
 
 export default function SidebarLayout({ children }) {
   useActiveAccountGuard();
+  useRequireAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [open, setOpen] = useState(false);

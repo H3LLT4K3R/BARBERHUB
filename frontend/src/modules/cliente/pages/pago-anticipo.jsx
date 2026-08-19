@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { apiFetch } from "../../../utils/api.js";
 import { useActiveAccountGuard } from "../../../hooks/useActiveAccountGuard";
+import { useRequireAuth } from "../../../hooks/useRequireAuth";
 import "../styles/pago-anticipo.css";
 
 // Anticipo fijo para todas las citas (por ahora); el resto se liquida en el local.
@@ -9,8 +10,15 @@ const ANTICIPO_FIJO_MXN = 100;
 
 export default function PagoAnticipo() {
   useActiveAccountGuard();
+  useRequireAuth();
   const navigate = useNavigate();
   const { state } = useLocation();
+  // Un doble clic muy rápido dispara ambos onClick antes de que React vuelva a
+  // renderizar con enviando=true (los dos clics leen el mismo closure viejo con
+  // enviando=false), así que un guard basado en useState no alcanza a bloquear el
+  // segundo — confirmado en pruebas: dos POST /citas idénticos, dos citas duplicadas.
+  // useRef sí sirve porque se actualiza al instante, sin esperar a un re-render.
+  const enviandoRef = useRef(false);
   const [enviando, setEnviando] = useState(false);
   const [enviada, setEnviada] = useState(false);
   const [error, setError] = useState("");
@@ -51,7 +59,7 @@ export default function PagoAnticipo() {
   const scheduledAt = `${state.fecha}T${state.hora}:00.000Z`;
 
   const aplicarCupon = async () => {
-    if (!codigoCupon.trim()) return;
+    if (!codigoCupon.trim() || validandoCupon) return;
     setValidandoCupon(true);
     setErrorCupon("");
     try {
@@ -82,6 +90,8 @@ export default function PagoAnticipo() {
 
   const handleConfirmar = async (e) => {
     e.preventDefault();
+    if (enviandoRef.current) return;
+    enviandoRef.current = true;
     setEnviando(true);
     setError("");
 
@@ -106,6 +116,7 @@ export default function PagoAnticipo() {
     } catch (err) {
       setError(err.message || "No fue posible enviar tu solicitud. Intenta de nuevo.");
     } finally {
+      enviandoRef.current = false;
       setEnviando(false);
     }
   };

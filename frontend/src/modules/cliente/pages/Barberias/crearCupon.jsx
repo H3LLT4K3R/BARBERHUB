@@ -86,7 +86,7 @@ export default function CrearCupon() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!barberiaId) return;
+    if (!barberiaId || enviando) return;
     if (!nombre.trim() || !codigo.trim() || !valor || !fecha) {
       setError('Completa nombre, código, valor y fecha de expiración.');
       return;

@@ -27,17 +27,35 @@ export async function apiFetch(path, options = {}) {
     ...options.headers,
   };
 
-  const res = await fetch(`/api${path}`, { ...options, headers });
+  let res;
+  try {
+    res = await fetch(`/api${path}`, { ...options, headers });
+  } catch {
+    // fetch() rechaza (en vez de resolver con una respuesta) cuando no hay conexión
+    // o el backend está inalcanzable. Sin este catch, algunas pantallas mostraban el
+    // texto crudo del navegador ("Failed to fetch") en vez de un mensaje entendible.
+    const error = new Error("No fue posible conectar con el servidor. Revisa tu conexión e intenta de nuevo.");
+    error.status = 0;
+    throw error;
+  }
   let data;
+  let huboRespuestaNoJson = false;
 
   try {
     data = await res.json();
   } catch {
+    // El backend siempre responde JSON; si esto falla es porque quien contestó fue
+    // el proxy/CDN en el medio (una página de error HTML), típicamente porque el
+    // backend está caído o inalcanzable, no porque la solicitud en sí esté mal.
     data = {};
+    huboRespuestaNoJson = true;
   }
 
   if (!res.ok) {
-    const error = new Error(data.error || "Error en la solicitud.");
+    const mensajePorDefecto = huboRespuestaNoJson && res.status >= 500
+      ? "El servidor no está disponible en este momento. Intenta de nuevo en unos minutos."
+      : "Error en la solicitud.";
+    const error = new Error(data.error || mensajePorDefecto);
     error.status = res.status;
     error.code = data.code;
     throw error;

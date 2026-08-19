@@ -64,7 +64,7 @@ export default function OwnerUsuarios() {
   };
 
   const handleCrearCuenta = async () => {
-    if (!nuevoUsuario.nombre || !nuevoUsuario.email || !nuevoUsuario.password || !barberiaId) return;
+    if (!nuevoUsuario.nombre || !nuevoUsuario.email || !nuevoUsuario.password || !barberiaId || enviando) return;
 
     const { valida } = evaluarPassword(nuevoUsuario.password);
     if (!valida) {

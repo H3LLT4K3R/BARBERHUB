@@ -4,6 +4,7 @@ import { IconCircleCheck } from "@tabler/icons-react";
 import { formatearHorarioCita, keyAFecha } from "../../../utils/fecha.js";
 import { supabase } from "../../../lib/supabase.js";
 import { useActiveAccountGuard } from "../../../hooks/useActiveAccountGuard";
+import { useRequireAuth } from "../../../hooks/useRequireAuth";
 import PageNavbar from "../components/page-navbar";
 import "../styles/datos-reserva.css";
 
@@ -12,6 +13,7 @@ const ANTICIPO_FIJO_MXN = 100;
 
 export default function DatosReserva() {
   useActiveAccountGuard();
+  useRequireAuth();
   const navigate = useNavigate();
   const { state } = useLocation();
 
