@@ -187,8 +187,8 @@ export default function InventarioView() {
                       </button>
                     </div>
                   </td>
-                  <td className="text-center text-gray">${prod.unit_cost}</td>
-                  <td className="text-center item-total">${(prod.unit_cost * prod.stock_on_hand).toLocaleString()}</td>
+                  <td className="text-center text-gray">${Number(prod.unit_cost).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</td>
+                  <td className="text-center item-total">${(prod.unit_cost * prod.stock_on_hand).toLocaleString('es-MX', { minimumFractionDigits: 2 })}</td>
                 </tr>
               ))
             )}
