@@ -139,15 +139,21 @@ export default function DatosReserva() {
                 <span className="dr-valor">{reserva.barberoNombre ?? "Sin preferencia"}</span>
               </div>
               <div className="dr-fila-resumen">
-                <span className="dr-etiqueta">TOTAL DEL SERVICIO (se paga en el local)</span>
+                <span className="dr-etiqueta">TOTAL DEL SERVICIO</span>
                 <span className="dr-valor">
-                  ${Math.max(0, reserva.precio - ANTICIPO_FIJO_MXN)} {reserva.moneda}
+                  ${reserva.precio} {reserva.moneda}
                 </span>
               </div>
               <div className="dr-fila-resumen destacado">
                 <span className="dr-etiqueta">ANTICIPO A PAGAR (al aceptar el barbero)</span>
                 <span className="dr-valor">
                   ${ANTICIPO_FIJO_MXN} {reserva.moneda}
+                </span>
+              </div>
+              <div className="dr-fila-resumen">
+                <span className="dr-etiqueta">RESTO A PAGAR EN EL LOCAL</span>
+                <span className="dr-valor">
+                  ${Math.max(0, reserva.precio - ANTICIPO_FIJO_MXN)} {reserva.moneda}
                 </span>
               </div>
             </div>
