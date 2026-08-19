@@ -214,9 +214,9 @@ export default function PagoAnticipo() {
                 <span className="pa-value">{resumen.barbero}</span>
               </div>
               <div className="pa-summary-item">
-                <span className="pa-label">TOTAL DEL SERVICIO (se paga en el local)</span>
+                <span className="pa-label">TOTAL DEL SERVICIO</span>
                 <span className="pa-value" style={cupon ? { textDecoration: "line-through", color: "#8e8e93" } : undefined}>
-                  {cupon ? resumen.total : `$${Math.max(0, state.precio - ANTICIPO_FIJO_MXN)} ${state.moneda}`}
+                  {resumen.total}
                 </span>
               </div>
               {cupon && (
@@ -229,13 +229,19 @@ export default function PagoAnticipo() {
               )}
               {cupon && (
                 <div className="pa-summary-item">
-                  <span className="pa-label">NUEVO TOTAL (se paga en el local)</span>
-                  <span className="pa-value font-bold">${Math.max(0, cupon.total - ANTICIPO_FIJO_MXN)} {state.moneda}</span>
+                  <span className="pa-label">NUEVO TOTAL</span>
+                  <span className="pa-value font-bold">${cupon.total} {state.moneda}</span>
                 </div>
               )}
               <div className="pa-summary-item pa-highlight-row">
                 <span className="pa-label">ANTICIPO A PAGAR (cuando se acepte)</span>
                 <span className="pa-value font-bold">{resumen.anticipo}</span>
+              </div>
+              <div className="pa-summary-item">
+                <span className="pa-label">RESTO A PAGAR EN EL LOCAL</span>
+                <span className="pa-value">
+                  ${Math.max(0, (cupon ? cupon.total : state.precio) - ANTICIPO_FIJO_MXN)} {state.moneda}
+                </span>
               </div>
             </div>
 

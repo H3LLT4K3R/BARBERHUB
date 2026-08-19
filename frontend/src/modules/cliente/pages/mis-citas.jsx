@@ -284,8 +284,9 @@ export default function MisCitas() {
               <p><strong>Barbero:</strong> {citaDetalle.barbero}</p>
               <p><strong>Barbería:</strong> {citaDetalle.barberia}</p>
               <p><strong>Horario:</strong> {citaDetalle.horario}</p>
-              <p><strong>Total del servicio (se paga en el local):</strong> ${Math.max(0, Number(citaDetalle.total) - ANTICIPO_FIJO_MXN).toFixed(2)}</p>
+              <p><strong>Total del servicio:</strong> ${Number(citaDetalle.total).toFixed(2)}</p>
               <p><strong>Anticipo por Mercado Pago:</strong> ${ANTICIPO_FIJO_MXN}.00</p>
+              <p><strong>Resto a pagar en el local:</strong> ${Math.max(0, Number(citaDetalle.total) - ANTICIPO_FIJO_MXN).toFixed(2)}</p>
               <p><strong>Estado:</strong> {citaDetalle.estado.texto}</p>
             </div>
             <div className="modal-footer">
