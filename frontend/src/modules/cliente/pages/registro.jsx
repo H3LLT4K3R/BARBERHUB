@@ -48,7 +48,7 @@ export default function Registro() {
 
   // Pre-despierta silenciosamente el servidor Render al entrar a la pantalla de registro
   useEffect(() => {
-    fetch("/api/health").catch(() => {});
+    fetch("/api/citas/disponibilidad").catch(() => {});
   }, []);
 
   const handleChange = (e) => {
