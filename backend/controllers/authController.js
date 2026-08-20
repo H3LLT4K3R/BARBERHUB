@@ -93,7 +93,7 @@ export const registrarUsuario = async (req, res) => {
 
         try {
             await transporter.sendMail({
-                from: `"Barber Hub" <${MAIL_USER}>`,
+                from: MAIL_FROM,
                 to: email.trim(),
                 subject: 'Confirma tu cuenta de Barber Hub',
                 html: `

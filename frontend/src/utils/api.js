@@ -27,9 +27,14 @@ export async function apiFetch(path, options = {}) {
     ...options.headers,
   };
 
-  const res = await fetch(`/api${path}`, { ...options, headers });
-  let data;
+  let res;
+  try {
+    res = await fetch(`/api${path}`, { ...options, headers });
+  } catch (netErr) {
+    throw new Error("No se pudo conectar con el servidor. Verifica tu conexión a internet.");
+  }
 
+  let data;
   try {
     data = await res.json();
   } catch {
@@ -37,6 +42,13 @@ export async function apiFetch(path, options = {}) {
   }
 
   if (!res.ok) {
+    if (res.status === 502 || res.status === 504) {
+      if (!options._isRetry) {
+        await new Promise((resolve) => setTimeout(resolve, 3500));
+        return apiFetch(path, { ...options, _isRetry: true });
+      }
+      throw new Error("El servidor se está iniciando (despertando de inactividad). Por favor, intenta de nuevo en unos segundos.");
+    }
     const error = new Error(data.error || "Error en la solicitud.");
     error.status = res.status;
     error.code = data.code;
