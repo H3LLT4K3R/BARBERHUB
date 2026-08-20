@@ -1,19 +1,29 @@
 :root {
-  --color-principal: #ffffff;
+  --color-principal: #fcfbf7;
   --color-dorado: #e5be6b;
-  --color-dorado-borde: #edd193;
-  --texto-principal: #000000;
-  --texto-muted: #555555;
-  --gris-claro: #f4f4f5;
+  --color-dorado-borde: #e2d3b2;
+  --texto-principal: #111827;
+  --texto-muted: #6b7280;
+  --gris-claro: #f3f4f6;
   --rojo-suave: #fee2e2;
   --rojo-texto: #dc2626;
+}
+
+/* Reset local */
+.nt-dashboard,
+.nt-dashboard *,
+.nt-dashboard *::before,
+.nt-dashboard *::after {
+  box-sizing: border-box;
 }
 
 .nt-dashboard {
   width: 100%;
   min-height: 100vh;
+  max-width: 100vw;
+  overflow-x: hidden;
   background-color: var(--color-principal);
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
 .nt-main-wrapper {
@@ -21,7 +31,7 @@
 }
 
 .contenido {
-  padding: 30px 20px;
+  padding: 32px 16px;
   display: flex;
   justify-content: center;
 }
@@ -29,9 +39,9 @@
 .contenedor-cards {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 18px;
   width: 100%;
-  max-width: 900px;
+  max-width: 720px;
 }
 
 /* Cabecera y contador */
@@ -39,25 +49,26 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
 }
 
 .contador-no-leidas {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .punto-indicador {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
   background-color: var(--color-dorado);
   border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(229, 190, 107, 0.25);
 }
 
 .contador-no-leidas p {
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--texto-principal);
   margin: 0;
 }
@@ -65,12 +76,14 @@
 .boton-limpiar {
   background: none;
   border: none;
-  color: var(--texto-muted);
-  font-size: 0.9rem;
-  font-weight: 600;
+  color: #855e16;
+  font-size: 0.88rem;
+  font-weight: 700;
   cursor: pointer;
   text-decoration: underline;
   transition: color 0.2s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .boton-limpiar:hover {
@@ -81,59 +94,58 @@
 .lista-notificaciones {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 /* Tarjeta */
 .tarjeta-notificacion {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   width: 100%;
   background-color: #ffffff;
-  border: 1.5px solid #eaeaea;
-  border-radius: 16px;
-  padding: 20px 24px;
-  gap: 20px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 18px;
+  padding: 18px 20px;
+  gap: 16px;
   text-align: left;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
   transition: all 0.2s ease;
   outline: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .tarjeta-notificacion:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(229, 190, 107, 0.2);
-  background-color: #fdfdfa;
-}
-
-.tarjeta-notificacion:focus-visible {
-  border-color: var(--color-dorado);
-  box-shadow: 0 0 0 3px rgba(229, 190, 107, 0.4);
+  transform: translateY(-1px);
+  border-color: rgba(229, 190, 107, 0.6);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
 }
 
 .tarjeta-notificacion.no-leida {
-  border-color: var(--color-dorado-borde);
-  background-color: #fffdf7;
+  border-color: #ebd49f;
+  background-color: #fffdf5;
 }
 
 /* Iconos dinámicos */
 .icono-contenedor {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background-color: var(--gris-claro);
-  color: var(--texto-principal);
+  background-color: #111111;
+  color: #e5be6b;
+  margin-top: 2px;
 }
 
 .icono-contenedor.confirmada,
-.icono-contenedor.cupon {
-  background-color: #fef3c7;
-  color: #b45309;
+.icono-contenedor.cupon,
+.icono-contenedor.appointment {
+  background-color: #111111;
+  color: #e5be6b;
 }
 
 .icono-contenedor.denegada {
@@ -144,33 +156,47 @@
 /* Textos e información */
 .info-notificacion {
   flex: 1;
+  min-width: 0;
+}
+
+.encabezado-notificacion {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .info-notificacion h3 {
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin: 0 0 4px 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0;
   color: var(--texto-principal);
+  line-height: 1.35;
+  word-break: break-word;
 }
 
 .descripcion-notificacion {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: var(--texto-muted);
-  margin: 0;
-  line-height: 1.4;
+  margin: 0 0 10px 0;
+  line-height: 1.45;
+  word-break: break-word;
 }
 
 /* Meta datos */
 .meta-notificacion {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+  justify-content: space-between;
+  width: 100%;
+  padding-top: 8px;
+  border-top: 1px dashed #e5e7eb;
 }
 
 .texto-tiempo {
-  font-size: 0.85rem;
-  color: var(--texto-muted);
+  font-size: 0.8rem;
+  color: #9ca3af;
   font-weight: 500;
 }
 
@@ -179,23 +205,57 @@
   height: 10px;
   background-color: var(--color-dorado);
   border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(229, 190, 107, 0.3);
 }
 
 .boton-eliminar-notificacion {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   border: none;
   background: transparent;
-  color: var(--texto-muted);
+  color: #9ca3af;
   cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: all 0.15s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .boton-eliminar-notificacion:hover {
   background-color: var(--rojo-suave);
   color: var(--rojo-texto);
+}
+
+@media (max-width: 550px) {
+  .contenido {
+    padding: 20px 12px;
+  }
+
+  .tarjeta-notificacion {
+    padding: 14px 12px;
+    gap: 12px;
+    border-radius: 14px;
+  }
+
+  .icono-contenedor {
+    width: 38px;
+    height: 38px;
+  }
+
+  .icono-contenedor svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .info-notificacion h3 {
+    font-size: 0.98rem;
+  }
+
+  .descripcion-notificacion {
+    font-size: 0.85rem;
+  }
 }
