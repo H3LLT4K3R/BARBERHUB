@@ -11,12 +11,28 @@
   --color-border: #e5e7eb;
 }
 
+/* Reset local */
+.seguridad-wrapper,
+.seguridad-wrapper *,
+.seguridad-wrapper *::before,
+.seguridad-wrapper *::after {
+  box-sizing: border-box;
+}
+
+.role-toggle-btn,
+.toggle-switch,
+.profile-select {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .seguridad-wrapper {
-  max-width: 900px; /* Un poco más estrecho para que los toggles no queden tan lejos */
+  max-width: 900px;
   margin: 0 auto;
-  padding: 30px;
+  padding: 30px 20px;
   font-family: system-ui, -apple-system, sans-serif;
   color: var(--color-black);
+  width: 100%;
 }
 
 .fade-in {
@@ -32,11 +48,11 @@
   ENCABEZADO
 =============================================*/
 .seguridad-header {
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 .seguridad-header h2 {
-  font-size: 1.8rem;
+  font-size: clamp(1.4rem, 2.5vw, 1.8rem);
   font-weight: 800;
   margin: 0 0 8px 0;
   color: var(--color-black);
@@ -58,19 +74,21 @@
   border-radius: 999px;
   margin-bottom: 24px;
   gap: 4px;
+  max-width: 100%;
 }
 
 .role-toggle-btn {
   border: none;
   background: transparent;
-  padding: 10px 22px;
+  padding: 10px 20px;
   border-radius: 999px;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--color-gray);
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: inherit;
+  white-space: nowrap;
 }
 
 .role-toggle-btn:hover {
@@ -86,7 +104,7 @@
   SELECTOR DE PERFIL (cuando hay varios)
 =============================================*/
 .profile-select {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: var(--color-black);
   border: 1px solid var(--color-border);
@@ -96,6 +114,7 @@
   font-family: inherit;
   cursor: pointer;
   margin-bottom: 4px;
+  max-width: 100%;
 }
 
 /*=============================================
@@ -104,9 +123,10 @@
 .security-panel {
   background-color: #ffffff;
   border-radius: 16px;
-  padding: 30px;
+  padding: 28px;
   border: 1px solid var(--color-border);
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+  width: 100%;
 }
 
 /*=============================================
@@ -115,37 +135,46 @@
 .profile-banner {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   border-bottom: 1px solid var(--color-border);
-  padding-bottom: 25px;
-  margin-bottom: 25px;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  width: 100%;
 }
 
 .profile-avatar {
   background-color: var(--color-black);
   color: var(--color-gold);
-  width: 64px;
-  height: 64px;
+  width: 58px;
+  height: 58px;
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 800;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+
+.profile-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .profile-info h3 {
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 800;
   margin: 0 0 4px 0;
   color: var(--color-black);
+  word-break: break-word;
 }
 
 .profile-info p {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--color-gray);
   margin: 0;
+  word-break: break-word;
 }
 
 /*=============================================
@@ -154,18 +183,21 @@
 .permissions-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  width: 100%;
 }
 
 .permission-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 18px 20px;
   border-radius: 12px;
   border: 1px solid var(--color-border);
   background-color: #ffffff;
   transition: all 0.3s ease;
+  gap: 16px;
+  width: 100%;
 }
 
 .permission-card.is-active {
@@ -180,21 +212,24 @@
 }
 
 .permission-text {
-  padding-right: 30px;
+  flex: 1;
+  min-width: 0;
 }
 
 .permission-text h4 {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: var(--color-black);
-  margin: 0 0 6px 0;
+  margin: 0 0 4px 0;
+  word-break: break-word;
 }
 
 .permission-text p {
-  font-size: 0.85rem;
+  font-size: 0.84rem;
   color: var(--color-gray);
   margin: 0;
   line-height: 1.4;
+  word-break: break-word;
 }
 
 /*=============================================
@@ -217,7 +252,7 @@
 }
 
 .toggle-off {
-  background-color: #cbd5e1; /* Gris oscuro para notar que está apagado */
+  background-color: #cbd5e1;
 }
 
 .toggle-circle {
@@ -231,35 +266,47 @@
   transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
 }
 
-/* Animación de deslizamiento del círculo */
 .toggle-on .toggle-circle {
-  transform: translateX(27px); /* Se mueve a la derecha */
+  transform: translateX(27px);
 }
 
 .toggle-off .toggle-circle {
-  transform: translateX(3px); /* Se queda a la izquierda */
+  transform: translateX(3px);
 }
 
 /*=============================================
-  RESPONSIVE
+  RESPONSIVE MÓVIL (< 600px)
 =============================================*/
 @media (max-width: 600px) {
   .seguridad-wrapper {
-    padding: 15px;
+    padding: 16px 12px;
   }
   
   .security-panel {
-    padding: 20px;
+    padding: 18px 14px;
+    border-radius: 14px;
+  }
+
+  .role-toggle-group {
+    width: 100%;
+  }
+
+  .role-toggle-btn {
+    flex: 1;
+    text-align: center;
+    padding: 8px 12px;
   }
 
   .permission-card {
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: flex-start;
-    gap: 20px;
-    padding: 15px;
+    gap: 12px;
+    padding: 14px;
   }
   
   .toggle-switch {
-    align-self: flex-end;
+    align-self: flex-start;
+    margin-top: 2px;
   }
 }

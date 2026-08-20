@@ -1,34 +1,47 @@
-/* Fuentes y estilos base */
-/* Antes vivía en `body`, lo que dejaba el fondo oscuro y el texto claro
-   pegados a toda la SPA al navegar a otras páginas (el CSS de un componente
-   no se descarga al desmontarlo). Se limita al wrapper propio de esta página. */
+/* Reset local */
+.cc-wrapper,
+.cc-wrapper *,
+.cc-wrapper *::before,
+.cc-wrapper *::after {
+  box-sizing: border-box;
+}
+
+.input-field,
+.input-field-code,
+.btn-rayo,
+.btn-cancel,
+.btn-submit,
+.day-checkbox-label,
+.btn-toggle-segmentacion {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
 
 /* ==========================================================================
-   LAYOUT PRINCIPAL (vive dentro de OwnerLayout, que ya trae su propio
-   header + sidebar reales — esta página solo aporta el contenido)
+   LAYOUT PRINCIPAL
    ========================================================================== */
 
 .cc-wrapper {
-  padding: 40px 20px;
+  padding: 30px 20px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  box-sizing: border-box;
   background-color: #121212;
   color: #e0e0e0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   min-height: 100%;
+  width: 100%;
 }
 
 /* ==========================================================================
-   ESTILOS DE LA TARJETA Y FORMULARIO (MÉTRICA ORIGINAL COMPLETA)
+   ESTILOS DE LA TARJETA Y FORMULARIO
    ========================================================================== */
 
 .grid-card {
   max-width: 1024px;
   width: 100%;
   background-color: #1a1a1a;
-  border-radius: 12px;
+  border-radius: 16px;
   border: 1px solid #2a2a2a;
   overflow: hidden;
   display: grid;
@@ -43,10 +56,11 @@
 }
 
 .form-side {
-  padding: 32px;
+  padding: 28px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+  width: 100%;
 }
 
 @media (min-width: 992px) {
@@ -57,17 +71,18 @@
 }
 
 .preview-side {
-  padding: 32px;
+  padding: 28px;
   background-color: #151515;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
   text-align: center;
+  width: 100%;
 }
 
 .title-main {
-  font-size: 24px;
+  font-size: clamp(1.25rem, 2.5vw, 1.5rem);
   font-weight: 700;
   color: #d4af37;
   display: flex;
@@ -78,15 +93,15 @@
 
 .subtitle {
   color: #a0a0a0;
-  font-size: 14px;
+  font-size: 13px;
   margin: 4px 0 0 0;
 }
 
 .section-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #ffffff;
-  margin: 0 0 16px 0;
+  margin: 0 0 14px 0;
 }
 
 .separator {
@@ -99,12 +114,14 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 100%;
 }
 
 .inputs-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
+  width: 100%;
 }
 
 @media (min-width: 640px) {
@@ -116,16 +133,18 @@
 .input-group {
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .flex-row-gap {
   display: flex;
   gap: 8px;
+  width: 100%;
 }
 
 .label-style {
   display: block;
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #a0a0a0;
@@ -136,15 +155,15 @@
   width: 100%;
   background-color: #262626;
   border: 1px solid #3a3a3a;
-  border-radius: 4px;
-  padding: 10px;
+  border-radius: 8px;
+  padding: 10px 12px;
   color: #ffffff;
   font-size: 14px;
-  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
 }
 
 .input-field:focus {
-  outline: none;
   border-color: #d4af37;
 }
 
@@ -152,12 +171,12 @@
   width: 100%;
   background-color: #e8f0fe;
   border: 1px solid #3a3a3a;
-  border-radius: 4px;
-  padding: 10px;
+  border-radius: 8px;
+  padding: 10px 12px;
   color: #000000;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 14px;
-  box-sizing: border-box;
+  outline: none;
 }
 
 .btn-rayo {
@@ -166,8 +185,9 @@
   color: #ff9f43;
   font-size: 12px;
   padding: 0 12px;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .footer-actions {
@@ -176,12 +196,13 @@
   gap: 12px;
   padding-top: 16px;
   border-top: 1px solid #2a2a2a;
+  width: 100%;
 }
 
 .btn-cancel {
   background: none;
   border: none;
-  padding: 10px 20px;
+  padding: 10px 18px;
   color: #a0a0a0;
   font-size: 14px;
   cursor: pointer;
@@ -190,11 +211,11 @@
 .btn-submit {
   background-color: #d4af37;
   border: none;
-  padding: 10px 20px;
-  border-radius: 4px;
+  padding: 10px 22px;
+  border-radius: 8px;
   color: #000000;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
 }
 
@@ -202,6 +223,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  width: 100%;
 }
 
 .day-checkbox-label {
@@ -209,10 +231,10 @@
   align-items: center;
   gap: 6px;
   background-color: #262626;
-  padding: 6px 12px;
-  border-radius: 4px;
+  padding: 8px 12px;
+  border-radius: 8px;
   border: 1px solid #3a3a3a;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
 }
 
@@ -223,8 +245,8 @@
 .btn-toggle-segmentacion {
   background: none;
   border: 1px dashed #3a3a3a;
-  border-radius: 6px;
-  padding: 10px 14px;
+  border-radius: 8px;
+  padding: 12px 14px;
   color: #d4af37;
   font-size: 13px;
   font-weight: 600;
@@ -242,16 +264,17 @@
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid #2a2a2a;
+  width: 100%;
 }
 
 /* Tarjeta Cupón Vista Previa */
 .preview-title {
-  font-size: 12px;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.15em;
   color: #6b7280;
   font-weight: 700;
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .cupon-card {
@@ -260,12 +283,11 @@
   max-width: 260px;
   background: linear-gradient(135deg, #2c2214 0%, #1a150e 100%);
   border: 2px dashed rgba(212, 175, 55, 0.4);
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 14px;
+  padding: 24px 20px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  box-sizing: border-box;
+  gap: 20px;
 }
 
 .cupon-card::before, .cupon-card::after {
@@ -283,10 +305,10 @@
 .cupon-card::after { right: -13px; }
 
 .card-brand { color: #d4af37; font-size: 14px; font-weight: 700; }
-.card-discount-value { font-size: 36px; font-weight: 800; color: #ffffff; }
-.card-coupon-name { font-size: 14px; color: #d1d5db; }
-.card-code-box { background-color: rgba(18, 18, 18, 0.8); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 4px; padding: 10px; }
-.card-code-text { font-family: monospace; font-size: 18px; font-weight: 700; color: #d4af37; }
+.card-discount-value { font-size: 32px; font-weight: 800; color: #ffffff; }
+.card-coupon-name { font-size: 14px; color: #d1d5db; word-break: break-word; }
+.card-code-box { background-color: rgba(18, 18, 18, 0.8); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 6px; padding: 10px; }
+.card-code-text { font-family: monospace; font-size: 17px; font-weight: 700; color: #d4af37; word-break: break-all; }
 .card-footer-info { font-size: 11px; color: #9ca3af; }
 
 input[type="date"]::-webkit-calendar-picker-indicator {
@@ -294,10 +316,24 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 
 /* ==========================================================================
-   RESPONSIVIDAD
+   RESPONSIVIDAD MÓVIL
    ========================================================================== */
 @media (max-width: 768px) {
   .cc-wrapper {
-    padding: 20px 10px;
+    padding: 16px 12px;
+  }
+
+  .form-side, .preview-side {
+    padding: 20px 16px;
+  }
+
+  .footer-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-submit, .btn-cancel {
+    width: 100%;
+    text-align: center;
   }
 }

@@ -21,12 +21,27 @@
   --error-icon: #e11d48;
 }
 
+/* Reset local */
+.control-wrapper,
+.control-wrapper *,
+.control-wrapper *::before,
+.control-wrapper *::after {
+  box-sizing: border-box;
+}
+
+.form-input,
+.btn-submit {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .control-wrapper {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 30px;
+  padding: 30px 20px;
   font-family: system-ui, -apple-system, sans-serif;
   color: var(--color-black);
+  width: 100%;
 }
 
 /* Animaciones Generales */
@@ -52,11 +67,11 @@
   ENCABEZADO
 =============================================*/
 .control-header-main {
-  margin-bottom: 30px;
+  margin-bottom: 24px;
 }
 
 .control-header-main h2 {
-  font-size: 1.8rem;
+  font-size: clamp(1.4rem, 2.5vw, 1.8rem);
   font-weight: 800;
   margin: 0 0 6px 0;
 }
@@ -68,7 +83,7 @@
 }
 
 /*=============================================
-  TARJETA DE CONTROL
+  TARJETAS DE CONTROL
 =============================================*/
 .control-card {
   background-color: #ffffff;
@@ -77,6 +92,7 @@
   border: 1px solid var(--color-border);
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
   max-width: 800px;
+  width: 100%;
 }
 
 .card-header-border {
@@ -112,12 +128,14 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 100%;
 }
 
 .form-row {
   display: flex;
   gap: 16px;
   align-items: flex-end;
+  width: 100%;
 }
 
 .input-group {
@@ -125,6 +143,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 0;
 }
 
 .input-group label {
@@ -144,6 +163,7 @@
   background-color: #ffffff;
   transition: all 0.2s ease;
   outline: none;
+  width: 100%;
 }
 
 .form-input:focus {
@@ -214,6 +234,7 @@
   padding: 16px;
   border-radius: 12px;
   margin-top: 10px;
+  width: 100%;
 }
 
 .banner-success {
@@ -250,20 +271,22 @@
 }
 
 /*=============================================
-  RESPONSIVE
+  RESPONSIVE MÓVIL (< 640px)
 =============================================*/
 @media (max-width: 640px) {
   .control-wrapper {
-    padding: 20px;
+    padding: 16px 12px;
   }
   
   .control-card {
-    padding: 24px;
+    padding: 20px 16px;
+    border-radius: 14px;
   }
 
   .form-row {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
   
   .btn-submit {

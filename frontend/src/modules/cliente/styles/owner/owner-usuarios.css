@@ -1,46 +1,61 @@
 /* ==========================================================================
    ── CONTENEDOR PRINCIPAL Y FORMULARIO ──
    ========================================================================== */
-.owner-usuarios-container {
-  padding: 32px 24px;
-  max-width: 700px;
-  margin: 0 auto;
-  width: 100%;
+.owner-usuarios-container,
+.owner-usuarios-container *,
+.owner-usuarios-container *::before,
+.owner-usuarios-container *::after {
   box-sizing: border-box;
 }
 
+.owner-usuarios-input,
+.owner-usuarios-role-btn,
+.owner-usuarios-submit-btn,
+.action-icon-btn {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.owner-usuarios-container {
+  padding: 32px 20px;
+  max-width: 700px;
+  margin: 0 auto;
+  width: 100%;
+}
+
 .owner-usuarios-title {
-  font-size: 28px;
+  font-size: clamp(1.4rem, 2.5vw, 1.75rem);
   font-weight: 800;
   color: #111827; 
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .owner-usuarios-description {
   color: #4b5563; 
-  margin-bottom: 32px;
-  font-size: 16px;
+  margin-bottom: 24px;
+  font-size: 0.95rem;
 }
 
 .owner-usuarios-card {
   background-color: #ffffff;
-  padding: 32px;
+  padding: 28px;
   border-radius: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); 
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); 
   border: 1px solid #e5e7eb;
+  width: 100%;
 }
 
 .owner-usuarios-card-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
   border-bottom: 1px solid #f3f4f6; 
 }
 
 .owner-usuarios-card-title {
-  font-size: 20px;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #111827;
 }
@@ -48,26 +63,26 @@
 .owner-usuarios-form {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+  width: 100%;
 }
 
 .owner-usuarios-label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-weight: 600;
   color: #374151;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .owner-usuarios-input {
   width: 100%;
-  padding: 12px 16px;
-  border-radius: 8px;
+  padding: 12px 14px;
+  border-radius: 10px;
   border: 1px solid #d1d5db;
   outline: none;
   transition: all 0.2s ease;
-  box-sizing: border-box;
-  font-size: 15px;
+  font-size: 14px;
   color: #111827;
   background-color: #f9fafb; 
 }
@@ -84,24 +99,25 @@
 
 .owner-usuarios-role-container {
   display: flex;
-  gap: 16px;
+  gap: 12px;
+  width: 100%;
 }
 
 .owner-usuarios-role-btn {
   flex: 1;
-  padding: 14px;
-  border-radius: 8px;
+  padding: 12px;
+  border-radius: 10px;
   border: 1px solid #d1d5db;
   background-color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   color: #4b5563;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .owner-usuarios-role-btn:hover {
@@ -112,41 +128,27 @@
 .owner-usuarios-role-btn.active {
   border: 2px solid #000000;
   background-color: #ffffff;
-  font-weight: 700;
+  font-weight: 800;
   color: #000000;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .owner-usuarios-submit-btn {
-  margin-top: 12px;
+  margin-top: 8px;
   padding: 14px;
   background-color: #000000;
   color: #ffffff;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
+  width: 100%;
 }
 
 .owner-usuarios-submit-btn:hover {
-  background-color: #333333;
-  transform: translateY(-1px); 
-}
-
-/* 📱 DISEÑO RESPONSIVO PARA CELULARES */
-@media (max-width: 600px) {
-  .owner-usuarios-container {
-    padding: 16px;
-  }
-  .owner-usuarios-card {
-    padding: 20px;
-  }
-  .owner-usuarios-role-container {
-    flex-direction: column;
-    gap: 12px;
-  }
+  background-color: #222222;
 }
 
 /* ==========================================================================
@@ -157,6 +159,7 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  flex-wrap: wrap;
 }
 
 .status-badge {
@@ -167,7 +170,6 @@
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 50px;
-  /* Colores fijos en lugar de variables para evitar fallos */
   background-color: #f3f4f6; 
   color: #6b7280; 
   border: 1px solid #e5e7eb;
@@ -194,7 +196,6 @@
 .status-badge.is-active .status-dot { background-color: #22c55e; }
 .status-badge.is-inactive .status-dot { background-color: #ef4444; }
 
-/* Etiquetas de los Roles */
 .account-role-badge {
   font-size: 11px;
   font-weight: 700;
@@ -206,14 +207,14 @@
 }
 
 .role-admin {
-  background-color: #fef08a; /* Fondo dorado suave */
-  color: #854d0e; /* Texto oscuro para contraste */
+  background-color: #fef08a;
+  color: #854d0e;
   border: 1px solid #eab308;
 }
 
 .role-barber {
-  background-color: #111827; /* Fondo negro */
-  color: #D4AF37; /* Letras doradas */
+  background-color: #111827;
+  color: #D4AF37;
   border: 1px solid #111827;
 }
 
@@ -223,26 +224,27 @@
 .accounts-list-stack {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
 }
 
 .account-row-card {
   display: flex;
-  flex-direction: row; /* Fuerza diseño en línea horizontal */
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   background-color: #ffffff;
   border: 1px solid #d1d5db;
-  padding: 16px;
+  padding: 14px 16px;
   border-radius: 12px;
-  gap: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  width: 100%;
 }
 
 .account-info-col {
   display: flex;
-  flex-direction: column; /* Apila nombre arriba y correo abajo */
+  flex-direction: column;
   flex: 1;
   min-width: 0; 
 }
@@ -252,18 +254,16 @@
   font-weight: 700;
   color: #111827;
   margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .account-email-text {
   font-size: 13px;
   font-weight: 500;
   color: #6b7280;
+  word-break: break-word;
 }
 
-/* Botones de Acción (Iconos) */
 .account-actions-group {
   display: flex;
   align-items: center;
@@ -275,8 +275,8 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
+  padding: 8px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -292,7 +292,6 @@
 .action-icon-btn.save { color: #166534; background-color: #dcfce7; }
 .action-icon-btn.cancel { color: #991b1b; background-color: #ffe4e6; }
 
-/* Inputs para cuando le das clic a "Editar" */
 .account-edit-mode {
   display: flex;
   flex-direction: row;
@@ -310,7 +309,7 @@
   color: #111827;
   font-weight: 500;
   border: 1px solid #d1d5db;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 13px;
   padding: 8px 12px;
   outline: none;
@@ -324,15 +323,27 @@
 }
 
 /* Responsivo para la lista de cuentas en celulares */
-@media (max-width: 768px) {
+@media (max-width: 650px) {
+  .owner-usuarios-container {
+    padding: 16px 12px;
+  }
+  .owner-usuarios-card {
+    padding: 18px 14px;
+    border-radius: 14px;
+  }
+  .owner-usuarios-role-container {
+    flex-direction: column;
+    gap: 10px;
+  }
   .account-row-card {
     flex-direction: column;
     align-items: flex-start;
+    gap: 10px;
   }
   
   .account-badges-group, .account-actions-group {
     width: 100%;
-    justify-content: flex-start;
-    margin-top: 8px;
+    justify-content: space-between;
+    margin-top: 4px;
   }
 }
