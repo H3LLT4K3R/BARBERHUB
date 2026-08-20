@@ -1,6 +1,29 @@
+/* Reset de box-sizing local */
+.al-pagina,
+.al-pagina *,
+.al-pagina *::before,
+.al-pagina *::after {
+  box-sizing: border-box;
+}
+
+/* Desactivar zoom por doble toque y resaltar al tocar en móviles */
+.al-celda-dia,
+.al-boton-hora,
+.al-opcion-servicio,
+.al-opcion-barbero,
+.al-mes-nav-btn,
+.al-boton-continuar,
+.al-boton-regresar {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
 /* Página base */
 .al-pagina {
   min-height: 100vh;
+  max-width: 100vw;
+  overflow-x: hidden;
   background-color: #fcfbf7;
   display: flex;
   flex-direction: column;
@@ -240,6 +263,8 @@
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .al-calendario-header {
@@ -285,7 +310,9 @@
 .al-grid-calendario {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
+  gap: 4px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .al-dia-header {
@@ -299,18 +326,20 @@
 
 .al-celda-dia {
   aspect-ratio: 1;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.98rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #111827;
   background: #f9fafb;
-  border: 1.5px solid transparent;
-  border-radius: 12px;
+  border: 2px solid transparent;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   padding: 0;
+  outline: none;
 }
 
 .al-celda-dia:hover:not(.vacia):not(:disabled) {
@@ -323,7 +352,7 @@
   border-color: #c9a227;
   color: #a77b24;
   font-weight: 800;
-  box-shadow: 0 2px 10px rgba(201, 162, 39, 0.22);
+  box-shadow: 0 2px 8px rgba(201, 162, 39, 0.2);
 }
 
 .al-celda-dia.vacia,
@@ -343,6 +372,8 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .al-titulo-horarios {
@@ -361,6 +392,8 @@
   max-height: 380px;
   overflow-y: auto;
   padding-right: 4px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .al-grid-horarios::-webkit-scrollbar {
@@ -381,6 +414,7 @@
   transition: all 0.2s ease;
   text-align: center;
   box-sizing: border-box;
+  outline: none;
 }
 
 /* Verde = Disponible */
@@ -393,7 +427,6 @@
 .al-boton-hora.disponible:hover {
   background-color: #dcfce7;
   border-color: #86efac;
-  transform: translateY(-1px);
 }
 
 /* Negro/Dorado = Seleccionado */
@@ -461,11 +494,11 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
+  outline: none;
 }
 
 .al-boton-continuar:hover:not(:disabled) {
   background-color: #222222;
-  transform: translateY(-1px);
 }
 
 .al-boton-continuar:disabled {
@@ -484,12 +517,12 @@
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
+  outline: none;
 }
 
 .al-boton-regresar:hover {
   background-color: #f9fafb;
   border-color: #9ca3af;
-  transform: translateY(-1px);
 }
 
 /* Responsivo */
@@ -567,7 +600,16 @@
 
   .al-seccion-calendario,
   .al-seccion-horarios {
-    padding: 16px;
+    padding: 14px 12px;
+  }
+
+  .al-grid-calendario {
+    gap: 3px;
+  }
+
+  .al-celda-dia {
+    font-size: 0.9rem;
+    border-radius: 8px;
   }
 
   .al-grid-horarios {
