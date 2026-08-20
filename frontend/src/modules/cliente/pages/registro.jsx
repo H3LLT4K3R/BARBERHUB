@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { apiFetch } from "../../../utils/api.js";
@@ -45,6 +45,11 @@ export default function Registro() {
   const [error, setError] = useState("");
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [mostrarConfirm, setMostrarConfirm] = useState(false);
+
+  // Pre-despierta silenciosamente el servidor Render al entrar a la pantalla de registro
+  useEffect(() => {
+    fetch("/api/suscripciones/config").catch(() => {});
+  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
