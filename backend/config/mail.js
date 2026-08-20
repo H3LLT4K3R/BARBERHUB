@@ -12,6 +12,9 @@ const transporter = isResend
             user: 'resend',
             pass: process.env.RESEND_API_KEY,
         },
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 5000,
     })
     : nodemailer.createTransport({
         service: 'gmail',
@@ -19,6 +22,9 @@ const transporter = isResend
             user: process.env.MAIL_USER,
             pass: process.env.MAIL_PASS,
         },
+        connectionTimeout: 5000,
+        greetingTimeout: 5000,
+        socketTimeout: 5000,
     });
 
 export default transporter;
