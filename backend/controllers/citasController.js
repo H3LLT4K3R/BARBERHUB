@@ -542,7 +542,12 @@ export const cancelarCita = async (req, res) => {
             }
         }
 
-        const { error: updateError } = await supabaseAdmin
+        // El estado se vuelve a filtrar aquí (no solo arriba, al leerlo) porque entre esa
+        // lectura y este UPDATE puede pasar la llamada a Mercado Pago para el reembolso —
+        // una ventana real donde el barbero podría aceptar/completar la cita en paralelo.
+        // Sin este filtro, este UPDATE la pisaba sin importar en qué estado hubiera quedado
+        // mientras tanto (ej. podía cancelar una cita que ya se había marcado "completed").
+        const { data: filasCanceladas, error: updateError } = await supabaseAdmin
             .from('appointments')
             .update({
                 status: 'cancelled',
@@ -550,8 +555,13 @@ export const cancelarCita = async (req, res) => {
                 cancelled_by: req.user.id,
                 cancellation_reason: motivo || 'Cancelada por el cliente',
             })
-            .eq('id', appointment.id);
+            .eq('id', appointment.id)
+            .eq('status', appointment.status)
+            .select('id');
         if (updateError) throw updateError;
+        if (!filasCanceladas?.length) {
+            return res.status(409).json({ error: 'Esta cita cambió de estado justo ahora y ya no se puede cancelar. Actualiza la página.' });
+        }
 
         const staffIds = await obtenerStaffActivo(appointment.barberia_id);
         const staffQueQuiereAviso = await filtrarStaffPorPreferencia(appointment.barberia_id, staffIds, 'cancellation_alerts');
@@ -835,12 +845,16 @@ export const aceptarCita = async (req, res) => {
             return res.status(409).json({ error: 'Esta solicitud ya no está pendiente de revisión.' });
         }
 
-        const { error: updateError } = await supabaseAdmin
+        const { data: filasAceptadas, error: updateError } = await supabaseAdmin
             .from('appointments')
             .update({ status: 'pending_payment' })
             .eq('id', appointment.id)
-            .eq('status', 'pending_confirmation');
+            .eq('status', 'pending_confirmation')
+            .select('id');
         if (updateError) throw updateError;
+        if (!filasAceptadas?.length) {
+            return res.status(409).json({ error: 'Esta solicitud ya fue actualizada por otra acción.' });
+        }
 
         await notificar([{
             profile_id: appointment.client_id,
@@ -894,7 +908,7 @@ export const rechazarCita = async (req, res) => {
             return res.status(409).json({ error: 'Esta cita ya no se puede rechazar.' });
         }
 
-        const { error: updateError } = await supabaseAdmin
+        const { data: filasRechazadas, error: updateError } = await supabaseAdmin
             .from('appointments')
             .update({
                 status: 'rejected',
@@ -902,8 +916,13 @@ export const rechazarCita = async (req, res) => {
                 cancelled_by: req.user.id,
                 cancellation_reason: motivo || 'Rechazada por la barbería.',
             })
-            .eq('id', appointment.id);
+            .eq('id', appointment.id)
+            .eq('status', appointment.status)
+            .select('id');
         if (updateError) throw updateError;
+        if (!filasRechazadas?.length) {
+            return res.status(409).json({ error: 'Esta cita cambió de estado justo ahora y ya no se puede rechazar. Actualiza la página.' });
+        }
 
         await notificar([{
             profile_id: appointment.client_id,
@@ -965,12 +984,16 @@ export const confirmarCitaFinal = async (req, res) => {
             return res.status(409).json({ error: 'Todavía no se registra el pago del anticipo para esta cita.' });
         }
 
-        const { error: updateError } = await supabaseAdmin
+        const { data: filasConfirmadas, error: updateError } = await supabaseAdmin
             .from('appointments')
             .update({ status: 'confirmed' })
             .eq('id', appointment.id)
-            .eq('status', 'pending_confirmation');
+            .eq('status', 'pending_confirmation')
+            .select('id');
         if (updateError) throw updateError;
+        if (!filasConfirmadas?.length) {
+            return res.status(409).json({ error: 'Esta cita ya fue confirmada por otra acción.' });
+        }
 
         if (await clienteQuierePreferencia(appointment.client_id, 'appointment_confirmed_alerts')) {
             await notificar([{
@@ -1025,12 +1048,16 @@ export const iniciarServicio = async (req, res) => {
             return res.status(409).json({ error: 'Solo se puede iniciar una cita ya confirmada.' });
         }
 
-        const { error: updateError } = await supabaseAdmin
+        const { data: filasIniciadas, error: updateError } = await supabaseAdmin
             .from('appointments')
             .update({ status: 'in_progress' })
             .eq('id', appointment.id)
-            .eq('status', 'confirmed');
+            .eq('status', 'confirmed')
+            .select('id');
         if (updateError) throw updateError;
+        if (!filasIniciadas?.length) {
+            return res.status(409).json({ error: 'Esta cita ya fue actualizada por otra acción.' });
+        }
 
         res.json({ ok: true });
     } catch (error) {
@@ -1121,12 +1148,21 @@ export const completarCita = async (req, res) => {
             return res.status(409).json({ error: 'Solo se puede completar una cita confirmada o en curso.' });
         }
 
-        const { error: updateError } = await supabaseAdmin
+        // El filtro .eq('status', appointment.status) ya evita que dos "Completar" en
+        // paralelo dejen la cita en un estado raro, pero por sí solo no basta: un UPDATE
+        // que no matchea ninguna fila no cuenta como error para PostgREST, así que sin
+        // este chequeo ambas solicitudes seguían de largo y otorgaban puntos de fidelidad
+        // dos veces por la misma cita (loyalty_ledger no tiene restricción única por cita).
+        const { data: filasCompletadas, error: updateError } = await supabaseAdmin
             .from('appointments')
             .update({ status: 'completed' })
             .eq('id', appointment.id)
-            .eq('status', appointment.status);
+            .eq('status', appointment.status)
+            .select('id');
         if (updateError) throw updateError;
+        if (!filasCompletadas?.length) {
+            return res.status(409).json({ error: 'Esta cita ya fue actualizada por otra acción. Actualiza la página.' });
+        }
 
         await otorgarPuntosFidelidad(appointment.barberia_id, appointment.client_id, appointment.id, appointment.total);
         await otorgarCuponesElegibles(appointment.barberia_id, appointment.client_id);
@@ -1289,12 +1325,16 @@ export const marcarNoShow = async (req, res) => {
             return res.status(409).json({ error: 'Solo se puede marcar como no asistida una cita confirmada.' });
         }
 
-        const { error: updateError } = await supabaseAdmin
+        const { data: filasNoShow, error: updateError } = await supabaseAdmin
             .from('appointments')
             .update({ status: 'no_show' })
             .eq('id', appointment.id)
-            .eq('status', 'confirmed');
+            .eq('status', 'confirmed')
+            .select('id');
         if (updateError) throw updateError;
+        if (!filasNoShow?.length) {
+            return res.status(409).json({ error: 'Esta cita ya fue actualizada por otra acción.' });
+        }
 
         await registrarAuditoria({
             barberiaId: appointment.barberia_id,

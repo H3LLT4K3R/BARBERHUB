@@ -151,11 +151,16 @@ export const confirmarComprobanteSuscripcion = async (req, res) => {
         const proximoPago = new Date();
         proximoPago.setMonth(proximoPago.getMonth() + 1);
 
-        const { error: updateError } = await supabaseAdmin
+        const { data: filasActivadas, error: updateError } = await supabaseAdmin
             .from('barberias')
             .update({ subscription_status: 'activa', subscription_next_payment: proximoPago.toISOString() })
-            .eq('id', barberiaId);
+            .eq('id', barberiaId)
+            .eq('subscription_status', 'pendiente_revision')
+            .select('id');
         if (updateError) throw updateError;
+        if (!filasActivadas?.length) {
+            return res.status(409).json({ error: 'Este comprobante ya fue revisado por otra acción.' });
+        }
 
         const { data: duenio } = await supabaseAdmin
             .from('barberia_memberships')
@@ -199,11 +204,16 @@ export const rechazarComprobanteSuscripcion = async (req, res) => {
             return res.status(409).json({ error: 'No hay ningún comprobante pendiente de revisión.' });
         }
 
-        const { error: updateError } = await supabaseAdmin
+        const { data: filasRechazadas, error: updateError } = await supabaseAdmin
             .from('barberias')
             .update({ subscription_status: 'sin_suscripcion', subscription_proof_image_path: null })
-            .eq('id', barberiaId);
+            .eq('id', barberiaId)
+            .eq('subscription_status', 'pendiente_revision')
+            .select('id');
         if (updateError) throw updateError;
+        if (!filasRechazadas?.length) {
+            return res.status(409).json({ error: 'Este comprobante ya fue revisado por otra acción.' });
+        }
 
         const { data: duenio } = await supabaseAdmin
             .from('barberia_memberships')
