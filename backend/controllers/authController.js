@@ -4,6 +4,17 @@ import transporter from '../config/mail.js';
 const FRONTEND_URL = (process.env.FRONTEND_URL || 'http://localhost:5173').split(',')[0].trim().replace(/\/+$/, '');
 const MAIL_FROM = process.env.MAIL_FROM || `"Barber Hub" <${process.env.MAIL_USER}>`;
 
+const getFrontendUrl = (req) => {
+    const origin = req.headers.origin || (req.headers.referer ? new URL(req.headers.referer).origin : null);
+    if (origin && !origin.includes('localhost')) {
+        return origin.replace(/\/+$/, '');
+    }
+    if (FRONTEND_URL && !FRONTEND_URL.includes('localhost')) {
+        return FRONTEND_URL;
+    }
+    return origin || FRONTEND_URL || 'http://localhost:5173';
+};
+
 // Envía un correo de recuperación con la marca de Barber Hub, usando un link de
 // recuperación real generado por Supabase (no el correo genérico de Supabase).
 // Responde éxito siempre exista o no la cuenta, para no filtrar qué correos están registrados.
@@ -14,10 +25,11 @@ export const solicitarRecuperacion = async (req, res) => {
     }
 
     try {
+        const frontendUrl = getFrontendUrl(req);
         const { data, error } = await supabaseAdmin.auth.admin.generateLink({
             type: 'recovery',
             email: email.trim(),
-            options: { redirectTo: `${FRONTEND_URL}/restablecer-password` },
+            options: { redirectTo: `${frontendUrl}/restablecer-password` },
         });
 
         if (error) {
@@ -66,13 +78,14 @@ export const registrarUsuario = async (req, res) => {
     }
 
     try {
+        const frontendUrl = getFrontendUrl(req);
         const { data, error } = await supabaseAdmin.auth.admin.generateLink({
             type: 'signup',
             email: email.trim(),
             password,
             options: {
                 data: { full_name: fullName.trim() },
-                redirectTo: `${FRONTEND_URL}/login`,
+                redirectTo: `${frontendUrl}/login`,
             },
         });
 
