@@ -42,6 +42,8 @@ const rawUrls = (process.env.FRONTEND_URL || '')
   .filter(Boolean);
 
 rawUrls.push('http://localhost:5173');
+rawUrls.push('https://www.barber-hub.com.mx');
+rawUrls.push('https://barber-hub.com.mx');
 
 const origenesPermitidos = new Set();
 for (const urlStr of rawUrls) {
@@ -68,7 +70,10 @@ app.use(cors({
     }
     try {
       const parsed = new URL(origin);
-      if (parsed.hostname.endsWith('.vercel.app')) {
+      if (
+        parsed.hostname.endsWith('.vercel.app') ||
+        parsed.hostname.includes('barber-hub.com.mx')
+      ) {
         return callback(null, true);
       }
     } catch {}
