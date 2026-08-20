@@ -106,12 +106,17 @@ export default function Login() {
         <img
           className="login-banner"
           src="/banner-login.svg"
-          alt="Barber Hub: encuentra tu barbería ideal en segundos"
+          alt=""
+          aria-hidden="true"
         />
-        <img className="login-logo-central" src="/logo.png" alt="Barber Hub" />
         <div className="login-overlay" />
         <div className="login-contenido-izquierdo">
           <BrandLogo className="login-logo-boton" imgClassName="login-logo" />
+          
+          <div className="login-logo-central-container">
+            <img className="login-logo-central" src="/logo.png" alt="Barber Hub" />
+          </div>
+
           <div className="login-texto-hero">
             <h2>Encuentra tu barbería ideal <span className="login-acento">en segundos</span></h2>
             <p>Reserva citas, guarda tus barberías favoritas y descubre las mejores cerca de ti.</p>

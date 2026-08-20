@@ -243,7 +243,7 @@
   text-decoration: underline;
 }
 
-/*Responsivo*/
+/* Responsivo */
 @media (max-width: 768px) {
   .reg-pagina {
     grid-template-columns: 1fr;
@@ -252,16 +252,53 @@
   .reg-columna-izquierda {
     min-height: auto;
     border-right: none;
-    border-bottom: 1px solid var(--reg-divisor);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   }
 
   .reg-columna-izquierda-contenido {
     min-height: auto;
-    padding: 32px 28px;
+    padding: 24px 20px;
+    gap: 18px;
+  }
+
+  .reg-logo {
+    width: 80px;
+  }
+
+  .reg-pasos-label {
+    margin-top: 0;
+  }
+
+  .reg-paso-item {
+    gap: 12px;
+  }
+
+  .reg-paso-circulo {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+  }
+
+  .reg-paso-linea {
+    min-height: 20px;
+  }
+
+  .reg-paso-texto {
+    padding-bottom: 14px;
+  }
+
+  .reg-paso-texto h4 {
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .reg-paso-texto p {
+    font-size: 12px;
+    line-height: 1.45;
   }
 
   .reg-columna-derecha {
-    padding: 40px 24px;
+    padding: 32px 20px 40px;
   }
 
   .reg-fila-doble {
@@ -271,24 +308,16 @@
 
 @media (max-width: 480px) {
   .reg-titulo {
-    font-size: 26px;
-  }
-
-  .reg-paso-circulo {
-    width: 38px;
-    height: 38px;
-    font-size: 15px;
-  }
-
-  .reg-paso-texto h4 {
-    font-size: 15px;
-  }
-
-  .reg-paso-texto p {
-    font-size: 12px;
+    font-size: 24px;
+    margin-bottom: 24px;
   }
 
   .reg-columna-derecha {
-    padding: 32px 20px;
+    padding: 24px 16px 32px;
+  }
+
+  .reg-boton-enviar {
+    font-size: 15px;
+    padding: 13px;
   }
 }

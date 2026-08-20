@@ -11,7 +11,7 @@
   --login-fuente: "Inter", system-ui, sans-serif;
 }
 
-/*Layout general*/
+/* Layout general */
 .login-pagina {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -23,7 +23,7 @@
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(ellipse at 50% 38%, rgba(229, 190, 107, 0.22) 0%, rgba(0, 0, 0, 0) 40%),
+    radial-gradient(ellipse at 50% 35%, rgba(229, 190, 107, 0.22) 0%, rgba(0, 0, 0, 0) 55%),
     linear-gradient(180deg, #141414 0%, #0a0a0a 50%, #030303 100%);
   display: flex;
   flex-direction: column;
@@ -35,18 +35,9 @@
   z-index: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-}
-
-.login-logo-central {
-  position: absolute;
-  z-index: 2;
-  top: 36%;
-  left: 50%;
-  width: min(62%, 410px);
-  aspect-ratio: 1;
-  object-fit: contain;
-  transform: translate(-50%, -50%);
+  object-fit: cover;
+  opacity: 0.15;
+  pointer-events: none;
 }
 
 .login-overlay {
@@ -58,8 +49,9 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   min-height: 100vh;
-  padding: 36px 44px 28px;
+  padding: 40px 48px 32px;
 }
 
 .login-logo-boton {
@@ -74,18 +66,34 @@
   display: block;
 }
 
+.login-logo-central-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 0;
+}
+
+.login-logo-central {
+  width: min(75%, 360px);
+  max-height: 42vh;
+  aspect-ratio: 1;
+  object-fit: contain;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.5));
+}
+
 .login-texto-hero {
   margin-top: auto;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
 }
 
 .login-texto-hero h2 {
-  font-size: clamp(26px, 2.8vw, 38px);
+  font-size: clamp(24px, 2.5vw, 36px);
   font-weight: 800;
   color: #ffffff;
-  line-height: 1.2;
-  margin-bottom: 14px;
-  max-width: 420px;
+  line-height: 1.25;
+  margin-bottom: 12px;
+  max-width: 440px;
 }
 
 .login-acento {
@@ -105,7 +113,7 @@
   padding-top: 18px;
 }
 
-/*columna derecha: formulario*/
+/* Columna derecha: formulario */
 .login-columna-derecha {
   background: var(--login-blanco);
   display: flex;
@@ -242,54 +250,108 @@
   margin-top: 24px;
 }
 
-/*Responsivo*/
+/* Responsivo */
 @media (max-width: 768px) {
   .login-pagina {
     grid-template-columns: 1fr;
+    min-height: 100vh;
   }
 
   .login-columna-izquierda {
-    min-height: 280px;
+    min-height: auto;
+    padding: 32px 24px 24px;
+    align-items: center;
+    text-align: center;
   }
 
   .login-banner {
-    display: block;
-  }
-
-  .login-logo-central {
-    top: 38%;
-    width: min(52%, 240px);
+    opacity: 0.12;
   }
 
   .login-contenido-izquierdo {
-    min-height: 280px;
+    min-height: auto;
+    padding: 0;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .login-logo-central-container {
+    flex: initial;
+    padding: 0;
+    margin-bottom: 4px;
+  }
+
+  .login-logo-central {
+    width: min(150px, 42vw);
+    max-height: 150px;
+    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5));
   }
 
   .login-texto-hero {
-    margin-top: 32px;
+    margin-top: 0;
+    margin-bottom: 0;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .login-texto-hero h2 {
+    font-size: clamp(20px, 5.5vw, 24px);
+    line-height: 1.3;
+    margin-bottom: 6px;
+    max-width: 320px;
+    text-align: center;
+  }
+
+  .login-texto-hero p {
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: #a3a3a3;
+    max-width: 310px;
+    text-align: center;
+  }
+
+  .login-footer-izquierdo {
+    display: none;
   }
 
   .login-columna-derecha {
-    padding: 40px 24px;
+    padding: 36px 24px 44px;
   }
 }
 
 @media (max-width: 480px) {
+  .login-columna-izquierda {
+    padding: 24px 18px 20px;
+  }
+
+  .login-logo-central {
+    width: 125px;
+    max-height: 125px;
+  }
+
+  .login-texto-hero h2 {
+    font-size: 19px;
+  }
+
+  .login-texto-hero p {
+    font-size: 13px;
+  }
+
   .login-titulo {
     font-size: 26px;
   }
 
   .login-subtitulo {
     font-size: 13px;
-    margin-bottom: 28px;
+    margin-bottom: 24px;
   }
 
-  .login-contenido-izquierdo {
-    padding: 24px 24px 20px;
-  }
-
-  .login-texto-hero h2 {
-    max-width: 100%;
+  .login-columna-derecha {
+    padding: 28px 20px 36px;
   }
 
   .login-boton-enviar {
