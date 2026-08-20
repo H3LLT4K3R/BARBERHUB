@@ -7,7 +7,8 @@ function hashToken(token) {
 }
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
-const MODERADOR_EMAIL = process.env.MAIL_USER;
+const MODERADOR_EMAIL = process.env.MODERATOR_EMAIL || process.env.MAIL_USER;
+const MAIL_FROM = process.env.MAIL_FROM || '"Sistema BarberHub" <bartfestmixology@gmail.com>';
 
 async function esOwner(userId, barberiaId) {
     const { data, error } = await supabaseAdmin
@@ -80,7 +81,7 @@ export const solicitarLink = async (req, res) => {
         const nombreBarberia = barberia?.name ?? barberiaId;
         try {
             await transporter.sendMail({
-                from: '"Sistema BarberHub" <bartfestmixology@gmail.com>',
+                from: MAIL_FROM,
                 to: MODERADOR_EMAIL,
                 subject: `🚨 Nueva solicitud de Link: ${nombreBarberia}`,
                 html: `
