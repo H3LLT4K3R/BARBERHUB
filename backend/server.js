@@ -64,10 +64,15 @@ for (const urlStr of rawUrls) {
 app.use(cors({
   origin(origin, callback) {
     if (!enProduccion || !origin || origenesPermitidos.has(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Origen no permitido por CORS.'));
+      return callback(null, true);
     }
+    try {
+      const parsed = new URL(origin);
+      if (parsed.hostname.endsWith('.vercel.app')) {
+        return callback(null, true);
+      }
+    } catch {}
+    callback(new Error('Origen no permitido por CORS.'));
   },
 }));
 
