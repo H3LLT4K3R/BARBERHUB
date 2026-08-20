@@ -146,7 +146,7 @@ export default function DatosReserva() {
               </div>
               <div className="dr-fila-resumen destacado">
                 <span className="dr-etiqueta">ANTICIPO A PAGAR (al aceptar el barbero)</span>
-                <span className="dr-valor">
+                <span className="dr-valor destacado-valor">
                   ${ANTICIPO_FIJO_MXN} {reserva.moneda}
                 </span>
               </div>
