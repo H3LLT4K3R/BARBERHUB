@@ -1,11 +1,11 @@
 :root {
   /* Paleta de colores */
-  --hc-bg-main: #ffffff;
+  --hc-bg-main: #fcfbf7;
   --hc-bg-tarjeta: #ffffff;
   --hc-dorado: #e5be6b;
-  --hc-texto-principal: #000000;
-  --hc-texto-muted: #555555;
-  --hc-borde-gris: #e4e4e7;
+  --hc-texto-principal: #111827;
+  --hc-texto-muted: #6b7280;
+  --hc-borde-gris: #e5e7eb;
 
   /* Estados */
   --hc-status-pendiente: #f59e0b;
@@ -13,57 +13,77 @@
   --hc-status-peligro: #ea5455;
 }
 
+/* Reset de box-sizing local */
+.hc-contenido,
+.hc-contenido *,
+.hc-contenido *::before,
+.hc-contenido *::after {
+  box-sizing: border-box;
+}
+
+/* Desactivar zoom no deseado */
+.hc-boton-filtro,
+.hc-boton-periodo,
+.hc-boton-detalle,
+.hc-boton-reagendar,
+.hc-boton-ver-barberia {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Contenido principal */
 .hc-contenido {
   display: flex;
   flex-direction: column;
   background-color: var(--hc-bg-main);
-  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   color: var(--hc-texto-principal);
-  /* Uso de clamp para padding dinámico: 20px en móvil, crece hasta 40px en desktop */
-  padding: clamp(20px, 4vw, 40px);
+  padding: clamp(16px, 3vw, 36px);
+  min-height: 100vh;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .hc-titulo-pagina {
-  /* Tamaño de fuente dinámico */
-  font-size: clamp(1.3rem, 2.5vw, 1.6rem);
-  font-weight: 700;
-  margin: 0 0 clamp(20px, 3vw, 30px) 0;
+  font-size: clamp(1.35rem, 2.5vw, 1.7rem);
+  font-weight: 800;
+  margin: 0 0 clamp(16px, 3vw, 24px) 0;
   color: var(--hc-texto-principal);
 }
 
 .hc-layout {
   flex: 1;
   display: flex;
-  gap: clamp(20px, 3vw, 35px);
+  gap: clamp(20px, 3vw, 32px);
 }
 
 .hc-contenido-central {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: clamp(20px, 3vw, 30px);
+  gap: clamp(16px, 2.5vw, 24px);
   max-width: 1200px;
+  min-width: 0;
 }
 
 /* Color dorado reutilizable */
 .dorado {
-  color: #c9a054;
+  color: #a77b24;
 }
 
-/* Tarjetas resumen (Convertidas a CSS Grid para fluidez automática) */
+/* Tarjetas resumen */
 .hc-tarjetas-resumen {
   display: grid;
-  /* Se adaptan solas al ancho disponible sin necesidad de media queries */
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: clamp(12px, 2vw, 25px);
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: clamp(10px, 2vw, 20px);
+  width: 100%;
 }
 
 .hc-tarjeta-resumen {
   background-color: var(--hc-bg-tarjeta);
   border: 1.5px solid var(--hc-borde-gris);
   border-radius: 16px;
-  padding: 22px;
+  padding: 18px 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -78,88 +98,109 @@
 }
 
 .hc-numero-resumen {
-  font-size: clamp(1.5rem, 3vw, 1.9rem);
-  font-weight: 700;
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+  font-weight: 800;
   color: var(--hc-texto-principal);
 }
 
 .hc-etiqueta-resumen {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--hc-texto-muted);
   font-weight: 600;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
-/* Filtros (Mejorados con scroll horizontal para móviles) */
+/* Filtros por estado */
 .hc-filtros {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   overflow-x: auto;
-  padding-bottom: 5px; /* Espacio para que no se corte la sombra/scroll */
-  scrollbar-width: none; /* Oculta scroll en Firefox */
-  -ms-overflow-style: none; /* Oculta scroll en IE/Edge */
+  padding: 4px 2px 8px 2px;
+  width: 100%;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 .hc-filtros::-webkit-scrollbar {
-  display: none; /* Oculta scroll en Chrome/Safari/Edge */
+  display: none;
 }
 
 .hc-boton-filtro {
-  background-color: #f0f0f2;
-  border: none;
-  color: #55555a;
-  padding: 10px 24px;
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #4b5563;
+  padding: 9px 20px;
   border-radius: 25px;
   cursor: pointer;
-  font-size: clamp(0.85rem, 2vw, 0.95rem);
+  font-size: 0.88rem;
   font-weight: 600;
-  white-space: nowrap; /* Evita que el texto del botón se rompa en 2 líneas */
-  flex-shrink: 0; /* Evita que los botones se aplasten */
-  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 
 .hc-boton-filtro:hover {
-  background-color: #e4e4e7;
+  background-color: #e5e7eb;
   color: var(--hc-texto-principal);
 }
 
 .hc-boton-filtro.activo {
-  background-color: var(--hc-dorado);
-  color: #000000;
+  background-color: #111111;
+  border-color: #111111;
+  color: #e5be6b;
   font-weight: 700;
-  box-shadow: 0 4px 12px rgba(229, 190, 107, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+/* Filtros por periodo */
 .hc-filtros-periodo {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: 8px;
   color: var(--hc-texto-muted);
   font-size: 0.88rem;
   font-weight: 600;
+  overflow-x: auto;
+  padding: 4px 2px 8px 2px;
+  width: 100%;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hc-filtros-periodo::-webkit-scrollbar {
+  display: none;
+}
+
+.hc-filtros-periodo > span {
+  flex-shrink: 0;
+  margin-right: 2px;
 }
 
 .hc-boton-periodo {
   border: 1px solid var(--hc-borde-gris);
   border-radius: 18px;
-  padding: 7px 12px;
+  padding: 6px 14px;
   background: #ffffff;
   color: var(--hc-texto-muted);
   cursor: pointer;
   font: inherit;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
 }
 
 .hc-boton-periodo.activo {
   border-color: #c9a054;
   background: #fff8e7;
   color: #855e16;
+  font-weight: 700;
 }
 
 .hc-rango-fechas {
   display: flex;
   gap: 8px;
   width: 100%;
+  flex-shrink: 0;
 }
 
 .hc-fecha-control {
@@ -207,10 +248,11 @@
 .hc-lista-citas {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
   max-height: clamp(400px, 60vh, 800px);
   overflow-y: auto;
-  padding-right: 8px;
+  padding-right: 4px;
+  width: 100%;
 }
 
 .hc-lista-citas::-webkit-scrollbar {
@@ -228,23 +270,16 @@
   background-color: var(--hc-bg-tarjeta);
   border: 1.5px solid var(--hc-borde-gris);
   border-radius: 18px;
-  padding: clamp(16px, 3vw, 24px) clamp(16px, 4vw, 30px);
-  gap: clamp(14px, 3vw, 30px);
+  padding: 20px 24px;
+  gap: 20px;
   transition: all 0.2s ease;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
+  width: 100%;
 }
 
 .hc-item-cita:hover {
   border-color: rgba(229, 190, 107, 0.6);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
-}
-
-.hc-imagen-cita {
-  width: clamp(80px, 15vw, 130px);
-  height: clamp(70px, 12vw, 90px);
-  object-fit: cover;
-  border-radius: 10px;
-  flex-shrink: 0;
 }
 
 .hc-info-cita {
@@ -253,64 +288,70 @@
 }
 
 .hc-info-cita h3 {
-  font-size: clamp(1.1rem, 2vw, 1.3rem);
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
   font-weight: 700;
-  margin: 0 0 6px 0;
-  color: #000000;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin: 0 0 4px 0;
+  color: #111827;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.35;
 }
 
 .hc-info-cita p {
-  font-size: clamp(0.9rem, 1.5vw, 1rem);
-  color: #555555;
+  font-size: 0.9rem;
+  color: #6b7280;
   margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .hc-acciones-cita {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 12px;
+  gap: 10px;
   flex-shrink: 0;
 }
 
+.hc-meta-cita {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
 .hc-precio-cita {
-  font-weight: 700;
-  color: #c9a054;
-  font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+  font-weight: 800;
+  color: #a77b24;
+  font-size: clamp(1.1rem, 2vw, 1.25rem);
 }
 
 .hc-fecha-cita {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--hc-texto-muted);
 }
 
 .hc-fila-acciones {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
   margin-top: 4px;
 }
 
 .hc-boton-detalle {
-  background-color: #1a1a1a;
-  color: #ffffff;
+  background-color: #111111;
+  color: #e5be6b;
   border: none;
   padding: 8px 18px;
   border-radius: 18px;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .hc-boton-detalle:hover {
-  background-color: #333333;
+  background-color: #222222;
 }
 
 .hc-boton-ocultar {
@@ -333,9 +374,9 @@
 
 /* Badges de estado */
 .hc-badge-estado {
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 6px 16px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 6px 14px;
   border-radius: 18px;
   min-width: 85px;
   text-align: center;
@@ -343,22 +384,22 @@
 
 .hc-estado-pendiente {
   background-color: rgba(245, 158, 11, 0.12);
-  color: var(--hc-status-pendiente);
+  color: #d97706;
 }
 
 .hc-estado-completada {
-  background-color: rgba(16, 185, 129, 0.12);
-  color: var(--hc-status-exito);
+  background-color: #dcfce7;
+  color: #15803d;
 }
 
 .hc-estado-cancelada {
-  background-color: rgba(245, 158, 11, 0.12);
-  color: var(--hc-status-pendiente);
+  background-color: #fef3c7;
+  color: #b45309;
 }
 
 .hc-estado-rechazada {
-  background-color: rgba(234, 84, 85, 0.12);
-  color: var(--hc-status-peligro);
+  background-color: #fee2e2;
+  color: #b91c1c;
 }
 
 /* Panel lateral: Detalle */
@@ -374,7 +415,7 @@
   padding: clamp(20px, 4vw, 26px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   position: sticky;
-  top: 20px; /* Hace que el panel acompañe el scroll en desktop */
+  top: 20px;
 }
 
 .hc-detalle-cita-header {
@@ -551,13 +592,13 @@
 }
 
 .hc-boton-reagendar {
-  background-color: var(--hc-dorado);
-  color: #000000;
+  background-color: #111111;
+  color: #e5be6b;
   border: none;
 }
 
 .hc-boton-reagendar:hover {
-  background-color: #edd193;
+  background-color: #222222;
 }
 
 .hc-boton-ver-barberia {
@@ -577,10 +618,7 @@
   font-size: 1rem;
 }
 
-/* =========================================
-   MEDIA QUERIES (Reducidos y optimizados)
-   ========================================= */
-
+/* Responsivo Móvil (< 650px) */
 @media (max-width: 1100px) {
   .hc-layout {
     flex-direction: column;
@@ -590,34 +628,78 @@
     width: 100%;
   }
 
-  /* Si el sidebar está abajo, quitamos el scroll interno de la lista para que se deslice toda la página */
   .hc-lista-citas {
     max-height: none;
     overflow-y: visible;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 650px) {
+  .hc-contenido {
+    padding: 16px 12px;
+  }
+
+  .hc-tarjetas-resumen {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .hc-tarjeta-resumen {
+    padding: 12px 6px;
+    border-radius: 12px;
+  }
+
+  .hc-numero-resumen {
+    font-size: 1.2rem;
+  }
+
+  .hc-etiqueta-resumen {
+    font-size: 0.72rem;
+    margin-top: 2px;
+  }
+
   .hc-item-cita {
     flex-direction: column;
     align-items: flex-start;
+    padding: 16px 14px;
+    gap: 12px;
+    border-radius: 16px;
   }
 
-  .hc-imagen-cita {
-    width: 100%;
-    height: 140px;
+  .hc-info-cita h3 {
+    font-size: 1.05rem;
   }
 
   .hc-acciones-cita {
     width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed #e5e7eb;
+  }
+
+  .hc-meta-cita {
+    display: flex;
     flex-direction: row;
-    align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
+    align-items: center;
+    width: 100%;
   }
 
   .hc-fila-acciones {
     width: 100%;
-    justify-content: flex-end;
+    justify-content: space-between;
+    margin-top: 0;
+  }
+
+  .hc-boton-detalle {
+    padding: 8px 14px;
+    font-size: 0.82rem;
+  }
+
+  .hc-badge-estado {
+    padding: 5px 12px;
+    font-size: 0.8rem;
   }
 }

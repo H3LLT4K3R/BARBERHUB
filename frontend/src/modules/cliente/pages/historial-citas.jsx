@@ -240,10 +240,12 @@ export default function HistorialCitas() {
                     <p>{cita.barberias?.name}</p>
                   </div>
                   <div className="hc-acciones-cita">
-                    <span className="hc-precio-cita">${Number(cita.total).toFixed(2)}</span>
-                    <span className="hc-fecha-cita">{formatearFechaLarga(cita.scheduled_at.slice(0, 10))}</span>
+                    <div className="hc-meta-cita">
+                      <span className="hc-precio-cita">${Number(cita.total).toFixed(2)}</span>
+                      <span className="hc-fecha-cita">{formatearFechaLarga(cita.scheduled_at.slice(0, 10))}</span>
+                    </div>
                     <div className="hc-fila-acciones">
-                      <button className="hc-boton-detalle" onClick={() => setCitaSeleccionada(cita)}>
+                      <button type="button" className="hc-boton-detalle" onClick={() => setCitaSeleccionada(cita)}>
                         Ver detalle
                       </button>
                       <span className={`hc-badge-estado ${ESTADO_CLASE[cita.status]}`}>
