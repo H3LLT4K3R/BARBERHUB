@@ -93,6 +93,8 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
+app.get('/api/health', (req, res) => res.json({ ok: true, timestamp: Date.now() }));
+
 // 🔴 LA CLAVE: Lo dejamos como '/api' para que coincida con tu frontend original
 app.use('/api', pagosRoutes);
 app.use('/api/pagos/mp', mercadoPagoRoutes);
