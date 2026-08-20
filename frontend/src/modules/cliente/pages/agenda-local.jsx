@@ -176,8 +176,10 @@ export default function AgendaLocal() {
         <section className="al-seleccion-reserva">
           <div className="al-grupo-seleccion">
             <h3>Servicio</h3>
-            {cargandoOpciones && <p>Cargando servicios...</p>}
-            {!cargandoOpciones && servicios.length === 0 && <p>Esta barbería aún no tiene servicios publicados.</p>}
+            {cargandoOpciones && <p className="al-estado-texto">Cargando servicios...</p>}
+            {!cargandoOpciones && servicios.length === 0 && (
+              <p className="al-estado-texto">Esta barbería aún no tiene servicios publicados.</p>
+            )}
             <div className="al-opciones-servicio">
               {servicios.map((s) => (
                 <button
@@ -186,8 +188,11 @@ export default function AgendaLocal() {
                   className={`al-opcion-servicio ${servicioSeleccionado?.id === s.id ? "activo" : ""}`}
                   onClick={() => seleccionarServicio(s)}
                 >
-                  <span><IconScissors size={16} stroke={1.7} style={{ verticalAlign: "-3px", marginRight: 6 }} />{s.name}</span>
-                  <strong>${s.price}</strong>
+                  <span className="al-servicio-info">
+                    <IconScissors size={18} className="al-servicio-icono" />
+                    <span className="al-servicio-nombre">{s.name}</span>
+                  </span>
+                  <strong className="al-servicio-precio">${s.price}</strong>
                 </button>
               ))}
             </div>
@@ -201,8 +206,11 @@ export default function AgendaLocal() {
                 className={`al-opcion-barbero ${barberoSeleccionado === null ? "activo" : ""}`}
                 onClick={() => seleccionarBarbero(null)}
               >
-                <IconUsers size={18} />
-                <span><strong>Sin preferencia</strong><small>Cualquier barbero disponible</small></span>
+                <IconUsers size={20} className="al-barbero-icono" />
+                <span className="al-barbero-detalles">
+                  <strong>Sin preferencia</strong>
+                  <small>Cualquier barbero disponible</small>
+                </span>
               </button>
               {barberos.map((b) => {
                 const avatarUrl = urlAvatarBarbero(b.profiles?.avatar_path);
@@ -213,8 +221,12 @@ export default function AgendaLocal() {
                     className={`al-opcion-barbero ${barberoSeleccionado?.id === b.id ? "activo" : ""}`}
                     onClick={() => seleccionarBarbero(b)}
                   >
-                    {avatarUrl ? <img src={avatarUrl} alt={b.display_name ?? "Barbero"} /> : <IconUser size={18} />}
-                    <span>
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={b.display_name ?? "Barbero"} className="al-barbero-avatar" />
+                    ) : (
+                      <IconUser size={20} className="al-barbero-icono" />
+                    )}
+                    <span className="al-barbero-detalles">
                       <strong>{b.display_name ?? "Barbero"}</strong>
                       {b.specialty && <small>{b.specialty}</small>}
                     </span>
@@ -227,28 +239,30 @@ export default function AgendaLocal() {
 
         {!servicioSeleccionado ? (
           <div className="al-aviso-seleccion">
-            <IconInfoCircle size={18} />
+            <IconInfoCircle size={20} />
             <span>Elige un servicio para ver el calendario y los horarios disponibles.</span>
           </div>
         ) : (
           <>
             <section className="al-seccion-calendario">
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <div className="al-calendario-header">
                 <button
                   type="button"
+                  className="al-mes-nav-btn"
                   onClick={() => setMesVisible((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1))}
                   disabled={mesVisible.getFullYear() === hoy.getFullYear() && mesVisible.getMonth() === hoy.getMonth()}
-                  style={{ border: "none", background: "transparent", fontSize: "1.3rem", cursor: "pointer" }}
+                  aria-label="Mes anterior"
                 >
                   ‹
                 </button>
-                <h3 className="al-titulo-mes" style={{ margin: 0, textTransform: "capitalize" }}>
+                <h3 className="al-titulo-mes">
                   {nombreMesAnio(mesVisible)}
                 </h3>
                 <button
                   type="button"
+                  className="al-mes-nav-btn"
                   onClick={() => setMesVisible((m) => new Date(m.getFullYear(), m.getMonth() + 1, 1))}
-                  style={{ border: "none", background: "transparent", fontSize: "1.3rem", cursor: "pointer" }}
+                  aria-label="Mes siguiente"
                 >
                   ›
                 </button>
@@ -265,13 +279,15 @@ export default function AgendaLocal() {
                   const esSeleccionado = diaSeleccionado && fechaAKey(fecha) === fechaAKey(diaSeleccionado);
 
                   return (
-                    <div
+                    <button
                       key={index}
+                      type="button"
+                      disabled={deshabilitado}
                       className={`al-celda-dia ${esSeleccionado ? "activo" : ""} ${deshabilitado ? "vacia" : ""}`}
                       onClick={() => !deshabilitado && seleccionarDia(fecha)}
                     >
                       {fecha.getDate()}
-                    </div>
+                    </button>
                   );
                 })}
               </div>
@@ -280,11 +296,11 @@ export default function AgendaLocal() {
             <section className="al-seccion-horarios">
               <h3 className="al-titulo-horarios">HORARIOS DISPONIBLES</h3>
 
-              {!diaSeleccionado && <p>Elige un día en el calendario para ver los horarios.</p>}
-              {cargandoSlots && <p>Cargando horarios...</p>}
-              {error && <p className="al-error" style={{ color: "#b91c1c" }}>{error}</p>}
+              {!diaSeleccionado && <p className="al-estado-texto">Elige un día en el calendario para ver los horarios.</p>}
+              {cargandoSlots && <p className="al-estado-texto">Cargando horarios disponibles...</p>}
+              {error && <p className="al-error">{error}</p>}
               {diaSeleccionado && !cargandoSlots && !error && slots.length === 0 && (
-                <p>Este día no tiene horarios disponibles.</p>
+                <p className="al-estado-texto">Este día no tiene horarios disponibles.</p>
               )}
 
               {diaSeleccionado && !cargandoSlots && slots.length > 0 && (
@@ -299,6 +315,7 @@ export default function AgendaLocal() {
                       return (
                         <button
                           key={slot.hora}
+                          type="button"
                           className={`al-boton-hora ${claseEstado}`}
                           disabled={!slot.disponible}
                           onClick={() => setHoraSeleccionada(slot.hora)}
@@ -318,8 +335,8 @@ export default function AgendaLocal() {
               )}
 
               <div className="al-acciones-final">
-                <button className="al-boton-regresar" onClick={regresar}>Regresar</button>
-                <button className="al-boton-continuar" onClick={handleContinuar} disabled={!diaSeleccionado || !horaSeleccionada}>
+                <button type="button" className="al-boton-regresar" onClick={regresar}>Regresar</button>
+                <button type="button" className="al-boton-continuar" onClick={handleContinuar} disabled={!diaSeleccionado || !horaSeleccionada}>
                   Continuar
                 </button>
               </div>
@@ -329,7 +346,7 @@ export default function AgendaLocal() {
 
         {!servicioSeleccionado && (
           <div className="al-acciones-sin-servicio">
-            <button className="al-boton-regresar" onClick={regresar} style={{ flex: "none", padding: "12px 30px", fontSize: "1rem" }}>
+            <button type="button" className="al-boton-regresar" onClick={regresar}>
               Regresar
             </button>
           </div>
