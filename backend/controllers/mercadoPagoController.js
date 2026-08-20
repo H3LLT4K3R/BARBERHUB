@@ -4,8 +4,8 @@ import { mercadoPagoClient } from '../config/mercadopago.js';
 import { supabaseAdmin } from '../config/supabase.js';
 import { registrarIngresoPorPago } from './operacionController.js';
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3000';
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'http://localhost:5173').split(',')[0].trim().replace(/\/+$/, '');
+const BACKEND_URL = (process.env.BACKEND_URL || 'http://localhost:3000').trim().replace(/\/+$/, '');
 
 // Anticipo fijo para todas las citas (por ahora, sin importar el precio del servicio).
 // El resto del total se liquida directamente en el local.

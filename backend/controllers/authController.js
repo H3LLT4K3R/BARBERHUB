@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '../config/supabase.js';
 import transporter from '../config/mail.js';
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'http://localhost:5173').split(',')[0].trim().replace(/\/+$/, '');
 const MAIL_FROM = process.env.MAIL_FROM || `"Barber Hub" <${process.env.MAIL_USER}>`;
 
 // Envía un correo de recuperación con la marca de Barber Hub, usando un link de

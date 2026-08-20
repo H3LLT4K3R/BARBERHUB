@@ -33,10 +33,37 @@ app.use(helmet());
 // se puede saber de antemano. Peticiones sin header Origin (webhooks de Mercado Pago,
 // curl, servidor a servidor) siempre pasan: CORS solo aplica a peticiones de navegador.
 const enProduccion = process.env.NODE_ENV === 'production';
-const origenesPermitidos = [process.env.FRONTEND_URL, 'http://localhost:5173'].filter(Boolean);
+
+// Procesa FRONTEND_URL permitiendo múltiples dominios (separados por coma),
+// elimina slashes finales e incluye automáticamente tanto la variante con 'www.' como sin 'www.'
+const rawUrls = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map((url) => url.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+
+rawUrls.push('http://localhost:5173');
+
+const origenesPermitidos = new Set();
+for (const urlStr of rawUrls) {
+  origenesPermitidos.add(urlStr);
+  try {
+    const parsed = new URL(urlStr);
+    if (parsed.hostname && !parsed.hostname.startsWith('localhost') && !/^\d+\.\d+\.\d+\.\d+$/.test(parsed.hostname)) {
+      if (parsed.hostname.startsWith('www.')) {
+        const sinWww = parsed.hostname.replace(/^www\./, '');
+        origenesPermitidos.add(`${parsed.protocol}//${sinWww}${parsed.port ? ':' + parsed.port : ''}`);
+      } else {
+        origenesPermitidos.add(`${parsed.protocol}//www.${parsed.hostname}${parsed.port ? ':' + parsed.port : ''}`);
+      }
+    }
+  } catch {
+    // Si la URL no es parseable, la conservamos tal como se agregó al Set
+  }
+}
+
 app.use(cors({
   origin(origin, callback) {
-    if (!enProduccion || !origin || origenesPermitidos.includes(origin)) {
+    if (!enProduccion || !origin || origenesPermitidos.has(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Origen no permitido por CORS.'));
