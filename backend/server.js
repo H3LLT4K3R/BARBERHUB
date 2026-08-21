@@ -93,11 +93,8 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-app.get('/api/health', (req, res) => res.json({ ok: true, timestamp: Date.now() }));
-
-// Ruta para mantener activo el servidor en Render (usada por UptimeRobot)
-app.get('/api/ping', (req, res) => {
-  res.status(200).json({ mensaje: 'Servidor despierto y listo' });
+app.get(['/ping', '/api/ping', '/health', '/api/health'], (req, res) => {
+  res.status(200).json({ ok: true, mensaje: 'Servidor despierto y listo' });
 });
 
 // 🔴 LA CLAVE: Lo dejamos como '/api' para que coincida con tu frontend original
