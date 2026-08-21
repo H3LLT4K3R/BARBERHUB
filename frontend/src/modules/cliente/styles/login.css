@@ -259,34 +259,44 @@
 
   .login-columna-izquierda {
     min-height: auto;
-    padding: 32px 24px 24px;
+    padding: 24px 20px 18px;
     align-items: center;
     text-align: center;
+    background: linear-gradient(180deg, #181818 0%, #0a0a0a 100%);
+    border-bottom: 1px solid rgba(229, 190, 107, 0.2);
   }
 
-  .login-banner {
-    opacity: 0.12;
+  .login-banner,
+  .login-logo-central-container,
+  .login-footer-izquierdo {
+    display: none !important;
   }
 
   .login-contenido-izquierdo {
     min-height: auto;
     padding: 0;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: center;
     width: 100%;
-    gap: 12px;
+    gap: 8px;
   }
 
-  .login-logo-central-container {
-    flex: initial;
+  .login-logo-boton {
+    display: inline-block !important;
+    background: none;
+    border: none;
     padding: 0;
-    margin-bottom: 4px;
+    cursor: pointer;
+    margin-bottom: 6px;
   }
 
-  .login-logo-central {
-    width: min(150px, 42vw);
-    max-height: 150px;
-    filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5));
+  .login-logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(201, 162, 39, 0.4);
   }
 
   .login-texto-hero {
@@ -299,46 +309,29 @@
   }
 
   .login-texto-hero h2 {
-    font-size: clamp(20px, 5.5vw, 24px);
+    font-size: 18px;
     line-height: 1.3;
-    margin-bottom: 6px;
-    max-width: 320px;
+    margin-bottom: 4px;
+    max-width: 300px;
     text-align: center;
   }
 
   .login-texto-hero p {
-    font-size: 13.5px;
-    line-height: 1.5;
-    color: #a3a3a3;
-    max-width: 310px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: #b0b0b0;
+    max-width: 290px;
     text-align: center;
   }
 
-  .login-footer-izquierdo {
-    display: none;
-  }
-
   .login-columna-derecha {
-    padding: 36px 24px 44px;
+    padding: 28px 20px 40px;
   }
 }
 
 @media (max-width: 480px) {
   .login-columna-izquierda {
-    padding: 24px 18px 20px;
-  }
-
-  .login-logo-central {
-    width: 125px;
-    max-height: 125px;
-  }
-
-  .login-texto-hero h2 {
-    font-size: 19px;
-  }
-
-  .login-texto-hero p {
-    font-size: 13px;
+    padding: 20px 16px 16px;
   }
 
   .login-titulo {
@@ -346,16 +339,16 @@
   }
 
   .login-subtitulo {
-    font-size: 13px;
-    margin-bottom: 24px;
+    font-size: 13.5px;
+    margin-bottom: 22px;
   }
 
   .login-columna-derecha {
-    padding: 28px 20px 36px;
+    padding: 24px 18px 36px;
   }
 
   .login-boton-enviar {
     font-size: 15px;
-    padding: 13px;
+    padding: 13.5px;
   }
 }

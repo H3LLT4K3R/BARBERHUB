@@ -14,4 +14,14 @@ if (!supabaseUrl || !serviceRoleKey) {
 // Cliente con permisos totales: se salta RLS. Solo se usa en este backend.
 export const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
+    global: {
+        fetch: (url, options = {}) => {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000);
+            return fetch(url, {
+                ...options,
+                signal: options.signal || controller.signal,
+            }).finally(() => clearTimeout(timeoutId));
+        },
+    },
 });
