@@ -204,7 +204,7 @@
   align-items: center;
   justify-content: space-between;
   height: var(--ow-navbar-h);
-  background: linear-gradient(180deg, #181818 0%, #0d0d0d 100%);
+  background: var(--ow-black);
   padding: 0 24px;
   flex-shrink: 0;
   border-bottom: 1px solid var(--ow-border);
