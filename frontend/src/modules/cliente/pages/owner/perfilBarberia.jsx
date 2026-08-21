@@ -370,7 +370,7 @@ export default function PerfilBarberia() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    justify-content: "center",
+                    justifyContent: "center",
                     gap: "8px",
                     textDecoration: "none",
                     padding: "10px 14px",
