@@ -178,14 +178,15 @@ export default function SuperAdminPanel() {
     e.preventDefault();
     setGuardandoLinkPlataforma(true);
     setMensajeLinkPlataforma("");
+    const esBorrado = !linkPlataforma.trim();
     try {
       await apiFetch("/suscripciones/config", {
         method: "PUT",
         body: JSON.stringify({ subscriptionPaymentLinkUrl: linkPlataforma.trim() || null }),
       });
-      setMensajeLinkPlataforma("Link guardado correctamente.");
+      setMensajeLinkPlataforma(esBorrado ? "Link eliminado correctamente." : "Link guardado correctamente.");
     } catch (err) {
-      setMensajeLinkPlataforma(err.message || "No fue posible guardar el link.");
+      setMensajeLinkPlataforma(err.message || "No fue posible actualizar el link.");
     } finally {
       setGuardandoLinkPlataforma(false);
     }

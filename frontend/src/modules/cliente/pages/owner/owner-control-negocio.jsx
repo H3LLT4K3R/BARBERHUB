@@ -66,13 +66,14 @@ export default function ControlNegocioView() {
 
     setGuardandoLink(true);
     setMensajeLink('');
+    const esBorrado = !linkPago.trim();
     try {
       const { error } = await supabase
         .from('barberias')
         .update({ payment_link_url: linkPago.trim() || null })
         .eq('id', barberiaId);
       if (error) throw error;
-      setMensajeLink('Link guardado correctamente.');
+      setMensajeLink(esBorrado ? 'Link de pago eliminado correctamente.' : 'Link guardado correctamente.');
     } catch (error) {
       console.error('No fue posible guardar el link de pago:', error);
       setMensajeLink('No fue posible guardar el link. Intenta de nuevo.');

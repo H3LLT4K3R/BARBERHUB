@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '../config/supabase.js';
 import transporter from '../config/mail.js';
 
-const FRONTEND_URL = (process.env.FRONTEND_URL || 'http://localhost:5173').split(',')[0].trim().replace(/\/+$/, '');
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'https://www.barber-hub.com.mx').split(',')[0].trim().replace(/\/+$/, '');
 const MAIL_FROM = process.env.MAIL_FROM || `"Barber Hub" <${process.env.MAIL_USER}>`;
 
 const getFrontendUrl = (req) => {
@@ -12,7 +12,7 @@ const getFrontendUrl = (req) => {
     if (FRONTEND_URL && !FRONTEND_URL.includes('localhost')) {
         return FRONTEND_URL;
     }
-    return origin || FRONTEND_URL || 'http://localhost:5173';
+    return origin || FRONTEND_URL || 'https://www.barber-hub.com.mx';
 };
 
 // Envía un correo de recuperación con la marca de Barber Hub, usando un link de
