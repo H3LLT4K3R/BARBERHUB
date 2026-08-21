@@ -78,54 +78,42 @@ export const registrarUsuario = async (req, res) => {
     }
 
     try {
-        const frontendUrl = getFrontendUrl(req);
-        const { data, error } = await supabaseAdmin.auth.admin.generateLink({
-            type: 'signup',
+        const { data, error } = await supabaseAdmin.auth.admin.createUser({
             email: email.trim(),
             password,
-            options: {
-                data: { full_name: fullName.trim() },
-                redirectTo: `${frontendUrl}/login`,
-            },
+            email_confirm: true,
+            user_metadata: { full_name: fullName.trim() },
         });
 
         if (error) {
-            if (error.message?.includes('already registered') || error.code === 'email_exists') {
+            if (error.message?.includes('already registered') || error.code === 'email_exists' || error.status === 422) {
                 return res.status(409).json({ error: 'Este correo ya tiene una cuenta. Intenta iniciar sesión.' });
             }
-            throw error;
+            return res.status(400).json({ error: error.message || 'No fue posible crear la cuenta.' });
         }
 
-        // El trigger on_auth_user_created ya creó profiles; guardamos el teléfono aquí
-        // porque todavía no hay sesión del usuario para que lo haga él mismo.
-        if (phone?.trim()) {
+        if (phone?.trim() && data?.user?.id) {
             await supabaseAdmin.from('profiles').update({ phone: phone.trim() }).eq('id', data.user.id);
         }
 
-        // Responde de inmediato al cliente para que la petición no se quede colgada
-        res.status(201).json({ ok: true });
+        res.status(201).json({ ok: true, user: { id: data.user.id, email: data.user.email } });
 
-        // Envía el correo en segundo plano (sin await para no bloquear la respuesta HTTP)
         transporter.sendMail({
             from: MAIL_FROM,
             to: email.trim(),
-            subject: 'Confirma tu cuenta de Barber Hub',
+            subject: '¡Bienvenido a Barber Hub!',
             html: `
-                <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto;">
+                <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 20px;">
                     <h2 style="color: #111;">Barber Hub</h2>
-                    <p>¡Gracias por registrarte! Confirma tu correo para activar tu cuenta.</p>
-                    <a href="${data.properties.action_link}"
-                       style="display: inline-block; padding: 14px 24px; background-color: #c9a227; color: #111; text-decoration: none; font-weight: bold; border-radius: 8px; margin-top: 12px;">
-                       Confirmar mi cuenta
-                    </a>
-                    <p style="color: #888; font-size: 13px; margin-top: 24px;">Si tú no creaste esta cuenta, puedes ignorar este correo.</p>
+                    <p>Hola <strong>${fullName.trim()}</strong>,</p>
+                    <p>¡Tu cuenta se ha creado con éxito! Ya puedes iniciar sesión en Barber Hub.</p>
                 </div>
             `,
         }).catch((mailError) => {
-            console.error('Error al enviar el correo de confirmación:', mailError);
+            console.error('Error enviando correo de bienvenida:', mailError.message);
         });
     } catch (error) {
         console.error('Error al registrar usuario:', error);
-        res.status(500).json({ error: 'No fue posible crear la cuenta.' });
+        res.status(500).json({ error: error.message || 'No fue posible crear la cuenta.' });
     }
 };

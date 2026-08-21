@@ -89,7 +89,7 @@ export default function Registro() {
         state: {
           email: form.email.trim(),
           cuentaVerificada: true,
-          mensaje: "Revisa tu correo para confirmar tu cuenta antes de iniciar sesión.",
+          mensaje: "¡Cuenta creada exitosamente! Ya puedes iniciar sesión con tus datos.",
         },
       });
     } catch (err) {
