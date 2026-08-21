@@ -367,8 +367,21 @@ export default function PerfilBarberia() {
                   href={`/barberia-perfil/${barberia.slug || barberia.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn-secondary-white w-100"
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", textDecoration: "none", padding: "10px", borderRadius: "8px", border: "1px solid #e5e7eb", color: "#374151", fontWeight: "500", fontSize: "14px" }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justify-content: "center",
+                    gap: "8px",
+                    textDecoration: "none",
+                    padding: "10px 14px",
+                    borderRadius: "8px",
+                    border: "1px solid #E9C46A",
+                    color: "#E9C46A",
+                    fontWeight: "600",
+                    fontSize: "13px",
+                    backgroundColor: "rgba(233, 196, 106, 0.08)",
+                    transition: "all 0.2s ease"
+                  }}
                 >
                   <ExternalLink size={16} />
                   Ver perfil de barbería
@@ -461,18 +474,19 @@ export default function PerfilBarberia() {
                           <div className="hours-row mb-1" key={weekday}>
                             <span className="day-span-label">{label}</span>
                             {isEditingHours ? (
-                              <span style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                                <label style={{ fontSize: 10, display: "flex", gap: 4, alignItems: "center" }}>
+                              <div className="hours-edit-group">
+                                <label style={{ fontSize: 11, display: "flex", gap: 4, alignItems: "center", cursor: "pointer", color: "#374151" }}>
                                   <input type="checkbox" checked={h.is_closed} onChange={(e) => actualizarHorario(weekday, "is_closed", e.target.checked)} />
                                   Cerrado
                                 </label>
                                 {!h.is_closed && (
-                                  <>
-                                    <input type="time" value={h.opens_at} onChange={(e) => actualizarHorario(weekday, "opens_at", e.target.value)} className="inline-hours-editor-input" style={{ width: 90 }} />
-                                    <input type="time" value={h.closes_at} onChange={(e) => actualizarHorario(weekday, "closes_at", e.target.value)} className="inline-hours-editor-input" style={{ width: 90 }} />
-                                  </>
+                                  <div className="time-inputs-pair">
+                                    <input type="time" value={h.opens_at} onChange={(e) => actualizarHorario(weekday, "opens_at", e.target.value)} className="inline-hours-editor-input" />
+                                    <span style={{ fontSize: 11, color: "#6b7280" }}>a</span>
+                                    <input type="time" value={h.closes_at} onChange={(e) => actualizarHorario(weekday, "closes_at", e.target.value)} className="inline-hours-editor-input" />
+                                  </div>
                                 )}
-                              </span>
+                              </div>
                             ) : (
                               <span className="hours-val">{h.is_closed ? "Cerrado" : `${h.opens_at} - ${h.closes_at}`}</span>
                             )}

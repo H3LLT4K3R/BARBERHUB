@@ -156,11 +156,30 @@
 
 .sub-section-title { font-size: 11px; font-weight: 700; color: var(--black); }
 .modern-hours-toggle-btn { background-color: var(--black); color: var(--bh-gold); border: none; padding: 0.35rem 0.65rem; border-radius: 0.5rem; font-size: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.35rem; }
-.working-hours-list-text { font-size: 11px; color: var(--color-gray-dark); }
-.hours-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.day-span-label { color: var(--text-muted); font-weight: 500; }
+.working-hours-list-text { font-size: 11px; color: var(--color-gray-dark); display: flex; flex-direction: column; gap: 6px; }
+.hours-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 4px 0; border-bottom: 1px dashed #f0f0f0; }
+.hours-row:last-child { border-bottom: none; }
+.day-span-label { color: var(--text-muted); font-weight: 600; min-width: 65px; }
 .hours-val { font-weight: 700; color: var(--black); }
-.inline-hours-editor-input { border: 1px solid var(--bh-gold); border-radius: 0.25rem; font-size: 11px; padding: 0.1rem 0.3rem; width: 110px; outline: none; }
+.hours-edit-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.time-inputs-pair { display: flex; align-items: center; gap: 4px; }
+.inline-hours-editor-input {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 11px;
+  padding: 4px 6px;
+  width: 95px;
+  outline: none;
+  background: #ffffff;
+  color: #111827;
+  transition: border-color 0.2s;
+}
+.inline-hours-editor-input:focus { border-color: var(--bh-gold); }
+
+@media (max-width: 480px) {
+  .hours-row { flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 0; }
+  .hours-edit-group { width: 100%; justify-content: space-between; }
+}
 
 .perfil-skills-image-display-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 10px; width: 100%; }
 .perfil-skill-photo-card { border: 1px solid var(--color-border); border-radius: 0.75rem; overflow: hidden; background: var(--white); width: 100%; }
