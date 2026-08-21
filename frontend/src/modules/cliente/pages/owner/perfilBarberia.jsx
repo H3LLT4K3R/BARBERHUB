@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  User, MapPin, Plus, Trash2, Scissors, Edit2, Check, Star, Users, Camera,
+  User, MapPin, Plus, Trash2, Scissors, Edit2, Check, Star, Users, Camera, ExternalLink,
 } from "lucide-react";
 
 import "../../styles/Barberias/perfilbarberia.css";
@@ -355,14 +355,25 @@ export default function PerfilBarberia() {
                 <MapPin className="inline-geo-icon" /> {[barberia.zone, barberia.city].filter(Boolean).join(", ") || "Sin ubicación"}
               </p>
 
-              <button
-                type="button"
-                className="btn-primary-gold mt-4"
-                style={{ marginTop: "1rem" }}
-                onClick={alternarPublicacion}
-              >
-                {barberia.is_published ? "Ocultar mi barbería" : "Publicar mi barbería"}
-              </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: "1rem" }}>
+                <button
+                  type="button"
+                  className="btn-primary-gold w-100"
+                  onClick={alternarPublicacion}
+                >
+                  {barberia.is_published ? "Ocultar mi barbería" : "Publicar mi barbería"}
+                </button>
+                <a
+                  href={`/barberia-perfil/${barberia.slug || barberia.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-secondary-white w-100"
+                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", textDecoration: "none", padding: "10px", borderRadius: "8px", border: "1px solid #e5e7eb", color: "#374151", fontWeight: "500", fontSize: "14px" }}
+                >
+                  <ExternalLink size={16} />
+                  Ver perfil de barbería
+                </a>
+              </div>
             </div>
 
             <div className="perfil-card-white-container localization-premium-card">

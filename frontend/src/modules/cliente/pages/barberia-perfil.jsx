@@ -62,6 +62,7 @@ export default function BarberiaPerfil() {
   const volverA = location.state?.volverA ?? "/explorar";
 
   const [barberia, setBarberia] = useState(null);
+  const [fotoPortada, setFotoPortada] = useState(null);
   const [servicios, setServicios] = useState([]);
   const [barberos, setBarberos] = useState([]);
   const [opiniones, setOpiniones] = useState([]);
@@ -92,7 +93,7 @@ export default function BarberiaPerfil() {
       }
 
       const nowIso = new Date().toISOString();
-      const [{ data: hours }, { data: servicesData }, { data: membershipsData }, { data: reviewsData }, favResult, { data: couponsData }] = await Promise.all([
+      const [{ data: hours }, { data: servicesData }, { data: membershipsData }, { data: reviewsData }, favResult, { data: couponsData }, { data: mediaData }] = await Promise.all([
         supabase.from("business_hours").select("weekday, opens_at, closes_at, is_closed").eq("barberia_id", b.id),
         supabase.from("services").select("id, name, price, duration_minutes").eq("barberia_id", b.id).eq("is_active", true).order("sort_order").limit(4),
         supabase.from("barberia_memberships").select("id, profile_id, display_name, specialty").eq("barberia_id", b.id).eq("role", "barber").eq("is_active", true),
@@ -109,6 +110,7 @@ export default function BarberiaPerfil() {
           .lte("starts_at", nowIso)
           .gte("ends_at", nowIso)
           .order("created_at", { ascending: false }),
+        supabase.from("barberia_media").select("storage_path").eq("barberia_id", b.id).eq("is_cover", true).maybeSingle(),
       ]);
 
       if (cancelado) return;
@@ -132,6 +134,7 @@ export default function BarberiaPerfil() {
       setOpiniones((reviewsData ?? []).map((r) => r.comment).filter(Boolean));
       setEsFavorita(Boolean(favResult?.data));
       setCupones(couponsData ?? []);
+      setFotoPortada(mediaData?.storage_path ? urlAvatarBarbero(mediaData.storage_path) : null);
       setCargando(false);
     }
 
@@ -217,7 +220,15 @@ export default function BarberiaPerfil() {
 
       <main className="bp-contenido">
         <section className="bp-hero" aria-label={`Perfil de ${barberia.name}`}>
+          {fotoPortada && (
+            <div className="bp-hero-fondo" style={{ backgroundImage: `url(${fotoPortada})` }}>
+              <div className="bp-hero-fondo-overlay" />
+            </div>
+          )}
           <div className="bp-hero-izquierda">
+            {fotoPortada && (
+              <img src={fotoPortada} alt={barberia.name} className="bp-hero-foto-perfil" />
+            )}
             <div className="bp-info">
               <div className="bp-titulo-fila">
                 <h1 className="bp-titulo">{barberia.name}</h1>
