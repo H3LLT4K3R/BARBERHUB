@@ -220,11 +220,6 @@ export default function BarberiaPerfil() {
 
       <main className="bp-contenido">
         <section className="bp-hero" aria-label={`Perfil de ${barberia.name}`}>
-          {fotoPortada && (
-            <div className="bp-hero-fondo" style={{ backgroundImage: `url(${fotoPortada})` }}>
-              <div className="bp-hero-fondo-overlay" />
-            </div>
-          )}
           <div className="bp-hero-izquierda">
             {fotoPortada && (
               <img src={fotoPortada} alt={barberia.name} className="bp-hero-foto-perfil" />
