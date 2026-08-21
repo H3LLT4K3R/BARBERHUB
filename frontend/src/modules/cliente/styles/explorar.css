@@ -290,39 +290,42 @@
   cursor: not-allowed;
 }
 
-.explorar-profile-link {
-  background-color: transparent;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  color: #374151;
+.explorar-map-link {
+  color: #c9a227;
   font-size: 13px;
   font-weight: 600;
+  text-decoration: underline;
   cursor: pointer;
-  padding: 8px 16px;
-  margin-top: auto; /* Push to the bottom */
-  text-decoration: none;
-  transition: all 0.2s ease-in-out;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 8px;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+}
+.explorar-map-link:hover {
+  color: #b8911e;
 }
 
-.explorar-map-button {
-  margin-top: 8px;
-  margin-bottom: 8px;
+.explorar-btn-gold {
+  background-color: #c9a227;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  max-width: 200px;
+  text-align: center;
+  margin-top: auto;
+  text-decoration: none;
 }
-
-.explorar-profile-link:hover {
-  background-color: #f3f4f6;
-  border-color: #9ca3af;
-  color: #111827;
-}
-
-@media (max-width: 768px) {
-  .explorar-profile-link {
-    width: 100%;
-    padding: 10px;
-  }
+.explorar-btn-gold:hover {
+  background-color: #b8911e;
+  transform: translateY(-2px);
 }
 
 /* Contenedor mapa */

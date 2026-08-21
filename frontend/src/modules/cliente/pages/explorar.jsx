@@ -283,16 +283,16 @@ export default function Explorar({ searchQuery = "" }) {
                       <p className="explorar-barberia-address">
                         <MapPin className="explorar-address-icon" />
                         {[b.zone, b.city, b.state].filter(Boolean).join(', ')}
+                        {b.lat != null && b.lng != null && (
+                          <button
+                            type="button"
+                            className="explorar-map-link"
+                            onClick={() => window.open(getOpenStreetMapUrl(b.lat, b.lng), "_blank", "noopener,noreferrer")}
+                          >
+                            Ver en el mapa
+                          </button>
+                        )}
                       </p>
-                      {b.lat != null && b.lng != null && (
-                        <button
-                          type="button"
-                          className="explorar-profile-link explorar-map-button"
-                          onClick={() => window.open(getOpenStreetMapUrl(b.lat, b.lng), "_blank", "noopener,noreferrer")}
-                        >
-                          Ver ubicación en el mapa
-                        </button>
-                      )}
                       <p className="explorar-barberia-price">
                         Servicio desde ${b.precio_desde ?? 0} {b.currency_code}
                       </p>
@@ -327,7 +327,7 @@ export default function Explorar({ searchQuery = "" }) {
                           state: { volverA: "/explorar" },
                         })
                       }
-                      className="explorar-profile-link"
+                      className="explorar-btn-gold"
                     >
                       Ver perfil de barbería
                     </button>
