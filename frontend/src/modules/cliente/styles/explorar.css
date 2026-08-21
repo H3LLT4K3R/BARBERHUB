@@ -291,19 +291,38 @@
 }
 
 .explorar-profile-link {
-  background: none;
-  border: none;
-  color: #9CA3AF;
-  font-size: 11px;
-  font-weight: 700;
+  background-color: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
-  padding: 0;
-  margin-top: 10px;
+  padding: 8px 16px;
+  margin-top: auto; /* Push to the bottom */
   text-decoration: none;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.explorar-map-button {
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
 
 .explorar-profile-link:hover {
-  color: #6b7280;
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+  color: #111827;
+}
+
+@media (max-width: 768px) {
+  .explorar-profile-link {
+    width: 100%;
+    padding: 10px;
+  }
 }
 
 /* Contenedor mapa */

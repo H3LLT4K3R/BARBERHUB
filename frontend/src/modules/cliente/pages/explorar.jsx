@@ -287,8 +287,7 @@ export default function Explorar({ searchQuery = "" }) {
                       {b.lat != null && b.lng != null && (
                         <button
                           type="button"
-                          className="explorar-profile-link"
-                          style={{ padding: "2px 0" }}
+                          className="explorar-profile-link explorar-map-button"
                           onClick={() => window.open(getOpenStreetMapUrl(b.lat, b.lng), "_blank", "noopener,noreferrer")}
                         >
                           Ver ubicación en el mapa
